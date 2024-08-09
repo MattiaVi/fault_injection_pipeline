@@ -5,7 +5,7 @@
 
 >**<u>CONSIGLIO 0</u>** Prima di fare qualsiasi modifica al 
 > progetto 
-> presenta in 
+> presente in 
 > questa 
 > cartella,
 ricordarsi di fare `git pull` per evitare spiacevoli inconvenienti che
@@ -15,18 +15,18 @@ portano a perdita di tempo e salute.
 ### Consigli:
 - Leggere i paper indicati con `(todo)` nella traccia del progetto (vedi 
   link sopra)
-- Leggere le slide relative a _Moduli e test_ può essere utile soprattutto a 
+- Leggere le slide relative a _Moduli e test_: può essere utile soprattutto a 
   livello di "SoftEng".
 <hr style="border: 0.5px solid red">
 
 ## Casi di studio
-Dopo un'indagine e volendo mantenere una certa coerenza con il lavoro già 
+Dopo un'indagine, e volendo mantenere una certa coerenza con il lavoro già 
 fatto da altri nelle pubblicazioni scientifiche di cui sopra, si è giunti a 
 una sorta di compromesso, decidendo di prendere in esame:
 1. **Bubble sort** o **Selection Sort** (Algoritmo di ordinamento), da 
-   scegliere uno dei due in base ai risultati prodotti.
+   scegliere uno dei due in base ai risultati prodotti;
 2. **Moltiplicazioni tra due matrici** 5x5 (Algoritmo classico usato in una 
-   varietà cospicua di contesti)
+   varietà cospicua di contesti).
 
 ## Prima Parte (Mattia)
 E' la parte che riguarda l'irrobustimento del codice e l'utilizzo del tipo 
@@ -37,8 +37,11 @@ approfondito viene riportato di seguito.
 **Task da svolgere (orientativamente parlando...)**:
 1. Reperire il codice per gli algoritmi citati, scriverli in Rust e 
    verificarne la correttezza logica e sintattica con qualche test/esempio 
-   che li utilizzi (Selection Sort già c'è); 
-2. Scrivere l'algoritmo proposto con i tipi `Hardened<T>` (per dettagli 
+   che li utilizzi (Selection Sort già c'è); in questo modo si ha la 
+   certezza di andare avanti con un livello di astrazione diverso partendo 
+   da una base corretta; 
+2. Riscrivere/Adattare l'algoritmo proposto con i tipi `Hardened<T>` (per 
+   dettagli 
    ulteriori vedi video relativo sulla cartella condivisa di Google Drive).
    - Nota che: in questa fase ci potrebbe essere la necessità di dover 
       implementare tratti mancanti nell'implementazione attuale. 
@@ -47,11 +50,11 @@ approfondito viene riportato di seguito.
       `acc += r_el*c_el` dove `acc` è un accumulatore e `r_el`, `c_el` 
       sono l'elemento corrispondente di riga e colonna della matrice; 
      tutte queste variabili per gli scopi del progetto sono di tipo 
-     Hardened. I tratti `Mul` e `AddAssign` per eseguire rispettivamente 
-     `*` e `+=` non sono implementati. Bisogna quindi che vengano 
+     Hardened. I tratti `Mul` e `AddAssign`, per eseguire rispettivamente 
+     `*` e `+=`, non sono implementati. Bisogna quindi che vengano 
      implementati prima di poter scrivere il codice che li utilizzi, 
      diversamente il compilatore genererà un errore relativo al fatto che 
-     per quel tipo non sono implementati certi tratti. Quello che ci 
+     per quel tipo non ci sono certi tratti. Quello che ci 
      siamo detti fino a questo punto.
 3. Testare tramite qualche esempio che le cose vadano come ci si aspetta (eg.
    Controllo di correttezza dell'output...). [Volendo, in base al tempo 
@@ -74,9 +77,9 @@ Questa parte è relativa allo sviluppo dell'ambiente di Fault Injection che
 prende come programmi attaccati (target) quelli implementati nella fase 
 precedente.
 
-Si è pensato di implementare questa prima parte realizzando una sorta di 
-pipeline realizzata combinando l'utilizzo di thread e canali di tipo 
-'multiple producer multiple channel'.
+Si è pensato di implementare questa seconda parte realizzando una sorta di 
+pipeline combinando l'utilizzo di thread e canali di tipo 
+'multiple producer single consumer (mpsc)'.
 
 >In questa parte non serve aver già pronti i casi di studio e l'analizzatore 
 > per poter andare avanti con le due parti centrali (Fault Manager e 
@@ -85,6 +88,7 @@ pipeline realizzata combinando l'utilizzo di thread e canali di tipo
 
 ### Implementazione della pipeline
 ![](pipeline_img.png)
+
 La pipeline che implementa tutta la seconda parte del progetto è composta da 
 tanti stadi quante sono le fasi di analisi: 
 1. Fault Manager
@@ -101,7 +105,7 @@ Questi fanno utilizzo di alcune fonti (indicate nello schema con dei cilindri):
    oltre che a essere visualizzato (CLI, GUI o altro).
 
 Un'idea sarebbe quella di realizzare questa pipeline all'interno di una 
-funzione wrapper fatta in questo modo:
+funzione wrapper fatta in questo modo o in un modo simile:
 
 ```rust
 use std::sync::mpsc::channel;
@@ -130,7 +134,7 @@ fn fault_injection_env(fault_list: String,      //nome file fault-list
       da `<variabile, tempo_iniezione, fault_mask>`
    3. Si potrebbe pensare di serializzare le informazioni su un file 
       utilizzando il crate `serde`, chiaramente questo prevede che venga 
-      creato un tipo nuovo esempio:
+      creato un tipo nuovo. Ad esempio:
    ```rust
     struct FaultListEntry{
         var: String,
@@ -176,9 +180,10 @@ control to an interrupt handler. (...)
    poterlo utilizzare correttamente.
 2. **Avvio del task e iniezione del guasto**: si fa partire il thread e al 
    momento opportuno viene iniettato il guasto.
-3. **Aspetto la terminazione**: ci si arresta sulla `JoinHandle` invocando 
+3. **Aspetto la terminazione**: ci si arresta sulla `JoinHandle`, invocando poi
    su questa il metodo `join()` che come noto restituisce il Result.
-4. **Mandare il risultato** verso l'opportuno `Sender`, descrivere a modo di 
+4. **Mandare il risultato** verso l'opportuno `Sender`, descrivere inoltre a 
+   modo di 
    documentazione qual è il risultato che l'analizzatore dovrà aspettarsi in 
    ottica di poter avere un 'manuale' con cui poter utilizzare queste 
    informazioni ai fini dell'analisi.
