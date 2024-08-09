@@ -1,5 +1,4 @@
 # ProgFaultInjection
-<hr>
 
 ## Prima Parte
 
