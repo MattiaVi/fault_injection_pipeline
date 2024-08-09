@@ -3,7 +3,7 @@ use crate::hardened::hardened::{Hardened,IncoherenceError};
 
 
 
-///<h3>Caso di studio 1: Selection Sort</h3>
+/// <h3>Caso di studio 1: Selection Sort</h3>
 fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
     let mut N:Hardened<usize> = vet.len().into();
     let mut j= Hardened::from(0);
