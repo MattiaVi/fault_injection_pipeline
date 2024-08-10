@@ -1,7 +1,6 @@
 mod hardened;
-use crate::hardened::hardened::{Hardened,IncoherenceError};
-
-
+mod fault_list_manager;
+use crate::hardened::{Hardened,IncoherenceError};
 
 /// <h3>Caso di studio 1: Selection Sort</h3>
 fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
@@ -26,8 +25,6 @@ fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
     //------------------------------------------------------
     Ok(())
 }
-
-
 
 fn main(){
     let mut myvec =
