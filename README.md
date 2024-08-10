@@ -1,4 +1,4 @@
-# ProgettoPdS::ProgFaultInjection
+# ProgettoPdS::prj_G19
 #### Realizzazione di un ambiente di Fault Injection per applicazione ridondata
 
 [Traccia del progetto](https://github.com/cmigliaccio00/ProgettoPdS_materiale)
