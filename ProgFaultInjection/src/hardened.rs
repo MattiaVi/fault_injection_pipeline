@@ -206,4 +206,9 @@ pub mod hardened{
         #[error("IncoherenceError::Generic: generic incoherence error")]
         Generic
     }
+
+    #[cfg(test)]
+    mod tests{
+
+    }
 }
