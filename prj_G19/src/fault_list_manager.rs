@@ -201,6 +201,18 @@ pub struct FaultListEntry{
     fault_mask: u64,
 }
 
+impl FaultListEntry{
+    fn get_var(&self)->&str{
+        &self.var
+    }
+    fn get_time(&self)->usize{
+        self.time
+    }
+    fn get_fault_mask(&self)->u64{
+        self.fault_mask
+    }
+}
+
 //Fault List Manager
 
 #[cfg(test)]
