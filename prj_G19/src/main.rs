@@ -1,7 +1,13 @@
 mod hardened;
 mod fault_list_manager;
 
-use crate::hardened::{Hardened,IncoherenceError};
+use std::collections::HashMap;
+use crate::hardened::{Hardened, IncoherenceError};
+use crate::fault_list_manager::FaultListEntry;
+use crate::fault_list_manager::{VariableVisitor};
+use std::fs;
+use syn::{File, Item};
+use syn::visit::Visit;
 
 /// <h3>Caso di studio 1: Selection Sort</h3>
 fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
@@ -28,6 +34,7 @@ fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
 }
 
 fn main(){
+    /*
     let mut myvec =
         Hardened::from_vec(vec![34, 12, 54, 1, 10, 21, 19, 2, 3, 24, 9]);
 
@@ -43,4 +50,5 @@ fn main(){
 
     let a = Hardened::from(3);
     println!("Uso Debug: {:?}",a);
+     */
 }
