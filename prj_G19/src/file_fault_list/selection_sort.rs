@@ -1,23 +1,17 @@
-fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
-    let mut N = vet.len().into();
-    let mut j= 0;
-    let mut min = 0;
-    //--------------SELECTION SORT-------------------------
-    let mut i= 0;
+fn selection_sort(vet: Vec<i32>, N: i32){
+    let mut i=0;
+    let mut j=0;
+    let Pos=0;
 
-    while i<(N-1)?{
-        min.assign(i)?;                 //min=i
-        j.assign((i+1)?)?;        //j=0
+    while i<N-1{
+        Pos=i;
+        j=i+1;
         //Ricerca del minimo
         while j<N{
-            if vet[j]<vet[min]  {   min.assign(j)?; }
-            j.assign((j+1)?)?;
+            if Vec[j] < Vec[Pos]{   Pos=j;  }
+            j = j+1;
         }
-        //Scambio il minimo
-        vet.swap(i.inner()?, min.inner()?);
-        //Vado avanti
-        i.assign((i+1)?)?;
+        if Pos!=i{      vet.swap(Pos,i);    }
+        i=i+1;
     }
-    //------------------------------------------------------
-    Ok(())
 }

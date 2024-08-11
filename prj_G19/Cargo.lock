@@ -6,6 +6,7 @@ version = 3
 name = "prj_G19"
 version = "0.1.0"
 dependencies = [
+ "proc-macro2",
  "quote",
  "syn",
  "thiserror",

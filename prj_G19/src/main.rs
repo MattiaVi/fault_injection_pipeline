@@ -3,8 +3,7 @@ mod fault_list_manager;
 
 use std::collections::HashMap;
 use crate::hardened::{Hardened, IncoherenceError};
-use crate::fault_list_manager::FaultListEntry;
-use crate::fault_list_manager::{VariableVisitor};
+use crate::fault_list_manager::{FaultListEntry, static_analysis};
 use std::fs;
 use syn::{File, Item};
 use syn::visit::Visit;
@@ -51,4 +50,16 @@ fn main(){
     let a = Hardened::from(3);
     println!("Uso Debug: {:?}",a);
      */
+
+    let file_path = "src/file_fault_list/selection_sort.rs";
+    let code = fs::read_to_string(file_path)
+        .expect("Failed to read file");
+
+    let file: File = syn::parse_str(&code).expect("Failed to parse code");
+
+    for item in file.items {
+        if let syn::Item::Fn(func) = item {
+            static_analysis::analyze_function(&func);
+        }
+    }
 }
