@@ -2,11 +2,21 @@ use syn::{File, ItemFn, Block, Stmt, Pat, Type, Expr, FnArg};
 use quote::ToTokens;
 use std::collections::HashMap;
 use std::fs;
+use std::fs::OpenOptions;
+use std::io::Write;
 use crate::fault_list_manager::static_analysis;
 
 //Analizza la funzione
-pub fn analyze_function(func: &ItemFn) {
-    println!("Function: {}", func.sig.ident);
+pub fn analyze_function(func: &ItemFn, file_path_dest: String) {
+    //println!("Function: {}", func.sig.ident);
+
+    //TODO: Rimuovere lo expect  per gestire l'errore
+    let mut fp= OpenOptions::new()
+        .write(true)
+        .append(true)
+        .create(true)
+        .open(file_path_dest)
+        .unwrap();
 
     let body = &func.block;
     let mut instruction_count = 0;
@@ -19,10 +29,21 @@ pub fn analyze_function(func: &ItemFn) {
     let mut variables = Vec::new();
     extract_variables(&func, &variable_types, &mut variables);
 
-    println!("Instruction count: {}", instruction_count);
-    println!("Variables:");
+    //todo: Queste informazioni vanno salvate su un file al posto di essere stampate
+    //Formato del file:
+    // <N>
+    // <name1> <type1> <size1>
+    // ...
+    //<nameN> <typeN> >sizeN>
+
+    //dove N è il numero di istruzioni
+
+    //todo: rimuovi expect()
+    fp.write_all(format!("{}\n", instruction_count).as_bytes()).expect("errore");
+    //println!("Variables:");
     for var in variables {
-        println!("Name: {}, Type: {}, Size: {}", var.name, var.ty, var.size);
+        //println!("Name: {}, Type: {}, Size: {}", var.name, var.ty, var.size);
+        fp.write_all( format!("{} {} {}\n", var.name, var.ty, var.size).as_bytes()).expect("errore");
     }
 }
 
@@ -179,6 +200,19 @@ fn extract_variables(func: &ItemFn, variable_types: &HashMap<String, String>, va
             ty: ty.clone(),
             size: type_size(&ty),
         });
+    }
+}
+
+//todo: Eliminare expect in modo da far ritornare un Result alla funzione
+pub fn generate_analysis_file(file_path_src: String, file_path_dest: String){
+    let code = fs::read_to_string(file_path_src)
+        .expect("Failed to read file");
+    let file: File = syn::parse_str(&code).expect("Failed to parse code");
+
+    for item in file.items {
+        if let syn::Item::Fn(func) = item {
+            analyze_function(&func, file_path_dest.clone());
+        }
     }
 }
 
