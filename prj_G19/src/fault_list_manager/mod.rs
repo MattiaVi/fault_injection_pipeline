@@ -1,3 +1,5 @@
+use std::sync::mpsc::Sender;
+
 pub mod static_analysis;
 
 ///Generazione della fault list:
@@ -29,4 +31,9 @@ mod tests{
     fn test_trivial(){
         assert_eq!(2,2);
     }
+}
+
+//Stage della pipeline: Fault List Manager
+pub fn fault_manager(tx_chan_fm_inj: Sender<FaultListEntry>, fault_list:String){
+    assert_eq!("", "");
 }
