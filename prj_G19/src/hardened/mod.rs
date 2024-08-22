@@ -187,6 +187,34 @@ impl<T> Debug for Hardened<T> where T:Debug+PartialEq+Eq+Copy+Clone{
     }
 }
 
+
+///Funzione di prova
+/// <h3>Caso di studio 1: Selection Sort</h3>
+fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
+    let mut N:Hardened<usize> = vet.len().into();
+    let mut j= Hardened::from(0);
+    let mut min = Hardened::from(0);
+    //--------------SELECTION SORT-------------------------
+    let mut i= Hardened::from(0);
+    while i<(N-1)?{
+        min.assign(i)?;                 //min=i
+        j.assign((i+1)?)?;        //j=0
+        //Ricerca del minimo
+        while j<N{
+            if vet[j]<vet[min]  {   min.assign(j)?; }
+            j.assign((j+1)?)?;
+        }
+        //Scambio il minimo
+        vet.swap(i.inner()?, min.inner()?);
+        //Vado avanti
+        i.assign((i+1)?)?;
+    }
+    //------------------------------------------------------
+    Ok(())
+}
+
+
+
 //-------------------------------------------------------------
 ///Tipo di errore generato tutte le volte che fallisce il controllo
 /// di coerenza delle due copie all'interno di una variabile di tipo
@@ -206,6 +234,7 @@ pub enum IncoherenceError{
 #[cfg(test)]
 mod tests{
     use crate::Hardened;
+    use crate::hardened::selection_sort;
     use crate::IncoherenceError;
     #[test]
     fn test_add_ok(){
@@ -240,4 +269,15 @@ mod tests{
         assert!(ris.is_ok());
         assert_eq!(ris.unwrap().inner().unwrap(), 9);
     }
+
+    #[test]
+    //Provo a usare il nuovo tipo per ordinare un vettore
+    fn test_sort(){
+        let mut myvec = Hardened::from_vec(vec![31, 10, 15, 6, 4, 3]);
+        assert!(selection_sort(&mut myvec).is_ok());
+        let mut myvec2 = Hardened::from_vec(vec![3,4,6,10,15,31]);
+        assert_eq!(myvec, myvec2);
+    }
+
+
 }
