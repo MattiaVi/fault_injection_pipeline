@@ -1,5 +1,5 @@
 fn selection_sort(vet: Vec<i32>){
-    let mut N = vet.len();
+    let mut N:usize = vet.len();
     let mut j=0;
     let mut min=0;
 

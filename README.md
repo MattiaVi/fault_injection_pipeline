@@ -3,13 +3,7 @@
 
 [Traccia del progetto](https://github.com/cmigliaccio00/ProgettoPdS_materiale)
 
->**<u>CONSIGLIO 0</u>** Prima di fare qualsiasi modifica al 
-> progetto 
-> presente in 
-> questa 
-> cartella,
-ricordarsi di fare `git pull` per evitare spiacevoli inconvenienti che
-portano a perdita di tempo e salute.
+>**<u>CONSIGLIO 0</u>** Prima di fare qualsiasi modifica al progetto presente in questa cartella, ricordarsi di fare `git pull` per evitare spiacevoli inconvenienti che portano a perdita di tempo e salute.
 
 
 ### Consigli:
@@ -195,6 +189,44 @@ E' la parte centrale della pipeline che si occupa di iniettare nelle variabili a
 2. **Temporizzazione tra thread iniettato e thread iniettore**
    1. A questo scopo si possono utilizzare i channel. Prendendo ispirazione       dal paper che utilizza il tracing per far partire l'injection a un       certo istante, si potrebbe far seguire ogni istruzione del caso di       studio analizzato da una `send()`       fatta all'interno di un canale creato tra i due thread. 
    2. Il thread       iniettore resta in ascolto di questi messaggi e li conta, al momento       opportuno prende il possesso del lock e inietta nelle variabili       utilizzando la fault mask. 
+
+   #### Esempio risultato generato da analisi
+   ```
+   Function: selection_sort
+   Instruction count: 13                      
+   Variables:
+   Name: vet, Type: Vec < i32 >, Size: 4*len
+   Name: min, Type: i32, Size: 4
+   Name: j, Type: i32, Size: 4
+   Name: N, Type: usize, Size: 4
+   Name: i, Type: i32, Size: 4
+   ```
+
+   __Nota che:__ per questa parte quello che interessa a chi implementa l'iniettore è solo l'informazione sul conteggio delle informazioni, in quanto tutte le altre informazioni provengono dallo stage precedente tramite le entry della fault list.
+   C'è un unico accorgimento da tenere in considerazione: le istruzioni contenute nei cicli vengono contate una sola volta per cui in ottica di aggiornare correttamente il conteggio e di "innescare" nei punti giusti i fault, potrebbe aver senso decrementare il conteggio all'uscita dal ciclo di un numero di istruzioni pari a quelle contenute nel ciclo.
+
+   > Di seguito è riportato il codice originale commentato con il conteggio delle istruzioni, che mostra come e quali sono le istruzioni che vengono contato dalle funzioni contenute nel sottomodulo di `static_analysis`
+
+   ```rust
+      fn selection_sort(vet: Vec<i32>){
+         let mut N = vet.len();           //1
+         let mut j=0;                     //2
+         let mut min=0;                   //3
+         let mut i=0;                     //4
+         while i<N-1{                     //5
+            min=i;                        //6
+            j=i+1;                        //7
+            while j<N{                    //8
+                  if Vec[j] < Vec[min]{   //9
+                     Pos=j;               //10
+                  }
+                  j = j+1;                //11
+            }
+            vet.swap(min,i);             //12
+            i=i+1;                       //13
+         }
+      }
+   ```
 
 ### Analizzatore (Federico)
 Quest'ultima fase è quella in cui si **raccolgono** e **analizzano** tramite tabulati, indici di tendenza centrale, indici di dispersione... i dati ottenuti dalle imulazioni effettuate agli stage precedenti.

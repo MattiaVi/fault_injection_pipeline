@@ -112,6 +112,7 @@ fn infer_type_from_expr(expr: &Expr) -> String {
             let left_type = infer_type_from_expr(&binary.left);
             let right_type = infer_type_from_expr(&binary.right);
             if left_type == right_type {
+
                 left_type
             } else {
                 "unknown".to_string()
