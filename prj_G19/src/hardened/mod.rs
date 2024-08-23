@@ -3,6 +3,10 @@ use std::fmt::{Display, Debug, Formatter};
 use std::ops::{Add, Index, IndexMut, Sub};
 use thiserror::Error;
 
+
+//Come variante si potrebbero gestire le operazioni di 
+//irrobustimento ad un tratto...
+
 //-------------------------------------------------------------
 #[derive(Clone, Copy)]
 /// <h2>Tipo ```Hardened<T>``` </h2> <br>
