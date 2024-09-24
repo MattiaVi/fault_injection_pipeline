@@ -240,3 +240,16 @@ Quest'ultima fase è quella in cui si **raccolgono** e **analizzano** tramite ta
 ## Questioni ancora aperte
 - Come interagisce un utente di questo programma con l'applicazione?   (esempio: CLI, GUI...) se abbiamo tempo sarebbe carino creare   un'interfaccia grafica semplice on pochissime funzioni essenziali e per   la visualizzazione dei risultati ottenuti.
 - Varie ed eventuali... (modificate voi all'occorrenza questa parte)
+
+# Consegna e Presentazione del progetto 
+Almeno 3 giorni prima dell'appello bisogna:
+1) Caricare il progetto su git;
+2) Mandare una mail a entrambi i docenti per dire che il progetto è stato 
+terminato;
+3) Iscriversi all'appello (entro le scadenze)
+
+### Materiale per la consegna e/o presentazione
+- Manuale di sviluppo: strutture dati/costrutti utilizzati con motivazione 
+  (da consegnare)
+- Manuale utente: come utilizzare il software? (da consegnare)
+- Presentazione: cosa è stato fatto tecnicamente (?) 

@@ -9,5 +9,10 @@ pub struct TestResult{
 pub fn injector(rx_chan_fm_inj: Receiver<FaultListEntry>,
                 tx_chan_inj_anl: Sender<TestResult>,
                 target: String){            //per il momento lasciamolo, poi si vedrà...
-    assert_eq!("", "");
+
+    while let a=rx_chan_fm_inj.recv(){
+        if (a.is_ok()){
+            println!("Received {:?}",a.unwrap());
+        }
+    }
 }

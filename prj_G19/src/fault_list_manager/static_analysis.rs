@@ -2,18 +2,19 @@ use syn::{File, ItemFn, Block, Stmt, Pat, Type, Expr, FnArg};
 use quote::ToTokens;
 use std::collections::HashMap;
 use std::fs;
+use std::fmt::{Display, Debug};
 use std::fs::OpenOptions;
 use std::io::Write;
+use serde::{Deserialize, Serialize};
+use serde_json;
 use crate::fault_list_manager::static_analysis;
 
 //Analizza la funzione
 pub fn analyze_function(func: &ItemFn, file_path_dest: String) {
-    //println!("Function: {}", func.sig.ident);
-
     //TODO: Rimuovere lo expect  per gestire l'errore
     let mut fp= OpenOptions::new()
         .write(true)
-        .append(true)
+        .append(false)
         .create(true)
         .open(file_path_dest)
         .unwrap();
@@ -29,7 +30,6 @@ pub fn analyze_function(func: &ItemFn, file_path_dest: String) {
     let mut variables = Vec::new();
     extract_variables(&func, &variable_types, &mut variables);
 
-    //todo: Queste informazioni vanno salvate su un file al posto di essere stampate
     //Formato del file:
     // <N>
     // <name1> <type1> <size1>
@@ -38,13 +38,25 @@ pub fn analyze_function(func: &ItemFn, file_path_dest: String) {
 
     //dove N è il numero di istruzioni
 
+    //Prima creo la struttura di tipo 'ResultAnalysis', poi la serializzo su file
+    let ris=ResultAnalysis{num_inst: instruction_count, vars: variables};
+
+    //Creo una stringa JSON dalla struttura dati a cui ho fatto derivare Serialize/Deserialize
+    let ris_json=serde_json::to_string_pretty(&ris);
+
+    if ris_json.is_ok(){
+        fp.write_all(ris_json.ok().unwrap().as_bytes()).unwrap()
+    }
+
     //todo: rimuovi expect()
+    /*
     fp.write_all(format!("{}\n", instruction_count).as_bytes()).expect("errore");
     //println!("Variables:");
     for var in variables {
         //println!("Name: {}, Type: {}, Size: {}", var.name, var.ty, var.size);
         fp.write_all( format!("{} {} {}\n", var.name, var.ty, var.size).as_bytes()).expect("errore");
     }
+     */
 }
 
 fn count_statements(block: &Block, variable_types: &mut HashMap<String, String>) -> usize {
@@ -133,7 +145,6 @@ fn infer_type_from_expr(expr: &Expr) -> String {
             let left_type = infer_type_from_expr(&binary.left);
             let right_type = infer_type_from_expr(&binary.right);
             if left_type == right_type {
-
                 left_type
             } else {
                 "unknown".to_string()
@@ -161,11 +172,21 @@ fn type_size(type_str: &str) -> String {
         .to_string()
 }
 
+
 //Tipo che conserva le informazioni di una certa variabile
-struct Variable {
-    name: String,
-    ty: String,
-    size: String,
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Variable {
+    pub name: String,
+    pub ty: String,
+    pub size: String,
+}
+
+//Implement Serialize/Deserialize for this structure
+//in a way that can be saved on file
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ResultAnalysis{
+    pub num_inst: usize,              //number of instruction
+    pub vars: Vec<Variable>         //list of instruction
 }
 
 fn extract_variables(func: &ItemFn, variable_types: &HashMap<String, String>, variables: &mut Vec<Variable>) {
@@ -185,6 +206,7 @@ fn extract_variables(func: &ItemFn, variable_types: &HashMap<String, String>, va
                 "parameter".to_string()
             };
 
+            ty.trim();
             variables.push(Variable {
                 name,
                 ty: ty.clone(),
@@ -203,18 +225,36 @@ fn extract_variables(func: &ItemFn, variable_types: &HashMap<String, String>, va
     }
 }
 
-//todo: Eliminare expect in modo da far ritornare un Result alla funzione
-pub fn generate_analysis_file(file_path_src: String, file_path_dest: String){
-    let code = fs::read_to_string(file_path_src)
-        .expect("Failed to read file");
-    let file: File = syn::parse_str(&code).expect("Failed to parse code");
+//Funzione 'utente'
+pub fn generate_analysis_file(file_path_src: String, file_path_dest: String)->Result<(),
+    std::io::Error>{
+    let code = fs::read_to_string(file_path_src)?;
+    let file: File = syn::parse_str(&code).expect("errore");
 
     for item in file.items {
         if let syn::Item::Fn(func) = item {
             analyze_function(&func, file_path_dest.clone());
         }
     }
+    Ok(())
 }
+
+/**************************ANALISI STATICA DEL CODICE SORGENTE*************************************
+---------------------------------------------------------------------------------------------------
+fn generate_analysis_file()                          Genera il file contenente le informazioni
+\                                                    circa l'analisi statica (wrapper)
+-->  fn analyze_function()                           è a sua volta un wrapper di...
+     \
+     --> fn count_statements()                      Two types: Local, Expression (recursion)
+     \        \
+     \        -->  fn infer_type_from_expr()
+     \        \
+     \        -->  fn count_statements_in_expr()    Si occupa di sviscerare blocchi If/Else
+     \                                               annidati (fatto ricorsivamente)
+     -->  fn extract_variables()                    Mette insieme variabili locali e parametri
+          \
+          -->  fn type_size()                       Tipo<->Dimensione in byte
+**************************************************************************************************/
 
 #[cfg(test)]
 mod tests{

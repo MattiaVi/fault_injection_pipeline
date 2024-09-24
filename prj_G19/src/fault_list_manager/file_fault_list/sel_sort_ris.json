@@ -1,0 +1,30 @@
+{
+  "num_inst": 13,
+  "vars": [
+    {
+      "name": "vet",
+      "ty": "Vec < i32 >",
+      "size": "4*len"
+    },
+    {
+      "name": "i",
+      "ty": "i32",
+      "size": "4"
+    },
+    {
+      "name": "min",
+      "ty": "i32",
+      "size": "4"
+    },
+    {
+      "name": "N",
+      "ty": "usize",
+      "size": "4"
+    },
+    {
+      "name": "j",
+      "ty": "i32",
+      "size": "4"
+    }
+  ]
+}
