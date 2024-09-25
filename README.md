@@ -191,15 +191,42 @@ E' la parte centrale della pipeline che si occupa di iniettare nelle variabili a
    2. Il thread       iniettore resta in ascolto di questi messaggi e li conta, al momento       opportuno prende il possesso del lock e inietta nelle variabili       utilizzando la fault mask. 
 
    #### Esempio risultato generato da analisi
-   ```
-   Function: selection_sort
-   Instruction count: 13                      
-   Variables:
-   Name: vet, Type: Vec < i32 >, Size: 4*len
-   Name: min, Type: i32, Size: 4
-   Name: j, Type: i32, Size: 4
-   Name: N, Type: usize, Size: 4
-   Name: i, Type: i32, Size: 4
+   ```JSON
+      {
+         "num_inst": 13,
+         "vars": [
+         {
+            "name": "vet",
+            "ty": "Vec < i32 >",
+            "size": "4*len",
+            "start": 1
+         },
+         {
+            "name": "i",
+            "ty": "i32",
+            "size": "4",
+            "start": 4
+         },
+         {
+            "name": "min",
+            "ty": "i32",
+            "size": "4",
+            "start": 3
+         },
+         {
+            "name": "N",
+            "ty": "usize",
+            "size": "4",
+            "start": 1
+         },
+         {
+            "name": "j",
+            "ty": "i32",
+            "size": "4",
+            "start": 2
+         }
+      ]
+   }
    ```
 
    __Nota che:__ per questa parte quello che interessa a chi implementa l'iniettore è solo l'informazione sul conteggio delle informazioni, in quanto tutte le altre informazioni provengono dallo stage precedente tramite le entry della fault list.
@@ -236,6 +263,12 @@ Quest'ultima fase è quella in cui si **raccolgono** e **analizzano** tramite ta
    1. _Fault silent_
    2. _Errori rilevati tramite panic/IncoherenceError_    Per questa parte si utilizzano le informazioni provenienti da chi       sviluppa lo stage di prima (Ale).
 2. Per la presentazione dei risultati ci si può ispirare ai paper di    riferimento sia della prima che della seconda parte. In particolare    [questo articolo](https://github.com/cmigliaccio00/ProgettoPdS_materiale/blob/main/paper/SecondPart/1.pdf)
+
+> Potrebbero essere interessanti queste fonti: 
+- https://docs.rs/plotters/latest/plotters/#demo-projects in cui
+- https://crates.io/crates/plotlib/
+
+Sono due crate che permettono di creare grafici (magari può essere uno strumento per la presentazione dei risultati). 
 
 ## Questioni ancora aperte
 - Come interagisce un utente di questo programma con l'applicazione?   (esempio: CLI, GUI...) se abbiamo tempo sarebbe carino creare   un'interfaccia grafica semplice on pochissime funzioni essenziali e per   la visualizzazione dei risultati ottenuti.

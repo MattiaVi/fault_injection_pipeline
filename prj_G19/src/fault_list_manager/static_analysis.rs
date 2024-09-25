@@ -14,6 +14,7 @@ pub fn analyze_function(func: &ItemFn, file_path_dest: String) {
     //TODO: Rimuovere lo expect  per gestire l'errore
     let mut fp= OpenOptions::new()
         .write(true)
+        .truncate(true)
         .append(false)
         .create(true)
         .open(file_path_dest)
@@ -59,7 +60,7 @@ pub fn analyze_function(func: &ItemFn, file_path_dest: String) {
      */
 }
 
-fn count_statements(block: &Block, variable_types: &mut HashMap<String, String>) -> usize {
+fn count_statements(block: &Block, variable_types: &mut HashMap<String, (String, usize)>) -> usize {
     let mut count = 0;
     let mut local_variables = HashMap::new();
 
@@ -72,7 +73,7 @@ fn count_statements(block: &Block, variable_types: &mut HashMap<String, String>)
                     if let Pat::Ident(pat_ident) = &*pat_type.pat {
                         let var_name = pat_ident.ident.to_string();
                         let var_type = extract_type(&*pat_type.ty);
-                        local_variables.insert(var_name.clone(), var_type.clone());
+                        local_variables.insert(var_name.clone(), (var_type.clone(),count as usize));
                     }
                 } else if let Pat::Ident(pat_ident) = &local.pat {
                     let var_name = pat_ident.ident.to_string();
@@ -81,7 +82,7 @@ fn count_statements(block: &Block, variable_types: &mut HashMap<String, String>)
                     } else {
                         "unknown".to_string()
                     };
-                    local_variables.insert(var_name.clone(), var_type.clone());
+                    local_variables.insert(var_name.clone(), (var_type.clone(), count as usize));
                 }
             }
             Stmt::Expr(expr,_) => {
@@ -112,7 +113,8 @@ fn count_statements(block: &Block, variable_types: &mut HashMap<String, String>)
     count
 }
 
-fn count_statements_in_expr(expr: &Expr, variable_types: &mut HashMap<String, String>) -> usize {
+fn count_statements_in_expr(expr: &Expr, variable_types: &mut HashMap<String, (String,usize)>) ->
+                                                                                           usize {
     match expr {
         Expr::Block(block_expr) => count_statements(&block_expr.block, variable_types),
         Expr::If(if_expr) => {
@@ -179,6 +181,7 @@ pub struct Variable {
     pub name: String,
     pub ty: String,
     pub size: String,
+    pub start: usize
 }
 
 //Implement Serialize/Deserialize for this structure
@@ -189,7 +192,8 @@ pub struct ResultAnalysis{
     pub vars: Vec<Variable>         //list of instruction
 }
 
-fn extract_variables(func: &ItemFn, variable_types: &HashMap<String, String>, variables: &mut Vec<Variable>) {
+fn extract_variables(func: &ItemFn, variable_types: &HashMap<String, (String,usize)>, variables:
+&mut Vec<Variable>) {
 
     // Estrazione dei parametri della funzione
     for param in &func.sig.inputs {
@@ -211,16 +215,18 @@ fn extract_variables(func: &ItemFn, variable_types: &HashMap<String, String>, va
                 name,
                 ty: ty.clone(),
                 size: type_size(&ty),
+                start: 1                    //I parametri possono essere iniettati da subito
             });
         }
     }
 
     // Estrazione delle variabili locali
-    for (name, ty) in variable_types {
+    for (name, (ty, start)) in variable_types {
         variables.push(Variable {
             name: name.clone(),
             ty: ty.clone(),
             size: type_size(&ty),
+            start: *start,
         });
     }
 }

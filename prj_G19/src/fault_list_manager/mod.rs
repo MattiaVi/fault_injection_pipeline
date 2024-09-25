@@ -31,7 +31,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
     //----------------------------------------------------------
 
     //--------------------------GENERAZIONE DELLA FAULT LIST-----------------------------
-    let NUM_FAULTS=100;     //TODO: stabilire quanti!
+    let NUM_FAULTS=200;     //TODO: stabilire quanti!
     let mut fault_list:Vec<FaultListEntry> = Vec::new();
     //Ingrediente fondamentale: Generazione di numeri casuali
     //Fonte utile:
@@ -47,10 +47,9 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
             let what_el = rnd.gen_range(0..N);
             let it=FaultListEntry{
                 var: format!("{}[{}]", vars[what_var].name, what_el),
-                //TODO: scelta di un tempo compatibile
-                time: rnd.gen_range(0..info.num_inst),
+                time: rnd.gen_range(vars[what_var].start..info.num_inst),
                 //TODO: va bene memorizzare solo il numero o dobbiamo metterci tutta la maschera?
-                fault_mask: rnd.gen_range(0..32),
+                fault_mask: rnd.gen_range(0..size_of::<i32>() as u64),
             };
             fault_list.push(it);
         }
@@ -58,8 +57,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
         else {
             let it = FaultListEntry {
                 var: vars[what_var].name.clone(),
-                //TODO:scelta di un tempo compatibile
-                time: rnd.gen_range(0..info.num_inst),
+                time: rnd.gen_range(vars[what_var].start..info.num_inst),
                 fault_mask: rnd.gen_range(0..vars[what_var].size
                     .parse::<usize>()
                     .unwrap() as u64*8),
@@ -76,6 +74,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
     //TODO: risolvere problema di errore su file
     let mut fl= OpenOptions::new()
         .write(true)
+        .truncate(true)
         .append(false)
         .create(true)
         .open(file_path_dest)

@@ -10,9 +10,7 @@ pub fn injector(rx_chan_fm_inj: Receiver<FaultListEntry>,
                 tx_chan_inj_anl: Sender<TestResult>,
                 target: String){            //per il momento lasciamolo, poi si vedrà...
 
-    while let a=rx_chan_fm_inj.recv(){
-        if (a.is_ok()){
-            println!("Received {:?}",a.unwrap());
-        }
+    while let Ok(a)=rx_chan_fm_inj.recv(){
+            println!("Received {:?}",a);
     }
 }
