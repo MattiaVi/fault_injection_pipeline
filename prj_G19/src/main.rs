@@ -14,8 +14,6 @@ use crate::fault_env::fault_injection_env;
 use clap::Parser;
 use std::process::Command;
 
-
-todo!();
 //TODO: completare con quello che serve per la realizzazione del menu da linea di comando
 ///Ambiente di Fault Injection per applicazione ridondata
 #[derive(Parser,Debug)]
