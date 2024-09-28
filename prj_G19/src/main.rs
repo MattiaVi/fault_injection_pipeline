@@ -60,5 +60,6 @@ fn main(){
     fault_injection_env(    String::from("src/fault_list_manager/file_fault_list/sel_sort_FL\
                                               .json"),                //nome file in cui c'è la FL
                             String::from("abc"),                //nome programma target
-                            String::from("abc"));               //nome file report
+                            String::from("abc"),                //nome file report
+                            vet);
 }

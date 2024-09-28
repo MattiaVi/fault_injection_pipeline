@@ -8,12 +8,6 @@
       "start": 1
     },
     {
-      "name": "min",
-      "ty": "i32",
-      "size": "4",
-      "start": 3
-    },
-    {
       "name": "N",
       "ty": "usize",
       "size": "4",
@@ -30,6 +24,12 @@
       "ty": "i32",
       "size": "4",
       "start": 4
+    },
+    {
+      "name": "min",
+      "ty": "i32",
+      "size": "4",
+      "start": 3
     }
   ]
 }
