@@ -1,9 +1,6 @@
-use std::collections::HashMap;
-use std::env::var;
-use std::sync::{Arc, Mutex, MutexGuard, RwLock};
+use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::thread;
-use std::time::Duration;
 use crate::fault_list_manager::FaultListEntry;
 use crate::hardened::{Hardened, IncoherenceError};
 
@@ -91,6 +88,8 @@ fn runner_selection_sort(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_
 
         let tmp = (*variables.i.read().unwrap() + 1)?;
         variables.i.write().unwrap().assign(tmp)?;
+        tx_runner.send("i13");
+        rx_runner.recv();
     }
 
 
