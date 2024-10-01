@@ -16,7 +16,8 @@ pub mod static_analysis;
 ///     - generazione casuale di un certo numero di entry +
 ///
 /// path_raw_info
-pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String)
+pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String,
+                            num_instr_eff: usize)       //Number of actual instructions
     ->Vec<FaultListEntry>{
     //RETRIEVING INFORMAZIONI GREZZE
     //Prendere il contenuto del file come stringa
@@ -25,7 +26,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
     let info:ResultAnalysis =serde_json::from_str(&raw_info).unwrap();
 
     //-----------------------Per Debug--------------------------
-    println!("Numero istruzioni: {}", info.num_inst);
+    //println!("Numero istruzioni: {}", info.num_inst);
 
     let vars:Vec<Variable> = info.vars;
     let num_vars=vars.len();
@@ -48,7 +49,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
             let what_el = rnd.gen_range(0..N);
             let it=FaultListEntry{
                 var: format!("{}[{}]", vars[what_var].name, what_el),
-                time: rnd.gen_range(vars[what_var].start..info.num_inst),
+                time: rnd.gen_range(vars[what_var].start..num_instr_eff),
                 //TODO: va bene memorizzare solo il numero o dobbiamo metterci tutta la maschera?
                 fault_mask: rnd.gen_range(0..size_of::<i32>() as u64),
             };
@@ -58,7 +59,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
         else {
             let it = FaultListEntry {
                 var: vars[what_var].name.clone(),
-                time: rnd.gen_range(vars[what_var].start..info.num_inst),
+                time: rnd.gen_range(vars[what_var].start..num_instr_eff),
                 fault_mask: rnd.gen_range(0..vars[what_var].size
                     .parse::<usize>()
                     .unwrap() as u64*8),

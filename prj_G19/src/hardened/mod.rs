@@ -258,6 +258,43 @@ pub enum IncoherenceError{
     Generic
 }
 
+pub fn run_for_count_selection_sort(vet: &mut Vec<i32>)->usize{
+    let mut N:usize = vet.len();
+    let mut j=0;
+    let mut min=0;
+
+    let mut count=5;
+    //-----------------------SELECTION SORT-------------------------
+    let mut i=0;
+    while i<N-1{
+        count=count+1;
+        min=i;
+        count=count+1;
+        j=i+1;
+        //Ricerca del minimo
+        count=count+1;
+        while j<N{
+            count=count+1;
+            if vet[j] < vet[min]{
+                count=count+1;
+                min=j;  }
+            count=count+1;
+            j = j+1;
+        }
+        count=count+1;
+        //Scambio il minimo
+        vet.swap(min,i);
+        //Vado avanti
+        count=count+1;
+        i=i+1;
+
+        //conto il while di dopo (se necessario)
+        if(i<N-1){count=count+1}
+    }
+    count
+}
+
+
 #[cfg(test)]
 mod tests{
     use crate::Hardened;
