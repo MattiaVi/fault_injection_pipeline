@@ -129,10 +129,37 @@ fn runner(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_runner: Receive
 
 fn injector(variables: Arc<Variables>, tx_injector: Sender<&str>, rx_runner: Receiver<&str>) {
 
-    let mut counter = 0usize;
+    let mut counter = 1usize;
+    let mut fault_list_entry: FaultListEntry = FaultListEntry {var: "N".to_string(), time: 3usize, fault_mask: 1};
+
+    // dato che fault_mask mi dice la posizione del bit da modificare, per ottenere la maschera devo calcolare 2^fault_mask
+    let mut mask = 2^fault_list_entry.fault_mask;
+
+    println!("mask: {}", mask);       // ottengo la maschera
 
     while let Ok(msg) = rx_runner.recv() {
         counter += 1;
+
+        /*  //todo: continuare masking del valore per iniettare l'errore
+        match fault_list_entry.var.as_str() {
+            "i" => {
+                let val = variables.i.read().unwrap().inner().clone();
+                let new_val = Hardened {cp1: 10, cp2: 2};
+            },
+            "j" => {},
+            "N" => {},
+            "min" => {},
+            _ => {
+                let index = fault_list_entry.var
+                    .split(|c| c == '[' || c == ']')
+                    .collect::<Vec<_>>()[1]
+                    .parse::<usize>().unwrap();
+            }
+        };
+
+         */
+
+
         tx_injector.send("ricevuto");
     }
 }

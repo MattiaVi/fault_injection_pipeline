@@ -88,9 +88,9 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FaultListEntry{
-    var: String,
-    time: usize,
-    fault_mask: u64,
+    pub var: String,
+    pub time: usize,
+    pub fault_mask: u64,
 }
 
 impl FaultListEntry{

@@ -38,7 +38,7 @@ fn pause() {
 
 fn main(){
     //Per il singolo caso di studio (Selection Sort)
-    let vet = vec![10,15,27,-9,19,20,16, 1, 3, 40];
+    let vet = vec![10, 15, 27, -9, 19, 20, 16, 1, 3, 40];
 
     /*
     let args=Args::parse();
