@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use std::fmt::{Display, Debug, Formatter};
 use std::ops::{Add, Index, IndexMut, Sub};
+use std::process::Output;
 use thiserror::Error;
 
 
@@ -179,6 +180,28 @@ impl<T> IndexMut<Hardened<usize>> for Vec<Hardened<T>>{
         self.index_mut(index.cp1)
     }
 }
+//Per iniettare nelle variabili si potrebbero utilizzare la notazione Var["cp1"], Var["cp2"]
+impl<T> Index<&str> for Hardened<T>{
+    type Output=T;
+    fn index(&self, index: &str) -> &Self::Output {
+        match index{
+            "cp1" => {  &self.cp1 },
+            "cp2" => {   &self.cp2 },
+            _ => panic!()
+        }
+    }
+}
+
+impl<T> IndexMut<&str> for Hardened<T>{
+    fn index_mut(&mut self, index: &str) -> &mut Self::Output {
+        match index{
+            "cp1" => {  &mut self.cp1 },
+            "cp2" => {   &mut self.cp2 },
+            _ => panic!()
+        }
+    }
+}
+
 
 //Per poter stampare il tipo Hardened<T> con la macro println!() e il
 // modificatore {:?}
@@ -284,4 +307,31 @@ mod tests{
     }
 
 
+    //Test su Index/IndexMut<&str> for Hardened<T>
+    #[test]
+    fn test_indexMut_Hardened_for_injection(){
+        let mut myhd =Hardened::from(3);
+        myhd["cp1"] = 2;
+        assert_eq!(myhd.incoherent(), true);
+    }
+
+    #[test]
+    fn test_index_Hardened_for_injection(){
+        let mut myhd=Hardened::from(2);
+        assert_eq!(myhd["cp1"],2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_index_panic(){
+        let mut myvar=Hardened::from(2);
+        _=myvar["cp3"];
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_indexMut_panic(){
+        let mut myvar=Hardened::from(2);
+        myvar["cpe2ejnkjndf"] = 2;
+    }
 }
