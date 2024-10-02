@@ -35,61 +35,74 @@ fn runner_selection_sort(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_
     *variables.N.write().unwrap() = variables.vec.read().unwrap().len().into();
     tx_runner.send("i1");
     rx_runner.recv();
+    println!("i1: {:?}", variables.N.read().unwrap());
 
     *variables.j.write().unwrap() = Hardened::from(0);
     tx_runner.send("i2");
     rx_runner.recv();
+        println!("i2: {:?}", variables.N.read().unwrap());
 
     *variables.min.write().unwrap() = Hardened::from(10);
     tx_runner.send("i3");
     rx_runner.recv();
+        println!("i3: {:?}", variables.N.read().unwrap());
 
     *variables.i.write().unwrap() = Hardened::from(0);
     tx_runner.send("i4");
     rx_runner.recv();
+        println!("i4: {:?}", variables.N.read().unwrap());
 
     while *variables.i.read().unwrap() < (*variables.N.read().unwrap() - 1)? {
         println!("{:?}", variables.vec.read().unwrap());
         tx_runner.send("i5");
         rx_runner.recv();
+            println!("{:?}", variables.N.read().unwrap());
 
         variables.min.write().unwrap().assign(*variables.i.read().unwrap())?;
         tx_runner.send("i6");
         rx_runner.recv();
+            println!("{:?}", variables.N.read().unwrap());
 
         variables.j.write().unwrap().assign((*variables.i.read().unwrap() + 1)?)?;
         tx_runner.send("i7");
         rx_runner.recv();
+            println!("{:?}", variables.N.read().unwrap());
 
         while *variables.j.read().unwrap() < *variables.N.read().unwrap() {
             tx_runner.send("i8");
             rx_runner.recv();
+                println!("{:?}", variables.N.read().unwrap());
 
 
             if variables.vec.read().unwrap()[*variables.j.read().unwrap()] < variables.vec.read().unwrap()[*variables.min.read().unwrap()] {
                 tx_runner.send("i9");
                 rx_runner.recv();
+                    println!("{:?}", variables.N.read().unwrap());
 
                 variables.min.write().unwrap().assign(*variables.j.read().unwrap())?;
                 tx_runner.send("i10");
                 rx_runner.recv();
+                    println!("{:?}", variables.N.read().unwrap());
             }
 
             let tmp = (*variables.j.read().unwrap() + 1)?;  // necessario dato che non potrei fare j = j + 1, dato che dovrei acquisire un lock in lettura dopo averlo gia' acquisito sulla stessa variabile in scrittura
             variables.j.write().unwrap().assign(tmp)?;
             tx_runner.send("i11");
             rx_runner.recv();
+                println!("{:?}", variables.N.read().unwrap());
 
         }
 
         variables.vec.write().unwrap().swap(variables.i.read().unwrap().inner()?, variables.min.read().unwrap().inner()?);
         tx_runner.send("i12");
         rx_runner.recv();
+            println!("{:?}", variables.N.read().unwrap());
 
         let tmp = (*variables.i.read().unwrap() + 1)?;
         variables.i.write().unwrap().assign(tmp)?;
         tx_runner.send("i13");
         rx_runner.recv();
+            println!("{:?}", variables.N.read().unwrap());
     }
 
 
@@ -129,36 +142,51 @@ fn runner(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_runner: Receive
 
 fn injector(variables: Arc<Variables>, tx_injector: Sender<&str>, rx_runner: Receiver<&str>) {
 
-    let mut counter = 1usize;
+    let mut counter = 0usize;
     let mut fault_list_entry: FaultListEntry = FaultListEntry {var: "N".to_string(), time: 3usize, fault_mask: 1};
 
     // dato che fault_mask mi dice la posizione del bit da modificare, per ottenere la maschera devo calcolare 2^fault_mask
-    let mut mask = 2^fault_list_entry.fault_mask;
+    let mut mask = 2^(fault_list_entry.fault_mask as usize);
 
     println!("mask: {}", mask);       // ottengo la maschera
 
     while let Ok(msg) = rx_runner.recv() {
         counter += 1;
 
-        /*  //todo: continuare masking del valore per iniettare l'errore
-        match fault_list_entry.var.as_str() {
-            "i" => {
-                let val = variables.i.read().unwrap().inner().clone();
-                let new_val = Hardened {cp1: 10, cp2: 2};
-            },
-            "j" => {},
-            "N" => {},
-            "min" => {},
-            _ => {
-                let index = fault_list_entry.var
-                    .split(|c| c == '[' || c == ']')
-                    .collect::<Vec<_>>()[1]
-                    .parse::<usize>().unwrap();
-            }
-        };
+        if counter == fault_list_entry.time {
+            match fault_list_entry.var.as_str() {
+                "i" => {
+                    let val = variables.i.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                    let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
+                    variables.i.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                },
+                "j" => {
+                    let val = variables.j.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                    let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
+                    variables.j.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                },
+                "N" => {
+                    let val = variables.N.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                    let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
+                    variables.N.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                },
+                "min" => {
+                    let val = variables.min.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                    let new_val = val ^ mask;                                             // nuovo valore da salvare (XOR per il bitflip)
+                    variables.min.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                },
+                _ => {
+                    let index = fault_list_entry.var
+                        .split(|c| c == '[' || c == ']')
+                        .collect::<Vec<_>>()[1]
+                        .parse::<usize>().unwrap(); // ottengo l'indice dell'elemento nel vttore in cui iniettare l'errore
 
-         */
-
+                    let val = variables.vec.read().unwrap()[index].inner().unwrap().clone();
+                    let new_val = val ^ (mask as i32);
+                    let prova = variables.vec.write().unwrap()[index]["cp1"] = new_val;
+                }
+            };
+        }
 
         tx_injector.send("ricevuto");
     }
