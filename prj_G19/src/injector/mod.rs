@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{channel, Receiver, Sender};
-use std::thread;
+use std::{panic, thread};
 use crate::fault_list_manager::FaultListEntry;
 use crate::hardened::{Hardened, IncoherenceError};
 
@@ -35,74 +35,74 @@ fn runner_selection_sort(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_
     *variables.N.write().unwrap() = variables.vec.read().unwrap().len().into();
     tx_runner.send("i1");
     rx_runner.recv();
-    println!("i1: {:?}", variables.N.read().unwrap());
+    //println!("i1: {:?}", variables.N.read().unwrap());
 
     *variables.j.write().unwrap() = Hardened::from(0);
     tx_runner.send("i2");
     rx_runner.recv();
-        println!("i2: {:?}", variables.N.read().unwrap());
+        //println!("i2: {:?}", variables.N.read().unwrap());
 
     *variables.min.write().unwrap() = Hardened::from(10);
     tx_runner.send("i3");
     rx_runner.recv();
-        println!("i3: {:?}", variables.N.read().unwrap());
+        //println!("i3: {:?}", variables.N.read().unwrap());
 
     *variables.i.write().unwrap() = Hardened::from(0);
     tx_runner.send("i4");
     rx_runner.recv();
-        println!("i4: {:?}", variables.N.read().unwrap());
+        //println!("i4: {:?}", variables.N.read().unwrap());
 
     while *variables.i.read().unwrap() < (*variables.N.read().unwrap() - 1)? {
-        println!("{:?}", variables.vec.read().unwrap());
+       //println!("{:?}", variables.vec.read().unwrap());
         tx_runner.send("i5");
         rx_runner.recv();
-            println!("{:?}", variables.N.read().unwrap());
+            //println!("{:?}", variables.N.read().unwrap());
 
         variables.min.write().unwrap().assign(*variables.i.read().unwrap())?;
         tx_runner.send("i6");
         rx_runner.recv();
-            println!("{:?}", variables.N.read().unwrap());
+            //println!("{:?}", variables.N.read().unwrap());
 
         variables.j.write().unwrap().assign((*variables.i.read().unwrap() + 1)?)?;
         tx_runner.send("i7");
         rx_runner.recv();
-            println!("{:?}", variables.N.read().unwrap());
+            //println!("{:?}", variables.N.read().unwrap());
 
         while *variables.j.read().unwrap() < *variables.N.read().unwrap() {
             tx_runner.send("i8");
             rx_runner.recv();
-                println!("{:?}", variables.N.read().unwrap());
+                //println!("{:?}", variables.N.read().unwrap());
 
 
             if variables.vec.read().unwrap()[*variables.j.read().unwrap()] < variables.vec.read().unwrap()[*variables.min.read().unwrap()] {
                 tx_runner.send("i9");
                 rx_runner.recv();
-                    println!("{:?}", variables.N.read().unwrap());
+                    //println!("{:?}", variables.N.read().unwrap());
 
                 variables.min.write().unwrap().assign(*variables.j.read().unwrap())?;
                 tx_runner.send("i10");
                 rx_runner.recv();
-                    println!("{:?}", variables.N.read().unwrap());
+                    //println!("{:?}", variables.N.read().unwrap());
             }
 
             let tmp = (*variables.j.read().unwrap() + 1)?;  // necessario dato che non potrei fare j = j + 1, dato che dovrei acquisire un lock in lettura dopo averlo gia' acquisito sulla stessa variabile in scrittura
             variables.j.write().unwrap().assign(tmp)?;
             tx_runner.send("i11");
             rx_runner.recv();
-                println!("{:?}", variables.N.read().unwrap());
+                //println!("{:?}", variables.N.read().unwrap());
 
         }
 
         variables.vec.write().unwrap().swap(variables.i.read().unwrap().inner()?, variables.min.read().unwrap().inner()?);
         tx_runner.send("i12");
         rx_runner.recv();
-            println!("{:?}", variables.N.read().unwrap());
+            //println!("{:?}", variables.N.read().unwrap());
 
         let tmp = (*variables.i.read().unwrap() + 1)?;
         variables.i.write().unwrap().assign(tmp)?;
         tx_runner.send("i13");
         rx_runner.recv();
-            println!("{:?}", variables.N.read().unwrap());
+            //println!("{:?}", variables.N.read().unwrap());
     }
 
 
@@ -134,21 +134,30 @@ fn runner_selection_sort(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_
 
 fn runner(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) {
 
-    runner_selection_sort(variables, tx_runner, rx_runner);
+    let result = panic::catch_unwind(|| {
+        runner_selection_sort(variables, tx_runner, rx_runner)
+    });
+
+    match result {
+        Ok(Ok(())) => (),
+        Ok(Err(err)) => println!("Error found - {}", err),
+        Err(_) => println!("runner_selection_sort panicked!"),
+    }
 
 }
 
 
 
-fn injector(variables: Arc<Variables>, tx_injector: Sender<&str>, rx_runner: Receiver<&str>) {
+fn injector(variables: Arc<Variables>, fault_list_entry: FaultListEntry, tx_injector: Sender<&str>, rx_runner: Receiver<&str>) {
 
     let mut counter = 0usize;
-    let mut fault_list_entry: FaultListEntry = FaultListEntry {var: "N".to_string(), time: 3usize, fault_mask: 1};
+
+    println!("error to inject: \nvar = {}\ntime = {}\nmask = {}", fault_list_entry.var, fault_list_entry.time, fault_list_entry.fault_mask);
 
     // dato che fault_mask mi dice la posizione del bit da modificare, per ottenere la maschera devo calcolare 2^fault_mask
-    let mut mask = 2^(fault_list_entry.fault_mask as usize);
+    let mut mask = 1 << (fault_list_entry.fault_mask as usize);
 
-    println!("mask: {}", mask);       // ottengo la maschera
+    println!("mask: {}", 1 << (fault_list_entry.fault_mask));       // ottengo la maschera
 
     while let Ok(msg) = rx_runner.recv() {
         counter += 1;
@@ -220,7 +229,7 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
     let injector_variables = Arc::clone(&shared_variables);
 
     handles.push(thread::spawn(move || runner(runner_variables, tx_1, rx_2)));     // lancio il thread che esegue l'algoritmo
-    handles.push(thread::spawn(move || injector(injector_variables, tx_2, rx_1)));      // lancio il thread iniettore
+    handles.push(thread::spawn(move || injector(injector_variables, fault_list_entry,tx_2, rx_1)));      // lancio il thread iniettore
 
 
 
