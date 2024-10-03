@@ -6,7 +6,7 @@ mod analizer;
 
 use hardened::{Hardened, IncoherenceError};
 use fault_list_manager::{FaultListEntry, static_analysis};
-use std::{fs, io};
+use std::{fs, io, panic};
 use std::io::{Read, Write};
 use syn::{File, Item};
 use syn::visit::Visit;
@@ -38,6 +38,12 @@ fn pause() {
 }
 
 fn main(){
+
+    panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
+        // Print a simple message when a panic occurs
+        eprintln!("A panic occurred!");
+    }));
+
     //Per il singolo caso di studio (Selection Sort)
     let mut vet = vec![10, 15, 27, -9, 19, 20, 16, 1, 3, -32];
 

@@ -141,9 +141,10 @@ fn runner(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_runner: Receive
     match result {
         Ok(Ok(())) => (),
         Ok(Err(err)) => println!("Error found - {}", err),
-        Err(_) => println!("runner_selection_sort panicked!"),
+        Err(_) => ()     //println!("runner_selection_sort panicked!")
     }
 
+    //println!("Posso fare altre cose");
 }
 
 
@@ -152,12 +153,12 @@ fn injector(variables: Arc<Variables>, fault_list_entry: FaultListEntry, tx_inje
 
     let mut counter = 0usize;
 
-    println!("error to inject: \nvar = {}\ntime = {}\nmask = {}", fault_list_entry.var, fault_list_entry.time, fault_list_entry.fault_mask);
+    println!("error to inject: {:?}", fault_list_entry);
 
     // dato che fault_mask mi dice la posizione del bit da modificare, per ottenere la maschera devo calcolare 2^fault_mask
     let mut mask = 1 << (fault_list_entry.fault_mask as usize);
 
-    println!("mask: {}", 1 << (fault_list_entry.fault_mask));       // ottengo la maschera
+    //println!("mask: {}", 1 << (fault_list_entry.fault_mask));       // ottengo la maschera
 
     while let Ok(msg) = rx_runner.recv() {
         counter += 1;
@@ -208,32 +209,24 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
                 target: String,
                 vec: Vec<i32>){            //per il momento lasciamolo, poi si vedrà...
 
-    /*
+    let mut handles = vec![];
+
+
     while let Ok(fault_list_entry) = rx_chan_fm_inj.recv(){
 
+        let variables = Variables::new(vec.clone());    // creo il set di variabili usate dai thread
+        let (tx_1, rx_1) = channel();
+        let (tx_2, rx_2) = channel();
+
+
+        let shared_variables = Arc::new(variables);
+
+        let runner_variables = Arc::clone(&shared_variables);
+        let injector_variables = Arc::clone(&shared_variables);
+
+        handles.push(thread::spawn(move || runner(runner_variables, tx_1, rx_2)));     // lancio il thread che esegue l'algoritmo
+        handles.push(thread::spawn(move || injector(injector_variables, fault_list_entry, tx_2, rx_1)));      // lancio il thread iniettore
     }
-    */
-    let mut handles = vec![];
-    let variables = Variables::new(vec);    // creo il set di variabili usate dai thread
-
-    let (tx_1, rx_1) = channel();
-    let (tx_2, rx_2) = channel();
-
-
-    let shared_variables = Arc::new(variables);
-
-    let fault_list_entry = rx_chan_fm_inj.recv().unwrap();   // aspetto fault list entry
-
-
-    let runner_variables = Arc::clone(&shared_variables);
-    let injector_variables = Arc::clone(&shared_variables);
-
-    handles.push(thread::spawn(move || runner(runner_variables, tx_1, rx_2)));     // lancio il thread che esegue l'algoritmo
-    handles.push(thread::spawn(move || injector(injector_variables, fault_list_entry,tx_2, rx_1)));      // lancio il thread iniettore
-
-
-
-
 
 
 
