@@ -10,7 +10,7 @@ use std::{fs, io, panic};
 use std::io::{Read, Write};
 use syn::{File, Item};
 use syn::visit::Visit;
-use crate::fault_env::fault_injection_env;
+use crate::fault_env::{Data, fault_injection_env};
 use clap::Parser;
 use std::process::Command;
 use crate::hardened::run_for_count_selection_sort;
@@ -45,7 +45,28 @@ fn main(){
     }));
 
     //Per il singolo caso di studio (Selection Sort)
+    //TODO: dati letti da file??
     let mut vet = vec![10, 15, 27, -9, 19, 20, 16, 1, 3, -32];
+    
+    //Prova costruzione di matrici
+    let mut mat1 = vec![10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,];
+
+    let mut mat2 = vec![10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,
+                        10, 20, 30, 15, 10, 10, 9, 8,];
+    let mut data2 = Data::Matrices(mat1, mat2);
 
     let mut args=Args::parse();
     //println!("{}", args.case_study);
@@ -75,7 +96,7 @@ fn main(){
                                               .json"),                //nome file in cui c'è la FL
                                     String::from("abc"),                //nome programma target
                                     String::from("abc"),                //nome file report
-                                    vet);
+                                    Data::Vector(vet));
         },
         _=>{
             println!("errore menu");

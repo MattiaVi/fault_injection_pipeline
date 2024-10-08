@@ -27,7 +27,53 @@ E' la parte che riguarda l'irrobustimento del codice e l'utilizzo del tipo `Hard
    - Nota che: in questa fase ci potrebbe essere la necessità di dover implementare tratti mancanti nell'implementazione attuale. 
    - Ad esempio: 
       per la _moltiplicazione di matrici_ bisogna fare operazioni del tipo `acc += r_el*c_el` dove `acc` è un accumulatore e `r_el`, `c_el` sono l'elemento corrispondente di riga e colonna della matrice; tutte queste variabili per gli scopi del progetto sono di tipo Hardened. I tratti `Mul` e `AddAssign`, per eseguire rispettivamente `*` e `+=`, non sono implementati. Bisogna quindi che vengano implementati prima di poter scrivere il codice che li utilizzi, diversamente il compilatore genererà un errore relativo al fatto che per quel tipo non ci sono certi tratti. Quello che ci siamo detti fino a questo punto.
-3. Testare tramite qualche esempio che le cose vadano come ci si aspetta (eg. Controllo di correttezza dell'output...). [Volendo, in base al tempo disponibile,  si potrebbero anche  scrivere dei test d'unità per gli algoritmi implementati secondo il paradigma AAA]. 
+3. Implementare la matrice con la tecnica row-major usando comunque un vettore, in questo modo si riesce a sfruttare il codice già implementato in Hardened per gestire i vettori; si ricordino le formule per la conversione (riga,colonna) $\to$ indice e viceversa. Di seguito riporto un esempio in cui si fanno queste operazioni: 
+
+```rust
+fn main(){
+    let mat = vec![ 1,2,3,4,
+                    5,6,7,8,
+                    9,1,2,0,
+                    0,0,0,1];
+    let nR=4;
+    let nC=4; 
+    
+    let i=1; let j=1;
+    
+    //Conversione (r,c) -> i  ==> i*nC+j
+    println!("{:?}", mat[i*nC+j]);
+    
+    //Conversione i -> (r,c) ==> (i/nC, i%nC)
+    let n=1; 
+    let r=n/nC;
+    let c=n%nC;
+    println!("r: {} c:{}", r, c);
+    
+    //Stampo l'elemento corrispondente
+    println!("el: {}",mat[r*nC+c]);
+    
+    //Esempio di scansione matrice
+    for i in 0..nR{
+        for j in 0..nC{
+            print!("{} ", mat[i*nC+j]);
+        }
+        println!("");
+    }
+}
+```
+Il risultato dell'esecuzione è il seguente: 
+
+```txt
+6
+r: 0 c:1
+el: 2
+1 2 3 4 
+5 6 7 8 
+9 1 2 0 
+0 0 0 1 
+```
+
+4. Testare tramite qualche esempio che le cose vadano come ci si aspetta (eg. Controllo di correttezza dell'output...). [Volendo, in base al tempo disponibile,  si potrebbero anche  scrivere dei test d'unità per gli algoritmi implementati secondo il paradigma AAA]. 
 
 > **Nota aggiuntiva** Nell'implementazione delle feature mancanti del tipo `Hardened` vanno gestiti e fatti sempre i controlli di consistenza sulle parti in cui è necessario (ricorda dalle "regole d'oro": ogni lettura di una qualsiasi variabile deve essere sempre preceduto da un controllo di consistenza). In particolare:
 >  - Se la firma del metodo di un certo tratto ha un tipo associato `type Output` allora posso ritornare un `Result<Hardened<T>,IncoherenceError>`;

@@ -1,6 +1,7 @@
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::{panic, thread};
+use crate::fault_env::Data;
 use crate::fault_list_manager::FaultListEntry;
 use crate::hardened::{Hardened, IncoherenceError};
 
@@ -142,7 +143,7 @@ fn injector(variables: Arc<Variables>, fault_list_entry: FaultListEntry, tx_inje
     println!("error to inject: {:?}", fault_list_entry);
 
     // dato che fault_mask mi dice la posizione del bit da modificare, per ottenere la maschera devo calcolare 2^fault_mask
-    let mut mask = 1 << (fault_list_entry.fault_mask as usize);
+    let mut mask = 1 << (fault_list_entry.fault_mask);
 
     //println!("mask: {}", 1 << (fault_list_entry.fault_mask));       // ottengo la maschera
 
@@ -200,7 +201,8 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
 
     while let Ok(fault_list_entry) = rx_chan_fm_inj.recv(){
 
-        let variables = Variables::new(vec.clone());    // creo il set di variabili usate dai thread
+        let variables = Variables::new(vec.clone());    // creo il set di variabili usate dai
+        // thread
         let (tx_1, rx_1) = channel();
         let (tx_2, rx_2) = channel();
 

@@ -51,7 +51,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
                 var: format!("{}[{}]", vars[what_var].name, what_el),
                 time: rnd.gen_range(vars[what_var].start..num_instr_eff),
                 //TODO: va bene memorizzare solo il numero o dobbiamo metterci tutta la maschera?
-                fault_mask: rnd.gen_range(0..size_of::<i32>() as u64),
+                fault_mask: rnd.gen_range(0..size_of::<i32>()),
             };
             fault_list.push(it);
         }
@@ -62,7 +62,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
                 time: rnd.gen_range(vars[what_var].start..num_instr_eff),
                 fault_mask: rnd.gen_range(0..vars[what_var].size
                     .parse::<usize>()
-                    .unwrap() as u64*8),
+                    .unwrap() *8),
             };
             fault_list.push(it);
         }
@@ -91,7 +91,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
 pub struct FaultListEntry{
     pub var: String,
     pub time: usize,
-    pub fault_mask: u64,
+    pub fault_mask: usize,
 }
 
 impl FaultListEntry{
@@ -101,7 +101,7 @@ impl FaultListEntry{
     fn get_time(&self)->usize{
         self.time
     }
-    fn get_fault_mask(&self)->u64{
+    fn get_fault_mask(&self)->usize{
         self.fault_mask
     }
 
