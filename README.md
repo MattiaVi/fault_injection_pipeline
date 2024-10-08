@@ -29,6 +29,13 @@ E' la parte che riguarda l'irrobustimento del codice e l'utilizzo del tipo `Hard
       per la _moltiplicazione di matrici_ bisogna fare operazioni del tipo `acc += r_el*c_el` dove `acc` è un accumulatore e `r_el`, `c_el` sono l'elemento corrispondente di riga e colonna della matrice; tutte queste variabili per gli scopi del progetto sono di tipo Hardened. I tratti `Mul` e `AddAssign`, per eseguire rispettivamente `*` e `+=`, non sono implementati. Bisogna quindi che vengano implementati prima di poter scrivere il codice che li utilizzi, diversamente il compilatore genererà un errore relativo al fatto che per quel tipo non ci sono certi tratti. Quello che ci siamo detti fino a questo punto.
 3. Implementare la matrice con la tecnica row-major usando comunque un vettore, in questo modo si riesce a sfruttare il codice già implementato in Hardened per gestire i vettori; si ricordino le formule per la conversione (riga,colonna) $\to$ indice e viceversa. Di seguito riporto un esempio in cui si fanno queste operazioni: 
 
+Le formule sono le seguenti: 
+- **Da indice di riga/colonna a indice del vettore** $i=r\cdot{nC}+c$
+- **Da indice del vettore a indice di riga/colonna** $\begin{cases} r=\frac{i}{nC}  \\
+c=i \mod nC
+\end{cases}$ 
+dove $nC$ è il numero di colonne e $ i \mod nC$ indica il risultato della divisione di $i$ per $nC$. 
+
 ```rust
 fn main(){
     let mat = vec![ 1,2,3,4,
