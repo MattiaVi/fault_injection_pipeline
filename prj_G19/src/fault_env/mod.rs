@@ -4,6 +4,7 @@ use crate::fault_list_manager::fault_manager;
 use crate::injector::injector_manager;
 
 //Al fine di generalizzare passo dei dati anziché un vec specifico
+#[derive(Clone)]
 pub enum Data<T>{
     Vector(Vec<T>),
     Matrices(Vec<T>, Vec<T>)          //Matrice gestita tramite row-major

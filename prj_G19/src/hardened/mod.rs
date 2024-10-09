@@ -49,6 +49,10 @@ where T: Debug+PartialEq+Eq+Copy+Clone{
         vet.iter().map(|&x| Hardened::from(x)).collect()
     }
 
+    pub fn from_mat(mat: Vec<Vec<T>>) -> Vec<Vec<Hardened<T>>> {
+        mat.into_iter().map(|row| row.into_iter().map(|x| Hardened::from(x)).collect()).collect()
+    }
+
     ///Estrae (dopo aver controllato la coerenza del dato) il dato
     /// di tipo T incapsulato al suo interno.
     pub fn inner(&self)->Result<T, IncoherenceError>{
@@ -343,6 +347,38 @@ mod tests{
         assert_eq!(myvec, myvec2);
     }
 
+    #[test]
+    //Test per verificare il corretto funzionamento di from_mat
+    fn test_from_mat(){
+        let input_matrix = vec![
+            vec![1, 2, 3],
+            vec![4, 5, 6],
+            vec![7, 8, 9]
+        ];
+
+        let expected_output = vec![
+            vec![Hardened::from(1), Hardened::from(2), Hardened::from(3)],
+            vec![Hardened::from(4), Hardened::from(5), Hardened::from(6)],
+            vec![Hardened::from(7), Hardened::from(8), Hardened::from(9)]
+        ];
+
+        // Call the function
+        let output_matrix = Hardened::from_mat(input_matrix);
+
+        // Assert the output is as expected
+        assert_eq!(output_matrix, expected_output);
+    }
+
+    #[test]
+    fn test_matrix(){
+        let mat = vec![
+            vec![1, 2, 3],
+            vec![4, 5, 6],
+            vec![7, 8, 9]
+        ];
+
+        assert_eq!(4, mat[1][0]);
+    }
 
     //Test su Index/IndexMut<&str> for Hardened<T>
     #[test]
