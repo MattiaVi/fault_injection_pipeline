@@ -89,62 +89,62 @@ fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Sender<&
 
 
     *variables.N.write().unwrap() = variables.vec.read().unwrap().len().into();
-    tx_runner.send("i1");
-    rx_runner.recv();
+    tx_runner.send("i1").unwrap();
+    rx_runner.recv().unwrap();
 
     *variables.j.write().unwrap() = Hardened::from(0);
-    tx_runner.send("i2");
-    rx_runner.recv();
+    tx_runner.send("i2").unwrap();
+    rx_runner.recv().unwrap();
 
     *variables.min.write().unwrap() = Hardened::from(10);
-    tx_runner.send("i3");
-    rx_runner.recv();
+    tx_runner.send("i3").unwrap();
+    rx_runner.recv().unwrap();
 
     *variables.i.write().unwrap() = Hardened::from(0);
-    tx_runner.send("i4");
-    rx_runner.recv();
+    tx_runner.send("i4").unwrap();
+    rx_runner.recv().unwrap();
 
 
     while *variables.i.read().unwrap() < (*variables.N.read().unwrap() - 1)? {
-        tx_runner.send("i5");
-        rx_runner.recv();
+        tx_runner.send("i5").unwrap();
+        rx_runner.recv().unwrap();
 
         variables.min.write().unwrap().assign(*variables.i.read().unwrap())?;
-        tx_runner.send("i6");
-        rx_runner.recv();
+        tx_runner.send("i6").unwrap();
+        rx_runner.recv().unwrap();
 
         variables.j.write().unwrap().assign((*variables.i.read().unwrap() + 1)?)?;
-        tx_runner.send("i7");
-        rx_runner.recv();
+        tx_runner.send("i7").unwrap();
+        rx_runner.recv().unwrap();
 
 
         while *variables.j.read().unwrap() < *variables.N.read().unwrap() {
-            tx_runner.send("i8");
-            rx_runner.recv();
+            tx_runner.send("i8").unwrap();
+            rx_runner.recv().unwrap();
 
             if variables.vec.read().unwrap()[*variables.j.read().unwrap()] < variables.vec.read().unwrap()[*variables.min.read().unwrap()] {
-                tx_runner.send("i9");
-                rx_runner.recv();
+                tx_runner.send("i9").unwrap();
+                rx_runner.recv().unwrap();
 
                 variables.min.write().unwrap().assign(*variables.j.read().unwrap())?;
-                tx_runner.send("i10");
-                rx_runner.recv();
+                tx_runner.send("i10").unwrap();
+                rx_runner.recv().unwrap();
             }
 
             let tmp = (*variables.j.read().unwrap() + 1)?;  // necessario dato che non potrei fare j = j + 1, dato che dovrei acquisire un lock in lettura dopo averlo gia' acquisito sulla stessa variabile in scrittura
             variables.j.write().unwrap().assign(tmp)?;
-            tx_runner.send("i11");
-            rx_runner.recv();
+            tx_runner.send("i11").unwrap();
+            rx_runner.recv().unwrap();
         }
 
         variables.vec.write().unwrap().swap(variables.i.read().unwrap().inner()?, variables.min.read().unwrap().inner()?);
-        tx_runner.send("i12");
-        rx_runner.recv();
+        tx_runner.send("i12").unwrap();
+        rx_runner.recv().unwrap();
 
         let tmp = (*variables.i.read().unwrap() + 1)?;
         variables.i.write().unwrap().assign(tmp)?;
-        tx_runner.send("i13");
-        rx_runner.recv();
+        tx_runner.send("i13").unwrap();
+        rx_runner.recv().unwrap();
     }
 
 
@@ -254,7 +254,7 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
             }
         }
         //println!("injector: ricevuto");
-        tx_injector.send("ricevuto");
+        tx_injector.send("ricevuto").unwrap();
     }
 }
 
