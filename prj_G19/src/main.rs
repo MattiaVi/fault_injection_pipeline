@@ -39,6 +39,7 @@ fn pause() {
 
 fn main(){
 
+
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs
         eprintln!("A panic occurred!");

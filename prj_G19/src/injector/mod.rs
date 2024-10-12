@@ -1,14 +1,68 @@
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::{panic, thread};
+use std::collections::HashMap;
 use crate::fault_env::Data;
 use crate::fault_list_manager::FaultListEntry;
 use crate::hardened::{Hardened, IncoherenceError};
 
 //TODO
 pub struct TestResult {
-    field: i32
+    fault_list_entry: FaultListEntry,
+    result: Result<(), IncoherenceError>
 }
+
+enum AlgorithmVariables {
+    SelectionSort(SelectionSortVariables),
+    MatrixMultiplication(MatrixMultiplicationVariables),
+}
+
+struct SelectionSortVariables {
+    i: RwLock<Hardened<usize>>,
+    j: RwLock<Hardened<usize>>,
+    N: RwLock<Hardened<usize>>,
+    min: RwLock<Hardened<usize>>,
+    vec: RwLock<Vec<Hardened<i32>>>,
+}
+
+struct MatrixMultiplicationVariables {
+    i: RwLock<Hardened<usize>>,
+    j: RwLock<Hardened<usize>>,
+    N: RwLock<Hardened<usize>>,
+    mat_a: RwLock<Vec<Hardened<i32>>>,
+    mat_b: RwLock<Vec<Hardened<i32>>>,
+    result: RwLock<Vec<Hardened<i32>>>,
+}
+
+// Common initialization trait
+trait VariableSet {
+    fn new(vec: Vec<i32>) -> Self;
+}
+
+impl VariableSet for SelectionSortVariables {
+    fn new(vec: Vec<i32>) -> Self {
+        SelectionSortVariables {
+            i: RwLock::new(Hardened::from(0)),
+            j: RwLock::new(Hardened::from(0)),
+            min: RwLock::new(Hardened::from(0)),
+            N: RwLock::new(Hardened::from(0)),
+            vec: RwLock::new(Hardened::from_vec(vec))
+        }
+    }
+}
+
+
+impl AlgorithmVariables {
+    fn from_target(target: &str, vec: Vec<i32>) -> Arc<AlgorithmVariables> {
+        match target {
+            "selection_sort" => Arc::new(AlgorithmVariables::SelectionSort(SelectionSortVariables::new(vec))),
+            "matrix_multiplication" => Arc::new(AlgorithmVariables::SelectionSort(SelectionSortVariables::new(vec))),
+            _ => panic!("Unknown target algorithm"),
+        }
+    }
+}
+
+
 
 struct Variables {
     i: RwLock<Hardened<usize>>,
@@ -31,7 +85,8 @@ impl Variables {
 }
 
 
-fn runner_selection_sort(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<(), IncoherenceError> {
+fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<(), IncoherenceError> {
+
 
     *variables.N.write().unwrap() = variables.vec.read().unwrap().len().into();
     tx_runner.send("i1");
@@ -119,24 +174,33 @@ fn runner_selection_sort(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_
 }
 
 
-fn runner(variables: Arc<Variables>, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) {
+fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> TestResult {
 
     let result = panic::catch_unwind(|| {
-        runner_selection_sort(variables, tx_runner, rx_runner)
+        match &*variables {
+            AlgorithmVariables::SelectionSort(var) => {
+                runner_selection_sort(var, tx_runner, rx_runner)
+            }
+            AlgorithmVariables::MatrixMultiplication(_) => {
+                Ok(())
+            }
+        }
+
     });
 
     match result {
-        Ok(Ok(())) => (),
-        Ok(Err(err)) => println!("Error found - {}", err),
-        Err(_) => ()     //println!("runner_selection_sort panicked!")
+        Ok(Ok(())) => TestResult {result: Ok(()), fault_list_entry},
+        Ok(Err(err)) => {
+            println!("Error found - {}", err);
+            TestResult {result: Err(err), fault_list_entry}
+        },
+        Err(_) => TestResult { result: Err(IncoherenceError::Generic), fault_list_entry }     //println!("runner_selection_sort panicked!")
     }
-
-    //println!("Posso fare altre cose");
 }
 
 
 
-fn injector(variables: Arc<Variables>, fault_list_entry: FaultListEntry, tx_injector: Sender<&str>, rx_runner: Receiver<&str>) {
+fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, tx_injector: Sender<&str>, rx_runner: Receiver<&str>) {
 
     let mut counter = 0usize;
 
@@ -151,40 +215,45 @@ fn injector(variables: Arc<Variables>, fault_list_entry: FaultListEntry, tx_inje
         counter += 1;
 
         if counter == fault_list_entry.time {
-            match fault_list_entry.var.as_str() {
-                "i" => {
-                    let val = variables.i.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
-                    let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
-                    variables.i.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
-                },
-                "j" => {
-                    let val = variables.j.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
-                    let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
-                    variables.j.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
-                },
-                "N" => {
-                    let val = variables.N.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
-                    let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
-                    variables.N.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
-                },
-                "min" => {
-                    let val = variables.min.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
-                    let new_val = val ^ mask;                                             // nuovo valore da salvare (XOR per il bitflip)
-                    variables.min.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
-                },
-                _ => {
-                    let index = fault_list_entry.var
-                        .split(|c| c == '[' || c == ']')
-                        .collect::<Vec<_>>()[1]
-                        .parse::<usize>().unwrap(); // ottengo l'indice dell'elemento nel vttore in cui iniettare l'errore
+            match &*variables {
+                AlgorithmVariables::SelectionSort(var) => {
+                    match fault_list_entry.var.as_str() {
+                        "i" => {
+                            let val = var.i.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                            let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
+                            var.i.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                        },
+                        "j" => {
+                            let val = var.j.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                            let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
+                            var.j.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                        },
+                        "N" => {
+                            let val = var.N.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                            let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
+                            var.N.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                        },
+                        "min" => {
+                            let val = var.min.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                            let new_val = val ^ mask;                                             // nuovo valore da salvare (XOR per il bitflip)
+                            var.min.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                        },
+                        _ => {
+                            let index = fault_list_entry.var
+                                .split(|c| c == '[' || c == ']')
+                                .collect::<Vec<_>>()[1]
+                                .parse::<usize>().unwrap(); // ottengo l'indice dell'elemento nel vttore in cui iniettare l'errore
 
-                    let val = variables.vec.read().unwrap()[index].inner().unwrap().clone();
-                    let new_val = val ^ (mask as i32);
-                    let prova = variables.vec.write().unwrap()[index]["cp1"] = new_val;
+                            let val = var.vec.read().unwrap()[index].inner().unwrap().clone();
+                            let new_val = val ^ (mask as i32);
+                            let prova = var.vec.write().unwrap()[index]["cp1"] = new_val;
+                        }
+                    };
                 }
-            };
+                AlgorithmVariables::MatrixMultiplication(_) => {}
+            }
         }
-
+        //println!("injector: ricevuto");
         tx_injector.send("ricevuto");
     }
 }
@@ -192,36 +261,49 @@ fn injector(variables: Arc<Variables>, fault_list_entry: FaultListEntry, tx_inje
 
 
 pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
-                tx_chan_inj_anl: Sender<TestResult>,
-                target: String,
-                vec: Vec<i32>){            //per il momento lasciamolo, poi si vedrà...
+                        tx_chan_inj_anl: Sender<TestResult>,
+                        target: String,
+                        vec: Vec<i32>){            //per il momento lasciamolo, poi si vedrà...
 
-    let mut handles = vec![];
-
+    let mut handles_runner = vec![];
+    let mut handles_injector = vec![];
+    let mut counter = 0;
 
     while let Ok(fault_list_entry) = rx_chan_fm_inj.recv(){
 
         let variables = Variables::new(vec.clone());    // creo il set di variabili usate dai
+
+        let var = AlgorithmVariables::from_target("selection_sort", vec.clone());
+
         // thread
         let (tx_1, rx_1) = channel();
         let (tx_2, rx_2) = channel();
 
 
-        let shared_variables = Arc::new(variables);
+        //let shared_variables = Arc::new(variables);
+
+        let shared_variables = var;
 
         let runner_variables = Arc::clone(&shared_variables);
         let injector_variables = Arc::clone(&shared_variables);
 
-        handles.push(thread::spawn(move || runner(runner_variables, tx_1, rx_2)));     // lancio il thread che esegue l'algoritmo
-        handles.push(thread::spawn(move || injector(injector_variables, fault_list_entry, tx_2, rx_1)));      // lancio il thread iniettore
+        let fault_list_entry_runner = fault_list_entry.clone();
+
+        handles_runner.push(thread::spawn(move || runner(runner_variables, fault_list_entry_runner, tx_1, rx_2)));     // lancio il thread che esegue l'algoritmo
+        handles_injector.push(thread::spawn(move || injector(injector_variables, fault_list_entry, tx_2, rx_1)));      // lancio il thread iniettore
     }
 
 
 
-    for handle in handles {
+    for handle in handles_runner {
+        let result = handle.join().unwrap();
+
+        tx_chan_inj_anl.send(result).unwrap();
+    }
+
+    for handle in handles_injector {
         handle.join().unwrap();
-        //TODO!
     }
 
-    // invio dei risultati
+    drop(tx_chan_inj_anl);
 }
