@@ -33,7 +33,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
     //----------------------------------------------------------
 
     //--------------------------GENERAZIONE DELLA FAULT LIST-----------------------------
-    let NUM_FAULTS=200;     //TODO: stabilire quanti!
+    let NUM_FAULTS=2000;     //TODO: stabilire quanti!
     let mut fault_list:Vec<FaultListEntry> = Vec::new();
     //Ingrediente fondamentale: Generazione di numeri casuali
     //Fonte utile:

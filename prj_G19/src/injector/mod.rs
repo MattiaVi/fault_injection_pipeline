@@ -7,11 +7,16 @@ use crate::fault_list_manager::FaultListEntry;
 use crate::hardened::{Hardened, IncoherenceError};
 
 //TODO
+#[derive(Debug)]
 pub struct TestResult {
     fault_list_entry: FaultListEntry,
     result: Result<(), IncoherenceError>
 }
-
+impl TestResult {
+    pub fn get_result(&self) -> Result<(), IncoherenceError> {
+        self.result.clone()
+    }
+}
 enum AlgorithmVariables {
     SelectionSort(SelectionSortVariables),
     MatrixMultiplication(MatrixMultiplicationVariables),

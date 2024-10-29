@@ -250,7 +250,7 @@ fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
 ///Tipo di errore generato tutte le volte che fallisce il controllo
 /// di coerenza delle due copie all'interno di una variabile di tipo
 /// ```Hardened<T>```.
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Clone)]
 pub enum IncoherenceError{
     #[error("IncoherenceError::AssignFail: assignment failed")]
     AssignFail,
