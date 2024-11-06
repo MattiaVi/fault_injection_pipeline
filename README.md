@@ -96,6 +96,50 @@ mat[2][0]: 1 mat[2][1]: 2 mat[2][2]: 1
 0 0 1  
 ```
 
+##### Gestione delle matrici e parser
+
+Dando in pasto al parser il seguente codice:
+
+```rust
+fn try_matrix(mat: Vec<Vec<i32>>, nR: usize, nC: usize){
+    //Dichiarazione matrice interna
+    let mut other_matrix: Vec<Vec<i32>> = vec![vec![1,2,3],vec![1,2,3]];
+}
+```
+
+il risultato generato è il seguente:
+```json
+{
+  "num_inst": 1,
+  "vars": [
+    {
+      "name": "mat",
+      "ty": "Vec < Vec < i32 > >",
+      "size": "4*nR*nC",
+      "start": 1
+    },
+    {
+      "name": "nR",
+      "ty": "usize",
+      "size": "4",
+      "start": 1
+    },
+    {
+      "name": "nC",
+      "ty": "usize",
+      "size": "4",
+      "start": 1
+    },
+    {
+      "name": "other_matrix",
+      "ty": "Vec < Vec < i32 > >",
+      "size": "4*nR*nC",
+      "start": 1
+    }
+  ]
+}
+```
+
 #### Codice non irrobustito 
 Questa/Queste funzioni verranno utilizzate come input per effettuare l'analisi statica del codice (parte di Carlo) per ricavare le informazioni circa:
 + Numero totale di istruzioni
