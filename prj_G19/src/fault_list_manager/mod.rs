@@ -12,11 +12,38 @@ use rand::prelude::*;
 
 pub mod static_analysis;
 
+
+//Dimensioni di array/matrici per la generazione della fault list
+#[derive(Copy, Clone)]
+pub enum DimData{
+    Vector(usize),              //caso vettore
+    Matrix((usize,usize))       //caso matrice
+}
+
+impl DimData{
+    fn into_tuple(self)->(usize,usize){
+        match self{
+            DimData::Matrix((a,b)) => {
+                (a,b)
+            }
+            _ => { panic!("not expected a tuple here") }
+        }
+    }
+    fn into_N(self)->usize{
+        if let DimData::Vector(a)=self{
+            return a;
+        }
+        else{
+            panic!("Not possible!");
+        }
+    }
+}
+
 ///Generazione della fault list:
 ///     - generazione casuale di un certo numero di entry +
 ///
 /// path_raw_info
-pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String,
+pub fn create_fault_list(path_raw_info: String, dims: DimData, file_path_dest: String,
                             num_instr_eff: usize)       //Number of actual instructions
     ->Vec<FaultListEntry>{
     //RETRIEVING INFORMAZIONI GREZZE
@@ -44,32 +71,44 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
     for i in 0..NUM_FAULTS{
         let what_var=rnd.gen_range(0..num_vars);
         //Caso 'vettore'
-        if vars[what_var].ty==String::from("Vec < i32 >"){
+        if vars[what_var].ty==String::from("Vec < i32 >") {
+            let N = dims.into_N();
             //Quale variabile del vettore voglio iniettare?
             let what_el = rnd.gen_range(0..N);
-            let it=FaultListEntry{
+            let it = FaultListEntry {
                 var: format!("{}[{}]", vars[what_var].name, what_el),
                 time: rnd.gen_range(vars[what_var].start..num_instr_eff),
-                //TODO: va bene memorizzare solo il numero o dobbiamo metterci tutta la maschera?
-                fault_mask: rnd.gen_range(0..size_of::<i32>()),
+                flipped_bit: rnd.gen_range(0..size_of::<i32>()),
             };
             fault_list.push(it);
         }
-        //Caso 'non vettore'
+        //Caso 'matrice'
+        else if vars[what_var].ty==String::from("Vec < Vec <i32> >"){
+            //Quale variabile del vettore voglio iniettare?
+            let (nR, nC) = dims.into_tuple();
+            //Genero un elemento a caso (riga/colonna)
+            let r = rnd.gen_range(0..nR);       //Scelgo a caso la riga
+            let c = rnd.gen_range(0..nC);       //Scelgo a caso la colonna
+
+            let it = FaultListEntry {
+                var: format!("{}[{}][{}]", vars[what_var].name, r,c),
+                time: rnd.gen_range(vars[what_var].start..num_instr_eff),
+                flipped_bit: rnd.gen_range(0..size_of::<i32>()),
+            };
+            fault_list.push(it);
+        }
+        //Caso 'non vettore', 'non matrice'
         else {
             let it = FaultListEntry {
                 var: vars[what_var].name.clone(),
                 time: rnd.gen_range(vars[what_var].start..num_instr_eff),
-                fault_mask: rnd.gen_range(0..vars[what_var].size
+                flipped_bit: rnd.gen_range(0..vars[what_var].size
                     .parse::<usize>()
                     .unwrap() *8),
             };
             fault_list.push(it);
         }
     }
-
-    //DEBUG
-    //fault_list.iter().for_each(|el|println!("{:?}", el));
 
     //SERIALIZZAZIONE (MARSHALLING) della fault list
 
@@ -91,7 +130,7 @@ pub fn create_fault_list(path_raw_info: String, N: usize, file_path_dest: String
 pub struct FaultListEntry{
     pub var: String,
     pub time: usize,
-    pub fault_mask: usize,
+    pub flipped_bit: usize,
 }
 
 impl FaultListEntry{
@@ -101,8 +140,8 @@ impl FaultListEntry{
     fn get_time(&self)->usize{
         self.time
     }
-    fn get_fault_mask(&self)->usize{
-        self.fault_mask
+    fn get_flipped_bit(&self)->usize{
+        self.flipped_bit
     }
 
 }

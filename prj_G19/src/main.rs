@@ -13,6 +13,7 @@ use syn::visit::Visit;
 use crate::fault_env::{Data, fault_injection_env};
 use clap::Parser;
 use std::process::Command;
+use crate::fault_list_manager::DimData;
 use crate::hardened::run_for_count_selection_sort;
 
 //TODO: completare con quello che serve per la realizzazione del menu da linea di comando
@@ -38,8 +39,6 @@ fn pause() {
 }
 
 fn main(){
-
-
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs
         eprintln!("A panic occurred!");
@@ -70,7 +69,6 @@ fn main(){
     let mut data2 = Data::Matrices(mat1, mat2);
 
     let mut args=Args::parse();
-    //println!("{}", args.case_study);
 
     //TODO: rimuovi qua! Solo per debug (questo deve essere scelto dall'utente)
     args.case_study=String::from("sel_sort");
@@ -86,7 +84,8 @@ fn main(){
 
             //2. Generazione della fault list (FL)
             fault_list_manager::create_fault_list(String::from
-                                                      ("src/fault_list_manager/file_fault_list/sel_sort_ris.json"),vet.len(),
+                                                      ("src/fault_list_manager/file_fault_list/sel_sort_ris.json"),
+                                                  DimData::Vector(vet.len()),
                                                   String::from
                                                       ("src/fault_list_manager/file_fault_list/sel_sort_FL\
                                               .json"), run_for_count_selection_sort(&mut vet
