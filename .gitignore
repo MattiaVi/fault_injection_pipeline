@@ -1,2 +1,9 @@
 
 /prj_G19/target
+*.aux
+*.sty
+*.fls
+*.log
+*.out
+*.gz
+*.toc

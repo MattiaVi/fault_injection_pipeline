@@ -74,15 +74,15 @@ fn main(){
     args.case_study=String::from("sel_sort");
     let what=args.case_study.as_str();
 
+    /*per provare analisi statica matrici
     _=static_analysis::generate_analysis_file(
         String::from("src/fault_list_manager/file_fault_list/prova_mat.rs"),
         String::from("src/fault_list_manager/file_fault_list/prova_mat.json")
     );
+    */
 
-
-    /*
-    match what{
-        "sel_sort"=>{
+    match what {
+        "sel_sort" => {
             //1. Analisi statica del codice (fornire nomi dei file INPUT/OUTPUT)
             static_analysis::generate_analysis_file(
                 String::from("src/fault_list_manager/file_fault_list/selection_sort.rs"),
@@ -99,15 +99,14 @@ fn main(){
                     .clone()));
 
             //Faccio partire l'ambiente di fault injection
-            fault_injection_env(    String::from("src/fault_list_manager/file_fault_list/sel_sort_FL\
+            fault_injection_env(String::from("src/fault_list_manager/file_fault_list/sel_sort_FL\
                                               .json"),                //nome file in cui c'è la FL
-                                    String::from("abc"),                //nome programma target
-                                    String::from("abc"),                //nome file report
-                                    Data::Vector(vet));
+                                String::from("abc"),                //nome programma target
+                                String::from("abc"),                //nome file report
+                                Data::Vector(vet));
         },
-        _=>{
+        _ => {
             println!("errore menu");
         }
     }
-     */
 }

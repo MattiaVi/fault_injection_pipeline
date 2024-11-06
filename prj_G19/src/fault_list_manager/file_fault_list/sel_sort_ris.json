@@ -8,42 +8,28 @@
       "start": 1
     },
     {
-<<<<<<< Updated upstream
-      "name": "j",
-=======
-      "name": "N",
-      "ty": "usize",
-      "size": "4",
-      "start": 1
-    },
-    {
       "name": "min",
->>>>>>> Stashed changes
       "ty": "i32",
       "size": "4",
       "start": 3
+    },
+    {
+      "name": "j",
+      "ty": "i32",
+      "size": "4",
+      "start": 2
     },
     {
       "name": "N",
       "ty": "usize",
       "size": "4",
       "start": 1
-    },
-    {
-      "name": "j",
-      "ty": "i32",
-      "size": "4",
-<<<<<<< Updated upstream
-      "start": 3
     },
     {
       "name": "i",
       "ty": "i32",
       "size": "4",
       "start": 4
-=======
-      "start": 2
->>>>>>> Stashed changes
     }
   ]
 }

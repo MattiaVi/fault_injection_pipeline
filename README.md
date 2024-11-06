@@ -84,6 +84,18 @@ fn print_matrix(mat: &Vec<Vec<i32>>, nR: usize, nC: usize){
 }
 ```
 
+Il risultato del codice è il seguente:
+
+```
+mat[0][0]: 3 mat[0][1]: 2 mat[0][2]: 1  
+mat[1][0]: 2 mat[1][1]: 1 mat[1][2]: 2  
+mat[2][0]: 1 mat[2][1]: 2 mat[2][2]: 1  
+ 
+1 0 0  
+0 1 0  
+0 0 1  
+```
+
 #### Codice non irrobustito 
 Questa/Queste funzioni verranno utilizzate come input per effettuare l'analisi statica del codice (parte di Carlo) per ricavare le informazioni circa:
 + Numero totale di istruzioni
