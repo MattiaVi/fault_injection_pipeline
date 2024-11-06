@@ -7,3 +7,6 @@
 *.out
 *.gz
 *.toc
+*.snm
+*.fdb_latexmk
+*.nav
