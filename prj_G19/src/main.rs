@@ -49,23 +49,23 @@ fn main(){
     let mut vet = vec![10, 15, 27, -9, 19, 20, 16, 1, 3, -32];
     
     //Prova costruzione di matrici
-    let mut mat1 = vec![10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,];
+    let mut mat1 = vec![vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8,]];
 
-    let mut mat2 = vec![10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,
-                        10, 20, 30, 15, 10, 10, 9, 8,];
+    let mut mat2 = vec![vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8],
+                        vec![10, 20, 30, 15, 10, 10, 9, 8,]];
     let mut data2 = Data::Matrices(mat1, mat2);
 
     let mut args=Args::parse();
@@ -74,6 +74,13 @@ fn main(){
     args.case_study=String::from("sel_sort");
     let what=args.case_study.as_str();
 
+    _=static_analysis::generate_analysis_file(
+        String::from("src/fault_list_manager/file_fault_list/prova_mat.rs"),
+        String::from("src/fault_list_manager/file_fault_list/prova_mat.json")
+    );
+
+
+    /*
     match what{
         "sel_sort"=>{
             //1. Analisi statica del codice (fornire nomi dei file INPUT/OUTPUT)
@@ -102,4 +109,5 @@ fn main(){
             println!("errore menu");
         }
     }
+     */
 }

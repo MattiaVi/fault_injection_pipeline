@@ -78,6 +78,10 @@ pub fn create_fault_list(path_raw_info: String, dims: DimData, file_path_dest: S
             let it = FaultListEntry {
                 var: format!("{}[{}]", vars[what_var].name, what_el),
                 time: rnd.gen_range(vars[what_var].start..num_instr_eff),
+<<<<<<< Updated upstream
+=======
+                //TODO: va bene memorizzare solo il numero o dobbiamo metterci tutta la maschera?
+>>>>>>> Stashed changes
                 flipped_bit: rnd.gen_range(0..size_of::<i32>()),
             };
             fault_list.push(it);
@@ -131,6 +135,10 @@ pub struct FaultListEntry{
     pub var: String,
     pub time: usize,
     pub flipped_bit: usize,
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 }
 
 impl FaultListEntry{
@@ -140,7 +148,11 @@ impl FaultListEntry{
     fn get_time(&self)->usize{
         self.time
     }
+<<<<<<< Updated upstream
     fn get_flipped_bit(&self)->usize{
+=======
+    fn get_fault_mask(&self)->usize{
+>>>>>>> Stashed changes
         self.flipped_bit
     }
 

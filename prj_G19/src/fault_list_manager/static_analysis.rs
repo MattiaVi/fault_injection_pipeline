@@ -169,6 +169,7 @@ fn type_size(type_str: &str) -> String {
         "f64" => "8",
         "bool"=>"1",
         "Vec < i32 >" => "4*len",
+        "Vec < Vec < i32 > >" => "4*nR*nC",
         _ => "unknown",
     }
         .to_string()

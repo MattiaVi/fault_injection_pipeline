@@ -49,6 +49,7 @@ where T: Debug+PartialEq+Eq+Copy+Clone{
         vet.iter().map(|&x| Hardened::from(x)).collect()
     }
 
+    //Uso questa funzione in ottica di irrobustire un'intera matrice...
     pub fn from_mat(mat: Vec<Vec<T>>) -> Vec<Vec<Hardened<T>>> {
         mat.into_iter().map(|row| row.into_iter().map(|x| Hardened::from(x)).collect()).collect()
     }

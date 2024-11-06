@@ -212,7 +212,7 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
     println!("error to inject: {:?}", fault_list_entry);
 
     // dato che fault_mask mi dice la posizione del bit da modificare, per ottenere la maschera devo calcolare 2^fault_mask
-    let mut mask = 1 << (fault_list_entry.fault_mask);
+    let mut mask = 1 << (fault_list_entry.flipped_bit);
 
     //println!("mask: {}", 1 << (fault_list_entry.fault_mask));       // ottengo la maschera
 

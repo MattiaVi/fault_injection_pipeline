@@ -21,6 +21,7 @@
   },
   {
     "var": "j",
+<<<<<<< Updated upstream
     "time": 19,
     "fault_mask": 3
   },
@@ -2078,10 +2079,20 @@
     "var": "j",
     "time": 160,
     "fault_mask": 17
+=======
+    "time": 92,
+    "flipped_bit": 26
+  },
+  {
+    "var": "j",
+    "time": 102,
+    "flipped_bit": 24
+>>>>>>> Stashed changes
   },
   {
     "var": "i",
     "time": 124,
+<<<<<<< Updated upstream
     "fault_mask": 3
   },
   {
@@ -4283,6 +4294,29 @@
     "var": "N",
     "time": 118,
     "fault_mask": 10
+=======
+    "flipped_bit": 11
+  },
+  {
+    "var": "j",
+    "time": 83,
+    "flipped_bit": 3
+  },
+  {
+    "var": "vet[7]",
+    "time": 36,
+    "flipped_bit": 2
+  },
+  {
+    "var": "i",
+    "time": 17,
+    "flipped_bit": 21
+  },
+  {
+    "var": "j",
+    "time": 20,
+    "flipped_bit": 15
+>>>>>>> Stashed changes
   },
   {
     "var": "i",
@@ -4291,6 +4325,7 @@
   },
   {
     "var": "vet[8]",
+<<<<<<< Updated upstream
     "time": 137,
     "fault_mask": 2
   },
@@ -4463,10 +4498,35 @@
     "var": "vet[0]",
     "time": 102,
     "fault_mask": 0
+=======
+    "time": 91,
+    "flipped_bit": 2
+  },
+  {
+    "var": "j",
+    "time": 97,
+    "flipped_bit": 16
+  },
+  {
+    "var": "N",
+    "time": 114,
+    "flipped_bit": 10
+  },
+  {
+    "var": "N",
+    "time": 39,
+    "flipped_bit": 21
+  },
+  {
+    "var": "N",
+    "time": 115,
+    "flipped_bit": 17
+>>>>>>> Stashed changes
   },
   {
     "var": "i",
     "time": 57,
+<<<<<<< Updated upstream
     "fault_mask": 27
   },
   {
@@ -9553,10 +9613,684 @@
     "var": "i",
     "time": 70,
     "fault_mask": 10
+=======
+    "flipped_bit": 25
+  },
+  {
+    "var": "j",
+    "time": 5,
+    "flipped_bit": 21
+  },
+  {
+    "var": "N",
+    "time": 135,
+    "flipped_bit": 23
+  },
+  {
+    "var": "min",
+    "time": 95,
+    "flipped_bit": 22
+  },
+  {
+    "var": "i",
+    "time": 25,
+    "flipped_bit": 8
+  },
+  {
+    "var": "vet[8]",
+    "time": 6,
+    "flipped_bit": 1
+  },
+  {
+    "var": "min",
+    "time": 128,
+    "flipped_bit": 23
+  },
+  {
+    "var": "j",
+    "time": 23,
+    "flipped_bit": 21
+  },
+  {
+    "var": "i",
+    "time": 37,
+    "flipped_bit": 22
+  },
+  {
+    "var": "vet[5]",
+    "time": 30,
+    "flipped_bit": 3
+  },
+  {
+    "var": "j",
+    "time": 58,
+    "flipped_bit": 6
+  },
+  {
+    "var": "j",
+    "time": 51,
+    "flipped_bit": 3
+  },
+  {
+    "var": "min",
+    "time": 21,
+    "flipped_bit": 12
+  },
+  {
+    "var": "j",
+    "time": 122,
+    "flipped_bit": 6
+  },
+  {
+    "var": "N",
+    "time": 58,
+    "flipped_bit": 30
+  },
+  {
+    "var": "vet[8]",
+    "time": 67,
+    "flipped_bit": 0
+  },
+  {
+    "var": "vet[0]",
+    "time": 141,
+    "flipped_bit": 2
+  },
+  {
+    "var": "i",
+    "time": 61,
+    "flipped_bit": 24
+  },
+  {
+    "var": "min",
+    "time": 113,
+    "flipped_bit": 13
+  },
+  {
+    "var": "i",
+    "time": 136,
+    "flipped_bit": 5
+  },
+  {
+    "var": "j",
+    "time": 108,
+    "flipped_bit": 8
+  },
+  {
+    "var": "j",
+    "time": 150,
+    "flipped_bit": 23
+  },
+  {
+    "var": "min",
+    "time": 103,
+    "flipped_bit": 1
+  },
+  {
+    "var": "min",
+    "time": 29,
+    "flipped_bit": 7
+  },
+  {
+    "var": "j",
+    "time": 154,
+    "flipped_bit": 30
+  },
+  {
+    "var": "vet[7]",
+    "time": 136,
+    "flipped_bit": 3
+  },
+  {
+    "var": "j",
+    "time": 51,
+    "flipped_bit": 23
+  },
+  {
+    "var": "i",
+    "time": 53,
+    "flipped_bit": 13
+  },
+  {
+    "var": "min",
+    "time": 73,
+    "flipped_bit": 12
+  },
+  {
+    "var": "i",
+    "time": 128,
+    "flipped_bit": 20
+  },
+  {
+    "var": "min",
+    "time": 81,
+    "flipped_bit": 6
+  },
+  {
+    "var": "vet[8]",
+    "time": 46,
+    "flipped_bit": 0
+  },
+  {
+    "var": "j",
+    "time": 64,
+    "flipped_bit": 19
+  },
+  {
+    "var": "vet[6]",
+    "time": 97,
+    "flipped_bit": 2
+  },
+  {
+    "var": "N",
+    "time": 123,
+    "flipped_bit": 9
+  },
+  {
+    "var": "min",
+    "time": 130,
+    "flipped_bit": 29
+  },
+  {
+    "var": "vet[4]",
+    "time": 99,
+    "flipped_bit": 0
+  },
+  {
+    "var": "j",
+    "time": 148,
+    "flipped_bit": 0
+  },
+  {
+    "var": "min",
+    "time": 136,
+    "flipped_bit": 3
+  },
+  {
+    "var": "j",
+    "time": 52,
+    "flipped_bit": 18
+  },
+  {
+    "var": "vet[0]",
+    "time": 69,
+    "flipped_bit": 1
+  },
+  {
+    "var": "i",
+    "time": 60,
+    "flipped_bit": 14
+  },
+  {
+    "var": "N",
+    "time": 63,
+    "flipped_bit": 11
+  },
+  {
+    "var": "vet[3]",
+    "time": 70,
+    "flipped_bit": 0
+  },
+  {
+    "var": "j",
+    "time": 88,
+    "flipped_bit": 13
+  },
+  {
+    "var": "vet[9]",
+    "time": 110,
+    "flipped_bit": 2
+  },
+  {
+    "var": "N",
+    "time": 138,
+    "flipped_bit": 11
+  },
+  {
+    "var": "vet[9]",
+    "time": 46,
+    "flipped_bit": 0
+  },
+  {
+    "var": "j",
+    "time": 120,
+    "flipped_bit": 11
+  },
+  {
+    "var": "min",
+    "time": 147,
+    "flipped_bit": 12
+  },
+  {
+    "var": "j",
+    "time": 77,
+    "flipped_bit": 26
+  },
+  {
+    "var": "N",
+    "time": 119,
+    "flipped_bit": 21
+  },
+  {
+    "var": "N",
+    "time": 12,
+    "flipped_bit": 7
+  },
+  {
+    "var": "min",
+    "time": 122,
+    "flipped_bit": 0
+  },
+  {
+    "var": "N",
+    "time": 138,
+    "flipped_bit": 18
+  },
+  {
+    "var": "min",
+    "time": 139,
+    "flipped_bit": 15
+  },
+  {
+    "var": "vet[3]",
+    "time": 148,
+    "flipped_bit": 1
+  },
+  {
+    "var": "min",
+    "time": 105,
+    "flipped_bit": 29
+  },
+  {
+    "var": "j",
+    "time": 153,
+    "flipped_bit": 8
+  },
+  {
+    "var": "j",
+    "time": 103,
+    "flipped_bit": 28
+  },
+  {
+    "var": "vet[8]",
+    "time": 70,
+    "flipped_bit": 1
+  },
+  {
+    "var": "i",
+    "time": 119,
+    "flipped_bit": 3
+  },
+  {
+    "var": "min",
+    "time": 156,
+    "flipped_bit": 29
+  },
+  {
+    "var": "i",
+    "time": 31,
+    "flipped_bit": 25
+  },
+  {
+    "var": "vet[0]",
+    "time": 117,
+    "flipped_bit": 0
+  },
+  {
+    "var": "vet[7]",
+    "time": 3,
+    "flipped_bit": 1
+  },
+  {
+    "var": "N",
+    "time": 150,
+    "flipped_bit": 11
+  },
+  {
+    "var": "j",
+    "time": 67,
+    "flipped_bit": 22
+  },
+  {
+    "var": "min",
+    "time": 24,
+    "flipped_bit": 13
+  },
+  {
+    "var": "min",
+    "time": 127,
+    "flipped_bit": 4
+  },
+  {
+    "var": "min",
+    "time": 66,
+    "flipped_bit": 2
+  },
+  {
+    "var": "N",
+    "time": 144,
+    "flipped_bit": 23
+  },
+  {
+    "var": "min",
+    "time": 71,
+    "flipped_bit": 9
+  },
+  {
+    "var": "min",
+    "time": 114,
+    "flipped_bit": 15
+  },
+  {
+    "var": "j",
+    "time": 115,
+    "flipped_bit": 6
+  },
+  {
+    "var": "N",
+    "time": 10,
+    "flipped_bit": 21
+  },
+  {
+    "var": "vet[1]",
+    "time": 102,
+    "flipped_bit": 0
+  },
+  {
+    "var": "vet[9]",
+    "time": 123,
+    "flipped_bit": 2
+  },
+  {
+    "var": "i",
+    "time": 142,
+    "flipped_bit": 9
+  },
+  {
+    "var": "j",
+    "time": 79,
+    "flipped_bit": 1
+  },
+  {
+    "var": "i",
+    "time": 112,
+    "flipped_bit": 13
+  },
+  {
+    "var": "i",
+    "time": 66,
+    "flipped_bit": 31
+  },
+  {
+    "var": "j",
+    "time": 12,
+    "flipped_bit": 15
+  },
+  {
+    "var": "N",
+    "time": 24,
+    "flipped_bit": 15
+  },
+  {
+    "var": "min",
+    "time": 70,
+    "flipped_bit": 1
+  },
+  {
+    "var": "j",
+    "time": 59,
+    "flipped_bit": 2
+  },
+  {
+    "var": "j",
+    "time": 65,
+    "flipped_bit": 2
+  },
+  {
+    "var": "N",
+    "time": 76,
+    "flipped_bit": 30
+  },
+  {
+    "var": "i",
+    "time": 114,
+    "flipped_bit": 10
+  },
+  {
+    "var": "j",
+    "time": 146,
+    "flipped_bit": 18
+  },
+  {
+    "var": "i",
+    "time": 27,
+    "flipped_bit": 31
+  },
+  {
+    "var": "N",
+    "time": 107,
+    "flipped_bit": 10
+  },
+  {
+    "var": "min",
+    "time": 24,
+    "flipped_bit": 0
+  },
+  {
+    "var": "i",
+    "time": 74,
+    "flipped_bit": 1
+  },
+  {
+    "var": "i",
+    "time": 4,
+    "flipped_bit": 21
+  },
+  {
+    "var": "i",
+    "time": 153,
+    "flipped_bit": 30
+  },
+  {
+    "var": "j",
+    "time": 149,
+    "flipped_bit": 10
+  },
+  {
+    "var": "vet[4]",
+    "time": 136,
+    "flipped_bit": 1
+  },
+  {
+    "var": "N",
+    "time": 133,
+    "flipped_bit": 4
+  },
+  {
+    "var": "vet[8]",
+    "time": 83,
+    "flipped_bit": 3
+  },
+  {
+    "var": "N",
+    "time": 51,
+    "flipped_bit": 1
+  },
+  {
+    "var": "N",
+    "time": 44,
+    "flipped_bit": 1
+  },
+  {
+    "var": "j",
+    "time": 91,
+    "flipped_bit": 12
+  },
+  {
+    "var": "vet[7]",
+    "time": 62,
+    "flipped_bit": 2
+  },
+  {
+    "var": "N",
+    "time": 62,
+    "flipped_bit": 11
+  },
+  {
+    "var": "N",
+    "time": 142,
+    "flipped_bit": 28
+  },
+  {
+    "var": "N",
+    "time": 117,
+    "flipped_bit": 11
+  },
+  {
+    "var": "vet[6]",
+    "time": 82,
+    "flipped_bit": 3
+  },
+  {
+    "var": "min",
+    "time": 83,
+    "flipped_bit": 13
+  },
+  {
+    "var": "N",
+    "time": 122,
+    "flipped_bit": 18
+  },
+  {
+    "var": "i",
+    "time": 32,
+    "flipped_bit": 25
+  },
+  {
+    "var": "N",
+    "time": 73,
+    "flipped_bit": 20
+  },
+  {
+    "var": "i",
+    "time": 158,
+    "flipped_bit": 28
+  },
+  {
+    "var": "j",
+    "time": 113,
+    "flipped_bit": 19
+  },
+  {
+    "var": "vet[2]",
+    "time": 17,
+    "flipped_bit": 3
+  },
+  {
+    "var": "vet[9]",
+    "time": 61,
+    "flipped_bit": 3
+  },
+  {
+    "var": "i",
+    "time": 64,
+    "flipped_bit": 29
+  },
+  {
+    "var": "j",
+    "time": 89,
+    "flipped_bit": 25
+  },
+  {
+    "var": "min",
+    "time": 63,
+    "flipped_bit": 8
+  },
+  {
+    "var": "i",
+    "time": 59,
+    "flipped_bit": 20
+  },
+  {
+    "var": "vet[6]",
+    "time": 74,
+    "flipped_bit": 0
+  },
+  {
+    "var": "vet[4]",
+    "time": 150,
+    "flipped_bit": 1
+  },
+  {
+    "var": "min",
+    "time": 30,
+    "flipped_bit": 14
+  },
+  {
+    "var": "N",
+    "time": 153,
+    "flipped_bit": 17
+  },
+  {
+    "var": "min",
+    "time": 21,
+    "flipped_bit": 10
+  },
+  {
+    "var": "min",
+    "time": 79,
+    "flipped_bit": 6
+  },
+  {
+    "var": "N",
+    "time": 68,
+    "flipped_bit": 4
+  },
+  {
+    "var": "j",
+    "time": 55,
+    "flipped_bit": 1
+  },
+  {
+    "var": "vet[7]",
+    "time": 144,
+    "flipped_bit": 3
+  },
+  {
+    "var": "i",
+    "time": 158,
+    "flipped_bit": 19
+  },
+  {
+    "var": "j",
+    "time": 152,
+    "flipped_bit": 18
+  },
+  {
+    "var": "vet[7]",
+    "time": 122,
+    "flipped_bit": 0
+  },
+  {
+    "var": "j",
+    "time": 148,
+    "flipped_bit": 14
+  },
+  {
+    "var": "i",
+    "time": 14,
+    "flipped_bit": 22
+  },
+  {
+    "var": "N",
+    "time": 48,
+    "flipped_bit": 25
+>>>>>>> Stashed changes
   },
   {
     "var": "i",
     "time": 41,
+<<<<<<< Updated upstream
     "fault_mask": 17
   },
   {
@@ -9893,10 +10627,224 @@
     "var": "j",
     "time": 55,
     "fault_mask": 14
+=======
+    "flipped_bit": 2
+  },
+  {
+    "var": "i",
+    "time": 52,
+    "flipped_bit": 24
+  },
+  {
+    "var": "min",
+    "time": 113,
+    "flipped_bit": 28
+  },
+  {
+    "var": "vet[1]",
+    "time": 120,
+    "flipped_bit": 3
+  },
+  {
+    "var": "N",
+    "time": 73,
+    "flipped_bit": 21
+  },
+  {
+    "var": "vet[4]",
+    "time": 109,
+    "flipped_bit": 3
+  },
+  {
+    "var": "min",
+    "time": 22,
+    "flipped_bit": 2
+  },
+  {
+    "var": "N",
+    "time": 30,
+    "flipped_bit": 10
+  },
+  {
+    "var": "vet[5]",
+    "time": 80,
+    "flipped_bit": 3
+  },
+  {
+    "var": "vet[8]",
+    "time": 111,
+    "flipped_bit": 2
+  },
+  {
+    "var": "i",
+    "time": 75,
+    "flipped_bit": 0
+  },
+  {
+    "var": "min",
+    "time": 40,
+    "flipped_bit": 14
+  },
+  {
+    "var": "min",
+    "time": 153,
+    "flipped_bit": 10
+  },
+  {
+    "var": "i",
+    "time": 115,
+    "flipped_bit": 31
+  },
+  {
+    "var": "N",
+    "time": 99,
+    "flipped_bit": 14
+  },
+  {
+    "var": "i",
+    "time": 70,
+    "flipped_bit": 15
+  },
+  {
+    "var": "j",
+    "time": 71,
+    "flipped_bit": 18
+  },
+  {
+    "var": "N",
+    "time": 16,
+    "flipped_bit": 3
+  },
+  {
+    "var": "N",
+    "time": 118,
+    "flipped_bit": 14
+  },
+  {
+    "var": "min",
+    "time": 105,
+    "flipped_bit": 24
+  },
+  {
+    "var": "j",
+    "time": 119,
+    "flipped_bit": 17
+  },
+  {
+    "var": "N",
+    "time": 27,
+    "flipped_bit": 7
+  },
+  {
+    "var": "vet[0]",
+    "time": 111,
+    "flipped_bit": 1
+  },
+  {
+    "var": "j",
+    "time": 16,
+    "flipped_bit": 23
+  },
+  {
+    "var": "i",
+    "time": 85,
+    "flipped_bit": 28
+  },
+  {
+    "var": "min",
+    "time": 73,
+    "flipped_bit": 30
+  },
+  {
+    "var": "vet[8]",
+    "time": 111,
+    "flipped_bit": 3
+  },
+  {
+    "var": "j",
+    "time": 17,
+    "flipped_bit": 1
+  },
+  {
+    "var": "N",
+    "time": 117,
+    "flipped_bit": 9
+  },
+  {
+    "var": "i",
+    "time": 85,
+    "flipped_bit": 25
+  },
+  {
+    "var": "i",
+    "time": 82,
+    "flipped_bit": 20
+  },
+  {
+    "var": "N",
+    "time": 16,
+    "flipped_bit": 23
+  },
+  {
+    "var": "i",
+    "time": 139,
+    "flipped_bit": 20
+  },
+  {
+    "var": "i",
+    "time": 11,
+    "flipped_bit": 4
+  },
+  {
+    "var": "i",
+    "time": 15,
+    "flipped_bit": 2
+  },
+  {
+    "var": "i",
+    "time": 28,
+    "flipped_bit": 18
+  },
+  {
+    "var": "N",
+    "time": 141,
+    "flipped_bit": 12
+  },
+  {
+    "var": "vet[9]",
+    "time": 87,
+    "flipped_bit": 1
+  },
+  {
+    "var": "j",
+    "time": 67,
+    "flipped_bit": 6
+  },
+  {
+    "var": "j",
+    "time": 110,
+    "flipped_bit": 24
+  },
+  {
+    "var": "vet[8]",
+    "time": 86,
+    "flipped_bit": 0
+  },
+  {
+    "var": "i",
+    "time": 105,
+    "flipped_bit": 8
+  },
+  {
+    "var": "min",
+    "time": 44,
+    "flipped_bit": 21
+>>>>>>> Stashed changes
   },
   {
     "var": "i",
     "time": 76,
+<<<<<<< Updated upstream
     "fault_mask": 2
   },
   {
@@ -9998,5 +10946,53 @@
     "var": "N",
     "time": 112,
     "fault_mask": 13
+=======
+    "flipped_bit": 27
+  },
+  {
+    "var": "j",
+    "time": 106,
+    "flipped_bit": 0
+  },
+  {
+    "var": "i",
+    "time": 53,
+    "flipped_bit": 24
+  },
+  {
+    "var": "N",
+    "time": 36,
+    "flipped_bit": 14
+  },
+  {
+    "var": "j",
+    "time": 58,
+    "flipped_bit": 8
+  },
+  {
+    "var": "min",
+    "time": 100,
+    "flipped_bit": 28
+  },
+  {
+    "var": "N",
+    "time": 145,
+    "flipped_bit": 19
+  },
+  {
+    "var": "i",
+    "time": 11,
+    "flipped_bit": 13
+  },
+  {
+    "var": "j",
+    "time": 20,
+    "flipped_bit": 8
+  },
+  {
+    "var": "min",
+    "time": 62,
+    "flipped_bit": 17
+>>>>>>> Stashed changes
   }
 ]

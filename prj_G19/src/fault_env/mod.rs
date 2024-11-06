@@ -7,7 +7,7 @@ use crate::injector::injector_manager;
 #[derive(Clone)]
 pub enum Data<T>{
     Vector(Vec<T>),
-    Matrices(Vec<T>, Vec<T>)          //Matrice gestita tramite row-major
+    Matrices(Vec<Vec<T>>, Vec<Vec<T>>)
 }
 
 impl<T> Data<T>{
@@ -22,7 +22,7 @@ impl<T> Data<T>{
         }
     }
 
-    pub fn into_Matrices(self)->(Vec<T>, Vec<T>){
+    pub fn into_Matrices(self)->(Vec<Vec<T>>, Vec<Vec<T>>){
         match self{
             Data::Matrices(a,b)=>{
                 (a,b)

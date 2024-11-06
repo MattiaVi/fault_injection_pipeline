@@ -27,66 +27,62 @@ E' la parte che riguarda l'irrobustimento del codice e l'utilizzo del tipo `Hard
    - Nota che: in questa fase ci potrebbe essere la necessità di dover implementare tratti mancanti nell'implementazione attuale. 
    - Ad esempio: 
       per la _moltiplicazione di matrici_ bisogna fare operazioni del tipo `acc += r_el*c_el` dove `acc` è un accumulatore e `r_el`, `c_el` sono l'elemento corrispondente di riga e colonna della matrice; tutte queste variabili per gli scopi del progetto sono di tipo Hardened. I tratti `Mul` e `AddAssign`, per eseguire rispettivamente `*` e `+=`, non sono implementati. Bisogna quindi che vengano implementati prima di poter scrivere il codice che li utilizzi, diversamente il compilatore genererà un errore relativo al fatto che per quel tipo non ci sono certi tratti. Quello che ci siamo detti fino a questo punto.
-3. Implementare la matrice con la tecnica row-major usando comunque un vettore, in questo modo si riesce a sfruttare il codice già implementato in Hardened per gestire i vettori; si ricordino le formule per la conversione (riga,colonna) $\to$ indice e viceversa. Di seguito riporto un esempio in cui si fanno queste operazioni: 
-
-Le formule sono le seguenti: 
-- **Da indice di riga/colonna a indice del vettore** $i=r\cdot{nC}+c$
-- **Da indice del vettore a indice di riga/colonna** $\begin{cases} r=\frac{i}{nC}  \\
-c=i \mod nC
-\end{cases}$ 
-dove $nC$ è il numero di colonne e $ i \mod nC$ indica il risultato della divisione di $i$ per $nC$. 
-
-```rust
-fn main(){
-    let mat = vec![ 1,2,3,4,
-                    5,6,7,8,
-                    9,1,2,0,
-                    0,0,0,1];
-    let nR=4;
-    let nC=4; 
-    
-    let i=1; let j=1;
-    
-    //Conversione (r,c) -> i  ==> i*nC+j
-    println!("{:?}", mat[i*nC+j]);
-    
-    //Conversione i -> (r,c) ==> (i/nC, i%nC)
-    let n=1; 
-    let r=n/nC;
-    let c=n%nC;
-    println!("r: {} c:{}", r, c);
-    
-    //Stampo l'elemento corrispondente
-    println!("el: {}",mat[r*nC+c]);
-    
-    //Esempio di scansione matrice
-    for i in 0..nR{
-        for j in 0..nC{
-            print!("{} ", mat[i*nC+j]);
-        }
-        println!("");
-    }
-}
-```
-Il risultato dell'esecuzione è il seguente: 
-
-```txt
-6
-r: 0 c:1
-el: 2
-1 2 3 4 
-5 6 7 8 
-9 1 2 0 
-0 0 0 1 
-```
-
-4. Testare tramite qualche esempio che le cose vadano come ci si aspetta (eg. Controllo di correttezza dell'output...). [Volendo, in base al tempo disponibile,  si potrebbero anche  scrivere dei test d'unità per gli algoritmi implementati secondo il paradigma AAA]. 
+3. Testare tramite qualche esempio che le cose vadano come ci si aspetta (eg. Controllo di correttezza dell'output...). [Volendo, in base al tempo disponibile,  si potrebbero anche  scrivere dei test d'unità per gli algoritmi implementati secondo il paradigma AAA]. 
 
 > **Nota aggiuntiva** Nell'implementazione delle feature mancanti del tipo `Hardened` vanno gestiti e fatti sempre i controlli di consistenza sulle parti in cui è necessario (ricorda dalle "regole d'oro": ogni lettura di una qualsiasi variabile deve essere sempre preceduto da un controllo di consistenza). In particolare:
 >  - Se la firma del metodo di un certo tratto ha un tipo associato `type Output` allora posso ritornare un `Result<Hardened<T>,IncoherenceError>`;
 >  - Altrimenti devo ritornare un `panic!(...)` prendendo come spunto quello che si è già fatto o cambiandolo se si crede che si possa fare meglio  e diversamente.
 
 ### Esempi, ulteriori chiarimenti
+
+#### Gestione delle matrici
+Uno dei nostri casi di studio riguarda la moltiplicazione tra matrici. Uno dei modi per utilizzare in Rust la notazione C-like `mat[i][j]` è quello di definire un dato di tipo
+```rust
+let mut matrix: = Vec::new();
+ ```
+Quindi ci si basa in questo caso sull'utilizzo di un vettore di vettori. Ogni vettore è una riga della matrice.
+Di seguito un esempio che fa utilizzo di matrici definite in questo modo. In generale sono pochi gli accorgimenti da avere rispetto ad un algoritmo scritto in C base.
+
+```rust
+#[allow(non_snake_case)]
+fn main(){
+    //Dichiarazione ex-novo della matrice come Vec<Vec<T>>: 
+    //il costruttore e' sempre quello di base
+    let mut matrix = Vec::new(); 
+
+    //Dichiarazione tramite macro vec![]
+    let mat1 = vec![vec![3,2,1], 
+                    vec![2,1,2], 
+                    vec![1,2,1]];
+    let _nR = mat1.len(); 
+    let _nC = mat1[0].len();
+    matrix = mat1; 
+    //Scansione della matrice
+    for i in 0.._nR{
+        for j in 0.._nC{
+            print!("mat[{}][{}]: {} ", i, j, matrix[i][j])
+        }
+        println!(" ");
+    }
+    println!(" ");
+    //Esempio di modifica: trasformo la matrice in identità
+    for i in 0.._nR{
+        for j in 0.._nC{
+            if i==j {matrix[i][j]=1}
+            else{matrix[i][j]=0}
+        }
+    }
+    print_matrix(&matrix,_nR,_nC);
+}
+fn print_matrix(mat: &Vec<Vec<i32>>, nR: usize, nC: usize){
+    for i in 0..nR{
+        for j in 0..nC{
+            print!("{} ", mat[i][j]);
+        }
+        println!(" ");
+    }
+}
+```
 
 #### Codice non irrobustito 
 Questa/Queste funzioni verranno utilizzate come input per effettuare l'analisi statica del codice (parte di Carlo) per ricavare le informazioni circa:
