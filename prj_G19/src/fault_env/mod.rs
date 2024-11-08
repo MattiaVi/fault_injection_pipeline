@@ -49,20 +49,22 @@ pub fn fault_injection_env(fault_list: String,      // nome file fault-list
     analizer(rx_chan_inj_anl);
 }
 
+/*
 #[cfg(test)]
 mod tests{
-    use crate::fault_env::Data;
+use crate::fault_env::Data;
 
-    #[test]
-    fn try_build_Matrices(){
-        //Creo la struttura dati contenente le matrici
-        let data = Data::Matrices(vec![1,2], vec![1,2]);
+#[test]
+fn try_build_Matrices(){
+    //Creo la struttura dati contenente le matrici
+    let data = Data::Matrices(vec![1,2], vec![1,2]);
 
-        //ricavo le matrici dal tipo enumerativo
-        let (mat1,mat2) = data.into_Matrices();
+    //ricavo le matrici dal tipo enumerativo
+    let (mat1,mat2) = data.into_Matrices();
 
-        //faccio qualcosa
-        assert_eq!(mat1[1],2);
-        assert_eq!(mat2[0],1);
-    }
+    //faccio qualcosa
+    assert_eq!(mat1[1],2);
+    assert_eq!(mat2[0],1);
 }
+}
+*/

@@ -74,11 +74,61 @@ fn main(){
     args.case_study=String::from("sel_sort");
     let what=args.case_study.as_str();
 
+
     /*per provare analisi statica matrici
     _=static_analysis::generate_analysis_file(
         String::from("src/fault_list_manager/file_fault_list/prova_mat.rs"),
         String::from("src/fault_list_manager/file_fault_list/prova_mat.json")
     );
+    */
+
+    //IMPLEMENTAZIONE MENU UTENTE
+    /*
+    // Descrizione iniziale
+    println!("Realizzazione di un ambiente di Fault Injection per applicazione ridondata");
+
+    // Impostiamo un percorso di default
+    let default_path = "prj_G19/src/analizer";
+
+    // Chiediamo all'utente di inserire il percorso o usare quello di default
+    let user_input: String = Input::new()
+        .with_prompt("inserisci output path per il report")
+        .default(default_path.to_string())  // Imposta il percorso di default
+        .interact_text()
+        .unwrap();
+
+    println!("Scegli un algoritmo da utilizzare: ");
+    // Definire le opzioni del menu
+    let options = vec![
+        "Selection Sort",
+        "Bubble Sort",
+        "Matrix Multiplication"
+    ];
+
+    // Crea il menu di selezione
+    let selection = Select::new()
+        .with_prompt("Please select an operation")
+        .default(0) // Selezione predefinita
+        .items(&options)
+        .interact()
+        .unwrap();
+
+    // Mostra l'opzione selezionata
+    println!("Hai selezionato: {} e lo stai salvando in {}", options[selection], user_input);
+
+    // Azione in base alla selezione
+    match selection {
+        0 => {
+            //sel 
+        }
+        1 => {
+            //bubble
+        }
+        2 => {
+            //matr mol
+        }
+        _ => println!("Invalid selection."),
+    }
     */
 
     match what {
