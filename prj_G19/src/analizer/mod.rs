@@ -2,6 +2,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use crate::fault_list_manager::static_analysis::Variable;
 use crate::hardened::IncoherenceError;
 use crate::injector::TestResult;
+use crate::pdf_generator;
 
 #[derive(Debug)]
 struct Analizer{
@@ -47,7 +48,7 @@ pub fn analizer(rx_chan_inj_anl: Receiver<TestResult>) {
         }
     }
     print!("Analizer: {:?}", analizer);
+    pdf_generator::print_pdf();
 }
-
 
 

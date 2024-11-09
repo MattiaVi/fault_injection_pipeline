@@ -3,6 +3,7 @@ mod fault_list_manager;
 mod fault_env;
 mod injector;
 mod analizer;
+mod pdf_generator;
 
 use hardened::{Hardened, IncoherenceError};
 use fault_list_manager::{FaultListEntry, static_analysis};

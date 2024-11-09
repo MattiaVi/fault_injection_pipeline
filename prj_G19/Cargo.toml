@@ -14,3 +14,7 @@ serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
 rand = "0.8"
 clap = { version = "4.5.18", features = ["derive"] }
+genpdf = { version = "0.2.0", features = ["images"] }
+
+[features]
+images = []
