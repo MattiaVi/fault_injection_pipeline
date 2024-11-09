@@ -14,9 +14,13 @@ fn matrix_multiplication(a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>) -> Vec<Vec<i32>> 
 }
 */
 
-fn matrix_multiplication(a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+fn matrix_multiplication(a: Vec<Vec<i32>>, b: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
     let size = 5; // Dimensione fissa 5x5
     let mut result: Vec<Vec<i32>> = Vec::new();
+
+    let mut i=0;
+    let mut k=0;
+    let mut j=0;
 
     for i in 0..size {
         let mut row: Vec<i32> = Vec::new(); // Crea una nuova riga
@@ -25,7 +29,7 @@ fn matrix_multiplication(a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>) -> Vec<Vec<i32>> 
             for k in 0..size {
                 acc += a[i][k] * b[k][j];
             }
-            row.push(cell_value); // Aggiunge il valore calcolato alla riga
+            row.push(acc); // Aggiunge il valore calcolato alla riga
         }
         result.push(row); // Aggiunge la riga alla matrice risultante
     }

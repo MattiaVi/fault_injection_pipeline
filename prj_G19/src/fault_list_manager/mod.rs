@@ -43,7 +43,7 @@ impl DimData{
 ///     - generazione casuale di un certo numero di entry +
 ///
 /// path_raw_info
-pub fn create_fault_list(path_raw_info: String, dims: DimData, file_path_dest: String,
+pub fn create_fault_list(case: String, path_raw_info: String, dims: DimData, file_path_dest: String,
                             num_instr_eff: usize)       //Number of actual instructions
     ->Vec<FaultListEntry>{
     //RETRIEVING INFORMAZIONI GREZZE
@@ -51,6 +51,7 @@ pub fn create_fault_list(path_raw_info: String, dims: DimData, file_path_dest: S
     let raw_info = fs::read_to_string(path_raw_info).unwrap();
     //Unmarshaling (Stringa JSON --> Struttura Dati)
     let info:ResultAnalysis =serde_json::from_str(&raw_info).unwrap();
+
 
     //-----------------------Per Debug--------------------------
     //println!("Numero istruzioni: {}", info.num_inst);
@@ -72,7 +73,16 @@ pub fn create_fault_list(path_raw_info: String, dims: DimData, file_path_dest: S
         let what_var=rnd.gen_range(0..num_vars);
         //Caso 'vettore'
         if vars[what_var].ty==String::from("Vec < i32 >") {
-            let N = dims.into_N();
+            let mut N=0;
+            //vettore accessorio usato dall'algoritmo di matrix_multiplication
+            if case=="matrix_multiplication"{
+                let tupla=dims.into_tuple();
+                N=tupla.0;
+            }
+            else{
+                N = dims.into_N();
+            }
+            //let N = dims.into_N();
             //Quale variabile del vettore voglio iniettare?
             let what_el = rnd.gen_range(0..N);
             let it = FaultListEntry {
@@ -83,7 +93,7 @@ pub fn create_fault_list(path_raw_info: String, dims: DimData, file_path_dest: S
             fault_list.push(it);
         }
         //Caso 'matrice'
-        else if vars[what_var].ty==String::from("Vec < Vec <i32> >"){
+        else if vars[what_var].ty==String::from("Vec < Vec < i32 > >"){
             //Quale variabile del vettore voglio iniettare?
             let (nR, nC) = dims.into_tuple();
             //Genero un elemento a caso (riga/colonna)
@@ -109,6 +119,8 @@ pub fn create_fault_list(path_raw_info: String, dims: DimData, file_path_dest: S
             fault_list.push(it);
         }
     }
+
+
 
     //SERIALIZZAZIONE (MARSHALLING) della fault list
 

@@ -1,6 +1,6 @@
 use std::sync::mpsc::channel;
 use crate::analizer::analizer;
-use crate::fault_list_manager::fault_manager;
+use crate::fault_list_manager::{DimData, fault_manager};
 use crate::injector::injector_manager;
 
 //Al fine di generalizzare passo dei dati anziché un vec specifico
@@ -31,6 +31,17 @@ impl<T> Data<T>{
                 panic!("Not a matrices variant");
             }
 
+        }
+    }
+
+    pub fn get_dim(self)->DimData{
+        match self{
+            Data::Vector(a)=>{
+                DimData::Vector(a.len())
+            },
+            Data::Matrices(a,_)=>{
+                DimData::Matrix((a.len(), a[0].len()))
+            }
         }
     }
 }
