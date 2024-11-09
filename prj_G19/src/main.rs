@@ -74,7 +74,7 @@ fn main(){
     //TODO: rimuovi qua! Solo per debug (questo deve essere scelto dall'utente)
     let cases = vec!["sel_sort", "bubble_sort", "matrix_multiplication"];
     //Questo al momento simula il menu (TODO)
-    args.case_study=String::from(cases[1]);
+    args.case_study=String::from(cases[0]);
     let what=args.case_study.as_str();
 
 

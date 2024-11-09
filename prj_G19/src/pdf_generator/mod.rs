@@ -21,8 +21,8 @@ use genpdf::Element as _;
 use genpdf::{elements, fonts, style};
 
 const FONT_DIRS: &[&str] = &[
-    "fonts",
-    "fonts",
+    "src/pdf_generator/fonts",
+    "src/pdf_generator/fonts",
 ];
 const DEFAULT_FONT_NAME: &'static str = "OpenSans";
 const MONO_FONT_NAME: &'static str = "CourierPrime";
@@ -40,13 +40,14 @@ pub fn print_pdf() {
         panic!("Missing argument: output file");
     }
      */
-    let output_file = "results/demo.pdf"; //&args[0];
+    let output_file = "src/pdf_generator/results/demo.pdf"; //&args[0];
 
     let font_dir = FONT_DIRS
         .iter()
         .filter(|path| std::path::Path::new(path).exists())
         .next()
         .expect("Could not find font directory");
+
     let default_font =
         fonts::from_files(font_dir, DEFAULT_FONT_NAME, Some(fonts::Builtin::Helvetica))
             .expect("Failed to load the default font family");
@@ -71,7 +72,7 @@ pub fn print_pdf() {
         layout.styled(style::Style::new().with_font_size(10))
     });
     doc.set_page_decorator(decorator);
-
+/*
     #[cfg(feature = "hyphenation")]
     {
         use hyphenation::Load;
@@ -81,6 +82,8 @@ pub fn print_pdf() {
                 .expect("Failed to load hyphenation data"),
         );
     }
+
+ */
 
     let monospace = doc.add_font_family(monospace_font);
     let code = style::Style::from(monospace).bold();
@@ -210,9 +213,8 @@ pub fn print_pdf() {
     doc.push(elements::Paragraph::new(
         "Embedding images also works using the 'images' feature.",
     ));
-
-    println!("Do image test");
-    images::do_image_test(&mut doc);
+    println!("Test image");
+   images::do_image_test(&mut doc);
 
     doc.push(elements::Paragraph::new("Here is an example table:"));
 
@@ -308,16 +310,18 @@ pub fn print_pdf() {
 mod images {
     use super::*;
 
-    const IMAGE_PATH_JPG: &'static str = "images/img.png";
+    const IMAGE_PATH_JPG: &'static str = "src/pdf_generator/images/histogram.png";
 
     pub fn do_image_test(doc: &mut genpdf::Document) {
         doc.push(elements::Paragraph::new(
             "Here is an example image with default position/scale:",
         ));
+
         doc.push(elements::Image::from_path(IMAGE_PATH_JPG).expect("Unable to load image"));
         doc.push(elements::Paragraph::new(
             "and here is one that is centered, rotated, and scaled some.",
         ));
+
         doc.push(
             elements::Image::from_path(IMAGE_PATH_JPG)
                 .expect("Unable to load image")
@@ -329,5 +333,6 @@ mod images {
             "For a full example of image functionality, please see images.pdf.",
         ));
         doc.push(elements::Break::new(1.5));
-    }
+   }
+
 }
