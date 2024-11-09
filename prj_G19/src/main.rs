@@ -152,7 +152,7 @@ fn main(){
             //3. Faccio partire l'ambiente di fault injection
             fault_injection_env(
                 String::from("src/fault_list_manager/file_fault_list/sel_sort_FL.json"),
-                String::from("selection_sort"),
+                String::from("sel_sort"),
                 String::from("abc"),                //nome file report
                 Data::Vector(vet));
         },
