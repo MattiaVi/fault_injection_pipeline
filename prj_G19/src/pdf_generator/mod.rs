@@ -14,6 +14,9 @@
 //! The generated document using the latest `genpdf-rs` release is available
 //! [here](https://genpdf-rs.ireas.org/examples/demo.pdf).
 
+mod encoder;
+mod chart_generator;
+
 use std::env;
 
 use genpdf::Alignment;
@@ -102,6 +105,7 @@ pub fn print_pdf() {
     ));
 
     let mut list = elements::UnorderedList::new();
+    /*
     list.push(
         elements::Paragraph::default()
             .styled_string("Text", code)
@@ -151,6 +155,8 @@ pub fn print_pdf() {
             ),
     );
 
+
+  */
     list.push(
         elements::LinearLayout::vertical()
             .element(
@@ -310,7 +316,7 @@ pub fn print_pdf() {
 mod images {
     use super::*;
 
-    const IMAGE_PATH_JPG: &'static str = "src/pdf_generator/images/histogram.png";
+    const IMAGE_PATH_JPG: &'static str = "src/pdf_generator/images/pie_chart1.png";
 
     pub fn do_image_test(doc: &mut genpdf::Document) {
         doc.push(elements::Paragraph::new(
