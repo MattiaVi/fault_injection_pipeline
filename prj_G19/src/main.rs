@@ -40,6 +40,10 @@ fn pause() {
 }
 
 fn main(){
+
+    //API KEY per prendere vettori per algoritmi di ordinamento
+    kaggle::Authentication::with_credentials("federicopretini", "5b7355de00b8dc63f52f18be16918e00");
+
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs
         eprintln!("A panic occurred!");

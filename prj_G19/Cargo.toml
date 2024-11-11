@@ -22,6 +22,7 @@ resvg = "0.44.0"
 usvg = "0.44.0"
 snafu = "0.8.5"
 charts-rs = "0.3.19"
+kaggle = "1.0.3"
 
 [features]
 images = []
