@@ -94,8 +94,8 @@ fn main(){
     // Descrizione iniziale
     println!("Realizzazione di un ambiente di Fault Injection per applicazione ridondata");
 
-    // Impostiamo un percorso di default
-    let default_path = "prj_G19/src/analizer";
+    // Impostiamo un percorso di default per salvare il pdf generato
+    let default_path = "prj_G19/src/pdf_generator/results";
 
     // Chiediamo all'utente di inserire il percorso o usare quello di default
     let user_input: String = Input::new()
@@ -105,14 +105,14 @@ fn main(){
         .unwrap();
 
     println!("Scegli un algoritmo da utilizzare: ");
-    // Definire le opzioni del menu
+    // Definiamo le opzioni del menu
     let options = vec![
         "Selection Sort",
         "Bubble Sort",
         "Matrix Multiplication"
     ];
 
-    // Crea il menu di selezione
+    // Menu di selezione
     let selection = Select::new()
         .with_prompt("Please select an operation")
         .default(0) // Selezione predefinita
@@ -120,23 +120,76 @@ fn main(){
         .interact()
         .unwrap();
 
-    // Mostra l'opzione selezionata
+    // Mostriamo l'opzione selezionata
     println!("Hai selezionato: {} e lo stai salvando in {}", options[selection], user_input);
-
-    // Azione in base alla selezione
+       
     match selection {
         0 => {
-            //sel 
+            // Caso studio 1: Selection Sort
+            run_case_study(
+                "sel_sort",
+                Data::Vector(vet.clone()),
+                DimData::Vector(vet.len()),
+                "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
+                "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
+                "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
+                || run_for_count_selection_sort(&mut vet.clone()),
+            );
         }
         1 => {
-            //bubble
+            // Caso studio 2: Bubble Sort
+            run_case_study(
+                "bubble_sort",
+                Data::Vector(vet.clone()),
+                DimData::Vector(vet.len()),
+                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
+                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
+                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
+                || run_for_count_bubble_sort(&mut vet.clone()),
+            );
         }
         2 => {
-            //matr mol
+            // Caso studio 3: Matrix Multiplication
+            run_case_study(
+                "matrix_multiplication",
+                Data::Matrices(mat1.clone(), mat2.clone()),
+                DimData::Matrix((mat1.len(), mat1[0].len())),
+                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
+                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
+                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
+                || run_for_count_matrix_mul(&mat1.clone(), &mat2.clone()),
+            );
         }
         _ => println!("Invalid selection."),
     }
+ 
+    //
+    fn run_case_study(case_name: &str, input_data: Data, dim_data: DimData, analysis_input_file: &str, analysis_output_file: &str, fault_list_file: &str, fault_list_run: fn() -> ()){
+        // 1. Analisi statica del codice
+        static_analysis::generate_analysis_file(
+            analysis_input_file.to_string(),
+            analysis_output_file.to_string(),
+        );
+    
+        // 2. Generazione della fault list (FL)
+        fault_list_manager::create_fault_list(
+            case_name.to_string(),
+            analysis_output_file.to_string(),
+            dim_data,
+            fault_list_file.to_string(),
+            fault_list_run(),
+        );
+    
+        // 3. Faccio partire l'ambiente di fault injection
+        fault_injection_env(
+            fault_list_file.to_string(),
+            case_name.to_string(),
+            "abc".to_string(),  // nome file report
+            input_data.clone(),
+        );
+    }
     */
+    
 
     match what {
         //Caso studio 1: Selection Sort
