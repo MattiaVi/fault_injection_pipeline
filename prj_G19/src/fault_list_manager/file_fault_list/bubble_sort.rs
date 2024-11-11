@@ -1,20 +1,21 @@
-fn bubble_sort(vet: Vec<i32>) {
-    let N:usize = vet.len();
-    let mut i=0;
-    let mut j=0;
+fn bubble_sort(mut vet: Vec<i32>) {
+    let n = vet.len();
+    let mut i = 0;
 
-    for i in 0..N {
-        // Se non ci sono scambi, l'array è ordinato (ottimizzazione)
+    while i < n {
         let mut swapped = false;
-        for j in 0..(N - i - 1) {
+        let mut j = 0;
+
+        while j < n - i - 1 {
             if vet[j] > vet[j + 1] {
                 vet.swap(j, j + 1);
                 swapped = true;
             }
+            j += 1;
         }
-        // Se non è avvenuto nessuno scambio, interrompi il ciclo
         if !swapped {
             break;
         }
+        i += 1;
     }
 }

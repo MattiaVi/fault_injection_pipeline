@@ -259,71 +259,57 @@ fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
 }
 /// <h3>Caso di studio 2: Bubble sort</h3>
 fn bubble_sort(vet: &mut Vec<Hardened<i32>>) -> Result<(), IncoherenceError> {
-    let N: Hardened<usize> = vet.len().into();
+
+    let n = Hardened::from(vet.len());
     let mut i = Hardened::from(0);
 
-    while i < (N - Hardened::from(1))? {
-        // Ottimizzazione per uscire se già ordinato
-        let mut swapped = false;
+    while i < n {
+        let mut swapped = Hardened::from(false);
         let mut j = Hardened::from(0);
 
-        // Calcola il limite massimo per il ciclo `j` estraendo il `Result` di `n - i`
-        let limit = match N - i {
-            Ok(value) => match value - Hardened::from(1) {
-                Ok(final_limit) => final_limit,  // Risultato finale di `n - i - 1`
-                Err(e) => return Err(e),
-            },
-            Err(e) => return Err(e),
-        };
-
-        while j < limit {
-            // Confronto
-            if vet[j.inner()?] > vet[(j + Hardened::from(1))?.inner()?] {
+        while j < ((n - i)? - 1)? {
+            if vet[j].inner()? > vet[(j + Hardened::from(1))?].inner()? {
                 vet.swap(j.inner()?, (j + Hardened::from(1))?.inner()?);
-                swapped = true;
+                swapped = Hardened::from(true);
             }
-            j = (j + Hardened::from(1))?; // Incremento di `j` con assegnazione diretta
+            j.assign((j + Hardened::from(1))?)?;
         }
-
-        // Se non ci sono stati scambi, l'array è già ordinato
-        if !swapped {
+        if !swapped.inner()? {
             break;
         }
-
-        i = (i + Hardened::from(1))?; // Incremento di `i` con assegnazione diretta
+        i.assign((i + Hardened::from(1))?)?;
     }
-
     Ok(())
 }
+
 /// <h3>Caso di studio 3: moltiplicazioni tra matrici</h3>
 fn matrix_multiplication(a: &Vec<Vec<Hardened<i32>>>, b: &Vec<Vec<Hardened<i32>>>) -> Result<Vec<Vec<Hardened<i32>>>, IncoherenceError> {
-    let size = 5;
-    let mut result = Vec::new();
+    
+    let size = Hardened::from(a.len());
+    let mut result: Vec<Vec<Hardened<i32>>> = Vec::new();
 
-    for i in 0..size {
-        let mut row = Vec::new();
-        for j in 0..size {
-            let mut acc = Hardened::from(0); // Accumulatore di tipo Hardened
+    let mut i = Hardened::from(0);
+    let mut j = Hardened::from(0);
+    let mut k = Hardened::from(0);
 
-            for k in 0..size {
-                // Gestione esplicita della moltiplicazione
-                match a[i][k] * b[k][j] {
-                    Ok(product) => {
-                        // Gestione esplicita della somma
-                        match acc + product {
-                            Ok(new_acc) => acc = new_acc,
-                            Err(e) => return Err(e), // Ritorna un errore se la somma fallisce
-                        }
-                    },
-                    Err(e) => return Err(e), // Ritorna un errore se la moltiplicazione fallisce
-                }
+    while i < size {
+        let mut row: Vec<Hardened<i32>> = Vec::new();
+        j.assign(Hardened::from(0))?;
+
+        while j < size {
+            let mut acc = Hardened::from(0);
+            k.assign(Hardened::from(0))?;
+
+            while k < size {
+                acc.assign((acc + Hardened::from(a[i.inner()?][k.inner()?].inner()?   *   b[k.inner()?][j.inner()?].inner()?) )? )?;
+                k.assign((k + Hardened::from(1))?)?;
             }
-
-            row.push(acc);
+            row.push(acc); // Aggiunge il valore calcolato alla riga
+            j.assign((j + Hardened::from(1))?)?;
         }
-        result.push(row);
+        result.push(row); // Aggiunge la riga alla matrice risultante
+        i.assign((i + Hardened::from(1))?)?;
     }
-
     Ok(result)
 }
 
