@@ -1,0 +1,18 @@
+Input file
+if you want to change some data make sure sizes are correct and matrices are square.
+
+10
+
+10, 15, 27, -9, 19, 20, 16, 1, 3, -32
+
+4
+
+5 7 6 5
+7 10 8 7
+6 8 10 9
+5 7 9 10
+
+68 -41 -17 10
+-41 25 10 -6
+-17 10 5 -3
+10 -6 -3 2

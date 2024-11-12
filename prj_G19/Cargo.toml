@@ -24,5 +24,7 @@ snafu = "0.8.5"
 charts-rs = "0.3.19"
 kaggle = "1.0.3"
 
+dialoguer = "0.11.0"
+
 [features]
 images = []

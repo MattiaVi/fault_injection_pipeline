@@ -16,6 +16,7 @@ use clap::Parser;
 use std::process::Command;
 use crate::fault_list_manager::DimData;
 use crate::hardened::*;
+use dialoguer::{Select, Input};
 
 //TODO: completare con quello che serve per la realizzazione del menu da linea di comando
 ///Ambiente di Fault Injection per applicazione ridondata
@@ -42,12 +43,15 @@ fn pause() {
 fn main(){
 
     //API KEY per prendere vettori per algoritmi di ordinamento
+    /*
     kaggle::Authentication::with_credentials("federicopretini", "5b7355de00b8dc63f52f18be16918e00");
 
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs
         eprintln!("A panic occurred!");
     }));
+    */
+    
 
     //TODO: dati letti da file??
     let mut vet = vec![10, 15, 27, -9, 19, 20, 16, 1, 3, -32];
@@ -90,7 +94,7 @@ fn main(){
     */
 
     //IMPLEMENTAZIONE MENU UTENTE
-    /*
+    
     // Descrizione iniziale
     println!("Realizzazione di un ambiente di Fault Injection per applicazione ridondata");
 
@@ -126,6 +130,7 @@ fn main(){
     match selection {
         0 => {
             // Caso studio 1: Selection Sort
+            let mut vettore= Data::Vector(vet.clone()); //let mut vettore= vet.clone();
             run_case_study(
                 "sel_sort",
                 Data::Vector(vet.clone()),
@@ -133,11 +138,12 @@ fn main(){
                 "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                || run_for_count_selection_sort(&mut vet.clone()),
+                | vettore| run_for_count_selection_sort(vettore),
             );
         }
         1 => {
             // Caso studio 2: Bubble Sort
+            let mut vettore= Data::Vector(vet.clone());
             run_case_study(
                 "bubble_sort",
                 Data::Vector(vet.clone()),
@@ -145,11 +151,12 @@ fn main(){
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
-                || run_for_count_bubble_sort(&mut vet.clone()),
+                |vettore| run_for_count_bubble_sort(vettore),
             );
         }
         2 => {
             // Caso studio 3: Matrix Multiplication
+            let mut matrici = Data::Matrices(mat1.clone(), mat2.clone());
             run_case_study(
                 "matrix_multiplication",
                 Data::Matrices(mat1.clone(), mat2.clone()),
@@ -157,14 +164,14 @@ fn main(){
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
-                || run_for_count_matrix_mul(&mat1.clone(), &mat2.clone()),
+                |matrici| run_for_count_matrix_mul(matrici),
             );
         }
         _ => println!("Invalid selection."),
     }
  
     //
-    fn run_case_study(case_name: &str, input_data: Data, dim_data: DimData, analysis_input_file: &str, analysis_output_file: &str, fault_list_file: &str, fault_list_run: fn() -> ()){
+    fn run_case_study(case_name: &str, input_data: Data<i32>, dim_data: DimData, analysis_input_file: &str, analysis_output_file: &str, fault_list_file: &str, fault_list_run: impl FnOnce(Data<i32>) -> usize){
         // 1. Analisi statica del codice
         static_analysis::generate_analysis_file(
             analysis_input_file.to_string(),
@@ -177,7 +184,7 @@ fn main(){
             analysis_output_file.to_string(),
             dim_data,
             fault_list_file.to_string(),
-            fault_list_run(),
+            fault_list_run(input_data.clone()),
         );
     
         // 3. Faccio partire l'ambiente di fault injection
@@ -188,9 +195,9 @@ fn main(){
             input_data.clone(),
         );
     }
-    */
     
-
+    
+/*
     match what {
         //Caso studio 1: Selection Sort
         "sel_sort" => {
@@ -265,4 +272,6 @@ fn main(){
             println!("errore menu");
         }
     }
+ */
+    
 }

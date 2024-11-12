@@ -3,6 +3,7 @@ use std::fmt::{Display, Debug, Formatter};
 use std::ops::{Add, Index, IndexMut, Sub, Mul, AddAssign};
 use std::process::Output;
 use thiserror::Error;
+use crate::fault_env::Data;
 
 //-------------------------------------------------------------
 #[derive(Clone, Copy)]
@@ -268,23 +269,23 @@ fn bubble_sort(vet: &mut Vec<Hardened<i32>>) -> Result<(), IncoherenceError> {
         let mut j = Hardened::from(0);
 
         while j < ((n - i)? - 1)? {
-            if vet[j].inner()? > vet[(j + Hardened::from(1))?].inner()? {
-                vet.swap(j.inner()?, (j + Hardened::from(1))?.inner()?);
+            if vet[j].inner()? > vet[(j + 1)?].inner()? {
+                vet.swap(j.inner()?, (j + 1)?.inner()?);
                 swapped = Hardened::from(true);
             }
-            j.assign((j + Hardened::from(1))?)?;
+            j.assign((j + 1)?)?;
         }
         if !swapped.inner()? {
             break;
         }
-        i.assign((i + Hardened::from(1))?)?;
+        i.assign((i + 1)?)?;
     }
     Ok(())
 }
 
 /// <h3>Caso di studio 3: moltiplicazioni tra matrici</h3>
 fn matrix_multiplication(a: &Vec<Vec<Hardened<i32>>>, b: &Vec<Vec<Hardened<i32>>>) -> Result<Vec<Vec<Hardened<i32>>>, IncoherenceError> {
-    
+
     let size = Hardened::from(a.len());
     let mut result: Vec<Vec<Hardened<i32>>> = Vec::new();
 
@@ -302,13 +303,13 @@ fn matrix_multiplication(a: &Vec<Vec<Hardened<i32>>>, b: &Vec<Vec<Hardened<i32>>
 
             while k < size {
                 acc.assign((acc + Hardened::from(a[i.inner()?][k.inner()?].inner()?   *   b[k.inner()?][j.inner()?].inner()?) )? )?;
-                k.assign((k + Hardened::from(1))?)?;
+                k.assign((k + 1)?)?;
             }
             row.push(acc); // Aggiunge il valore calcolato alla riga
-            j.assign((j + Hardened::from(1))?)?;
+            j.assign((j + 1)?)?;
         }
         result.push(row); // Aggiunge la riga alla matrice risultante
-        i.assign((i + Hardened::from(1))?)?;
+        i.assign((i + 1)?)?;
     }
     Ok(result)
 }
@@ -331,7 +332,9 @@ pub enum IncoherenceError{
 
 //Funzioni per il conteggio 'passivo' delle istruzioni eseguite
 
-pub fn run_for_count_selection_sort(vet: &mut Vec<i32>)->usize{
+pub fn run_for_count_selection_sort(vettore: Data<i32>) ->usize{
+    
+    let mut vet = vettore.into_Vector();
     let mut N:usize = vet.len();
     let mut j=0;
     let mut min=0;
@@ -366,7 +369,9 @@ pub fn run_for_count_selection_sort(vet: &mut Vec<i32>)->usize{
     }
     count
 }
-pub fn run_for_count_bubble_sort(vet: &mut Vec<i32>)->usize{
+pub fn run_for_count_bubble_sort(vettore: Data<i32>) ->usize{
+
+    let mut vet = vettore.into_Vector();
     let N:usize = vet.len();
     let mut count=2;
     for i in 0..N {
@@ -392,7 +397,13 @@ pub fn run_for_count_bubble_sort(vet: &mut Vec<i32>)->usize{
     }
     count
 }
-pub fn run_for_count_matrix_mul(a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>)->usize{
+//a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>
+pub fn run_for_count_matrix_mul(matrici: Data<i32>)->usize{
+
+    let matrices = matrici.into_Matrices();
+    let a = matrices.0;
+    let b = matrices.1;
+    
     let size = 5; // Dimensione fissa 5x5
     let mut result: Vec<Vec<i32>> = Vec::new();
     let mut count=3;
