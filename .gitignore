@@ -10,3 +10,6 @@
 *.fdb_latexmk
 *.nav
 docs/beamer/main.synctex(busy)
+*.bbl
+*.bcf
+*.blg
