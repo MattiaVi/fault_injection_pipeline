@@ -22,6 +22,7 @@ use std::env;
 use genpdf::Alignment;
 use genpdf::Element as _;
 use genpdf::{elements, fonts, style};
+use crate::analyzer::Analyzer;
 
 const FONT_DIRS: &[&str] = &[
     "src/pdf_generator/fonts",
@@ -36,16 +37,8 @@ const LOREM_IPSUM: &'static str =
     voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat \
     non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
-pub fn print_pdf() {
-    /*
-    let args: Vec<_> = env::args().skip(1).collect();
-    if args.len() != 1 {
-        panic!("Missing argument: output file");
-    }
-     */
-    let output_file = "src/pdf_generator/results/demo.pdf"; //&args[0];
-
-    let font_dir = FONT_DIRS
+pub fn print_pdf(file_path: String, analyzer: Analyzer) {
+      let font_dir = FONT_DIRS
         .iter()
         .filter(|path| std::path::Path::new(path).exists())
         .next()
@@ -63,7 +56,7 @@ pub fn print_pdf() {
     doc.set_line_spacing(1.25);
 
     let mut decorator = genpdf::SimplePageDecorator::new();
-    decorator.set_margins(10);
+    decorator.set_margins(0);
     decorator.set_header(|page| {
         let mut layout = elements::LinearLayout::vertical();
         if page > 1 {
@@ -75,18 +68,6 @@ pub fn print_pdf() {
         layout.styled(style::Style::new().with_font_size(10))
     });
     doc.set_page_decorator(decorator);
-/*
-    #[cfg(feature = "hyphenation")]
-    {
-        use hyphenation::Load;
-
-        doc.set_hyphenator(
-            hyphenation::Standard::from_embedded(hyphenation::Language::EnglishUS)
-                .expect("Failed to load hyphenation data"),
-        );
-    }
-
- */
 
     let monospace = doc.add_font_family(monospace_font);
     let code = style::Style::from(monospace).bold();
@@ -94,7 +75,7 @@ pub fn print_pdf() {
     let blue = style::Color::Rgb(0, 0, 255);
 
     doc.push(
-        elements::Paragraph::new("genpdf Demo Document")
+        elements::Paragraph::new("Analyzer results")
             .aligned(Alignment::Center)
             .styled(style::Style::new().bold().with_font_size(20)),
     );
@@ -220,7 +201,9 @@ pub fn print_pdf() {
         "Embedding images also works using the 'images' feature.",
     ));
     println!("Test image");
-   images::do_image_test(&mut doc);
+    chart_generator::not_rose_radius_pie_chart(analyzer);
+    //chart_generator::pie_chart(analyzer);
+    images::do_image_test(&mut doc);
 
     doc.push(elements::Paragraph::new("Here is an example table:"));
 
@@ -307,7 +290,7 @@ pub fn print_pdf() {
     }
     doc.push(table);
 
-    doc.render_to_file(output_file)
+    doc.render_to_file(file_path)
         .expect("Failed to write output file");
 }
 
@@ -316,7 +299,7 @@ pub fn print_pdf() {
 mod images {
     use super::*;
 
-    const IMAGE_PATH_JPG: &'static str = "src/pdf_generator/images/pie_chart1.png";
+    const IMAGE_PATH_JPG: &'static str = "src/pdf_generator/images/pie_chart2.png";
 
     pub fn do_image_test(doc: &mut genpdf::Document) {
         doc.push(elements::Paragraph::new(

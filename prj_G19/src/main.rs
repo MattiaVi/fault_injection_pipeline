@@ -2,7 +2,7 @@ mod hardened;
 mod fault_list_manager;
 mod fault_env;
 mod injector;
-mod analizer;
+mod analyzer;
 mod pdf_generator;
 
 use hardened::{Hardened, IncoherenceError};
@@ -17,15 +17,10 @@ use std::process::Command;
 use crate::fault_list_manager::DimData;
 use crate::hardened::*;
 use dialoguer::{Select, Input};
+//use serde_json::Value::String;
 
-//TODO: completare con quello che serve per la realizzazione del menu da linea di comando
 ///Ambiente di Fault Injection per applicazione ridondata
-#[derive(Parser,Debug)]
-#[command(version,long_about=None)]
-struct Args{
-    #[arg(short, long, default_value ="Ciao")]
-    case_study: String,
-}
+
 
 //Per uso futuro...
 fn pause() {
@@ -43,9 +38,10 @@ fn pause() {
 fn main(){
 
     //API KEY per prendere vettori per algoritmi di ordinamento
-    /*
+
     kaggle::Authentication::with_credentials("federicopretini", "5b7355de00b8dc63f52f18be16918e00");
 
+    /*
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs
         eprintln!("A panic occurred!");
@@ -77,13 +73,11 @@ fn main(){
     //let mut data1= Data::Vector(vet);
     //let mut data2 = Data::Matrices(mat1, mat2);
 
-    let mut args=Args::parse();
-
     //TODO: rimuovi qua! Solo per debug (questo deve essere scelto dall'utente)
     let cases = vec!["sel_sort", "bubble_sort", "matrix_multiplication"];
     //Questo al momento simula il menu (TODO)
-    args.case_study=String::from(cases[0]);
-    let what=args.case_study.as_str();
+   // args.case_study=String::from(cases[0]);
+
 
 
     /*per provare analisi statica matrici
@@ -99,14 +93,17 @@ fn main(){
     println!("Realizzazione di un ambiente di Fault Injection per applicazione ridondata");
 
     // Impostiamo un percorso di default per salvare il pdf generato
-    let default_path = "prj_G19/src/pdf_generator/results";
+    let mut file_path:String = "results/".to_string();
 
-    // Chiediamo all'utente di inserire il percorso o usare quello di default
+    // Chiediamo all'utente di inserire il nome del file o usare quello di default
     let user_input: String = Input::new()
-        .with_prompt("inserisci output path per il report")
-        .default(default_path.to_string())  // Imposta il percorso di default
+        .with_prompt("Inserisci il nome del file per il report")
+        .default("demo.pdf".to_string())  // Imposta il percorso di default
         .interact_text()
         .unwrap();
+
+    file_path.push_str(&user_input);
+    println!("{:?}",file_path);
 
     println!("Scegli un algoritmo da utilizzare: ");
     // Definiamo le opzioni del menu
@@ -133,6 +130,7 @@ fn main(){
             let mut vettore= Data::Vector(vet.clone()); //let mut vettore= vet.clone();
             run_case_study(
                 "sel_sort",
+                file_path,
                 Data::Vector(vet.clone()),
                 DimData::Vector(vet.len()),
                 "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
@@ -146,6 +144,7 @@ fn main(){
             let mut vettore= Data::Vector(vet.clone());
             run_case_study(
                 "bubble_sort",
+                file_path,
                 Data::Vector(vet.clone()),
                 DimData::Vector(vet.len()),
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
@@ -159,6 +158,7 @@ fn main(){
             let mut matrici = Data::Matrices(mat1.clone(), mat2.clone());
             run_case_study(
                 "matrix_multiplication",
+                file_path,
                 Data::Matrices(mat1.clone(), mat2.clone()),
                 DimData::Matrix((mat1.len(), mat1[0].len())),
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
@@ -169,15 +169,16 @@ fn main(){
         }
         _ => println!("Invalid selection."),
     }
- 
+
     //
-    fn run_case_study(case_name: &str, input_data: Data<i32>, dim_data: DimData, analysis_input_file: &str, analysis_output_file: &str, fault_list_file: &str, fault_list_run: impl FnOnce(Data<i32>) -> usize){
+    fn run_case_study(case_name: &str, file_path: String, input_data: Data<i32>, dim_data: DimData, analysis_input_file: &str, analysis_output_file: &str, fault_list_file: &str, fault_list_run: impl FnOnce(Data<i32>) -> usize){
         // 1. Analisi statica del codice
+        // TODO: cercare di gestire l'errore magari con un expect
         static_analysis::generate_analysis_file(
             analysis_input_file.to_string(),
             analysis_output_file.to_string(),
         );
-    
+
         // 2. Generazione della fault list (FL)
         fault_list_manager::create_fault_list(
             case_name.to_string(),
@@ -186,12 +187,12 @@ fn main(){
             fault_list_file.to_string(),
             fault_list_run(input_data.clone()),
         );
-    
+
         // 3. Faccio partire l'ambiente di fault injection
         fault_injection_env(
             fault_list_file.to_string(),
             case_name.to_string(),
-            "abc".to_string(),  // nome file report
+            file_path,
             input_data.clone(),
         );
     }
