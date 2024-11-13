@@ -19,17 +19,21 @@ mod chart_generator;
 
 use std::env;
 
-use genpdf::Alignment;
+use genpdf::{Alignment, Margins};
 use genpdf::Element as _;
 use genpdf::{elements, fonts, style};
+use genpdf::elements::{CellDecorator, LinearLayout};
+use genpdf::render::Area;
+use genpdf::style::Style;
 use crate::analyzer::Analyzer;
 
 const FONT_DIRS: &[&str] = &[
-    "src/pdf_generator/fonts",
-    "src/pdf_generator/fonts",
+    "src/pdf_generator/fonts/times_new_roman",
+    "src/pdf_generator/fonts/times_new_roman",
 ];
-const DEFAULT_FONT_NAME: &'static str = "OpenSans";
-const MONO_FONT_NAME: &'static str = "CourierPrime";
+const DEFAULT_FONT_NAME: &'static str = "TimesNewRoman";
+const MONO_FONT_NAME: &'static str = "TimesNewRoman";
+
 const LOREM_IPSUM: &'static str =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut \
     labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco \
@@ -37,17 +41,26 @@ const LOREM_IPSUM: &'static str =
     voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat \
     non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
+
+
 pub fn print_pdf(file_path: String, analyzer: Analyzer) {
-      let font_dir = FONT_DIRS
+
+    let title_style =  style::Style::new().bold().with_font_size(20);
+    let title_margins= Margins::trbl(0, 0,0,5);
+    let text_style = style::Style::new().with_font_size(10);
+    let text_margins = Margins::trbl(0, 60, 0, 5);
+
+
+    let font_dir = FONT_DIRS
         .iter()
         .filter(|path| std::path::Path::new(path).exists())
         .next()
         .expect("Could not find font directory");
 
     let default_font =
-        fonts::from_files(font_dir, DEFAULT_FONT_NAME, Some(fonts::Builtin::Helvetica))
+        fonts::from_files(font_dir, DEFAULT_FONT_NAME, Some(fonts::Builtin::Times))
             .expect("Failed to load the default font family");
-    let monospace_font = fonts::from_files(font_dir, MONO_FONT_NAME, Some(fonts::Builtin::Courier))
+    let monospace_font = fonts::from_files(font_dir, MONO_FONT_NAME, Some(fonts::Builtin::Times))
         .expect("Failed to load the monospace font family");
 
     let mut doc = genpdf::Document::new(default_font);
@@ -55,13 +68,14 @@ pub fn print_pdf(file_path: String, analyzer: Analyzer) {
     doc.set_minimal_conformance();
     doc.set_line_spacing(1.25);
 
+
     let mut decorator = genpdf::SimplePageDecorator::new();
-    decorator.set_margins(0);
+    decorator.set_margins(10);
     decorator.set_header(|page| {
         let mut layout = elements::LinearLayout::vertical();
         if page > 1 {
             layout.push(
-                elements::Paragraph::new(format!("Page {}", page)).aligned(Alignment::Center),
+                elements::Paragraph::new(format!("Page {}", page)).aligned(Alignment::Right),
             );
             layout.push(elements::Break::new(1));
         }
@@ -75,18 +89,59 @@ pub fn print_pdf(file_path: String, analyzer: Analyzer) {
     let blue = style::Color::Rgb(0, 0, 255);
 
     doc.push(
-        elements::Paragraph::new("Analyzer results")
-            .aligned(Alignment::Center)
-            .styled(style::Style::new().bold().with_font_size(20)),
+        elements::Paragraph::new("Risultati Analizzatore")
+            .padded(title_margins)
+            .styled(title_style)
+            .styled(red),
     );
     doc.push(elements::Break::new(1.5));
     doc.push(elements::Paragraph::new(
-        "This document demonstrates how the genpdf crate generates PDF documents. Currently, \
-         genpdf supports these elements:",
-    ));
+        "Questo è un documento di prova per mostrare come sarebbe possibile mostrare i dati \
+              estratti dall'analizzatore direttamente in un pdf.",
+    ).padded(text_margins).styled(text_style));
+
+    doc.push(elements::Break::new(0.5));
+
+    doc.push(elements::Paragraph::new(
+        "Grafico a torta contenente il totale di errori iniettati divisi per categoria",
+    ).padded(text_margins).styled(text_style));
+    chart_generator::not_rose_radius_pie_chart(analyzer);
+    //chart_generator::pie_chart(analyzer);
+
+    let image_path1: &'static str = "src/pdf_generator/images/pie_chart1.png";
+    let image_path2: &'static str = "src/pdf_generator/images/pie_chart2.png";
+
+    // Metto una sola immagine
+    doc.push(elements::Image::from_path(image_path2).expect("Unable to load image").
+        with_alignment(Alignment::Center));
+
+    //Metto due immagini una di fianco all'altra
+    let mut table = elements::TableLayout::new(vec![5, 5]);
+    table.set_cell_decorator(elements::FrameCellDecorator::new(false, false, false));
+    let mut linear_layout = elements::LinearLayout::vertical();
+
+    table
+        .row()
+        .element(
+            elements::PaddedElement::new(
+                elements::Image::from_path(image_path1)
+                    .expect("Unable to load image")
+                    .with_alignment(Alignment::Center), Margins::trbl(0,40,0,0)),
+        )
+        .element(
+            elements::PaddedElement::new(
+                elements::Image::from_path(image_path2)
+                    .expect("Unable to load image")
+                    .with_alignment(Alignment::Center), Margins::trbl(0,0,0,0)),
+        )
+        .push()
+        .expect("Invalid table row");
+    doc.push(table.padded(Margins::trbl(5,0,0,20)));
+
+
 
     let mut list = elements::UnorderedList::new();
-    /*
+
     list.push(
         elements::Paragraph::default()
             .styled_string("Text", code)
@@ -136,8 +191,6 @@ pub fn print_pdf(file_path: String, analyzer: Analyzer) {
             ),
     );
 
-
-  */
     list.push(
         elements::LinearLayout::vertical()
             .element(
@@ -201,14 +254,12 @@ pub fn print_pdf(file_path: String, analyzer: Analyzer) {
         "Embedding images also works using the 'images' feature.",
     ));
     println!("Test image");
-    chart_generator::not_rose_radius_pie_chart(analyzer);
-    //chart_generator::pie_chart(analyzer);
-    images::do_image_test(&mut doc);
+
 
     doc.push(elements::Paragraph::new("Here is an example table:"));
 
     let mut table = elements::TableLayout::new(vec![1, 2]);
-    table.set_cell_decorator(elements::FrameCellDecorator::new(true, false, false));
+    table.set_cell_decorator(elements::FrameCellDecorator::new(false, false, false));
     table
         .row()
         .element(
@@ -234,6 +285,7 @@ pub fn print_pdf(file_path: String, analyzer: Analyzer) {
         )
         .push()
         .expect("Invalid table row");
+
     let list_layout = elements::LinearLayout::vertical()
         .element(elements::Paragraph::new(
             "Of course, you can use all other elements inside a table.",
@@ -299,14 +351,10 @@ pub fn print_pdf(file_path: String, analyzer: Analyzer) {
 mod images {
     use super::*;
 
-    const IMAGE_PATH_JPG: &'static str = "src/pdf_generator/images/pie_chart2.png";
+    pub fn one_(doc: &mut genpdf::Document) {
 
-    pub fn do_image_test(doc: &mut genpdf::Document) {
-        doc.push(elements::Paragraph::new(
-            "Here is an example image with default position/scale:",
-        ));
 
-        doc.push(elements::Image::from_path(IMAGE_PATH_JPG).expect("Unable to load image"));
+        /*
         doc.push(elements::Paragraph::new(
             "and here is one that is centered, rotated, and scaled some.",
         ));
@@ -322,6 +370,7 @@ mod images {
             "For a full example of image functionality, please see images.pdf.",
         ));
         doc.push(elements::Break::new(1.5));
+         */
    }
 
 }
