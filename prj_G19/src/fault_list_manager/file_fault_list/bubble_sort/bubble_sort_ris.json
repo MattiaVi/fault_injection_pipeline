@@ -20,16 +20,16 @@
       "start": 1
     },
     {
+      "name": "n",
+      "ty": "usize",
+      "size": "4",
+      "start": 1
+    },
+    {
       "name": "i",
       "ty": "i32",
       "size": "4",
       "start": 2
-    },
-    {
-      "name": "n",
-      "ty": "unknown",
-      "size": "unknown",
-      "start": 1
     }
   ]
 }

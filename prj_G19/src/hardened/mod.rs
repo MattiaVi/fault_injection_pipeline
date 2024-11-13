@@ -370,30 +370,36 @@ pub fn run_for_count_selection_sort(vettore: Data<i32>) ->usize{
     count
 }
 pub fn run_for_count_bubble_sort(vettore: Data<i32>) ->usize{
-
-    let mut vet = vettore.into_Vector();
-    let N:usize = vet.len();
     let mut count=2;
-    for i in 0..N {
-        count=count+1;
-        // Se non ci sono scambi, l'array è ordinato (ottimizzazione)
+    let mut vet=vettore.into_Vector();
+    let n = vet.len();
+    let mut i = 0;
+
+    while i < n {
+        count+=1;
         let mut swapped = false;
-        count=count+1;
-        for j in 0..(N - i - 1) {
-            count=count+2;              //for + if
+        count+=1;
+        let mut j = 0;
+        count+=1;
+
+        while j < n - i - 1 {
+            count+=1;
             if vet[j] > vet[j + 1] {
-                count=count+1;
+                count+=1;
                 vet.swap(j, j + 1);
-                count=count+1;
+                count+=1;
                 swapped = true;
+                count+=1;
             }
+            j += 1;
+            count+=1;
         }
-        // Se non è avvenuto nessuno scambio, interrompi il ciclo
-        count=count+1;
         if !swapped {
-            count=count+1;
+            count+=1;
             break;
         }
+        i += 1;
+        count+=1;
     }
     count
 }

@@ -1,5 +1,5 @@
 fn bubble_sort(mut vet: Vec<i32>) {
-    let n = vet.len();
+    let n:usize = vet.len();
     let mut i = 0;
 
     while i < n {

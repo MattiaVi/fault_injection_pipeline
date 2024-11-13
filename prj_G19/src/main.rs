@@ -47,7 +47,6 @@ fn main(){
         eprintln!("A panic occurred!");
     }));
     */
-    
 
     //TODO: dati letti da file??
     let mut vet = vec![10, 15, 27, -9, 19, 20, 16, 1, 3, -32];
@@ -171,8 +170,16 @@ fn main(){
     }
 
     //
-    fn run_case_study(case_name: &str, file_path: String, input_data: Data<i32>, dim_data: DimData, analysis_input_file: &str, analysis_output_file: &str, fault_list_file: &str, fault_list_run: impl FnOnce(Data<i32>) -> usize){
+    fn run_case_study(case_name: &str,
+                      file_path: String,
+                      input_data: Data<i32>,
+                      dim_data: DimData,
+                      analysis_input_file: &str,
+                      analysis_output_file: &str,
+                      fault_list_file: &str,
+                      fault_list_run: impl FnOnce(Data<i32>) -> usize){
         // 1. Analisi statica del codice
+
         // TODO: cercare di gestire l'errore magari con un expect
         static_analysis::generate_analysis_file(
             analysis_input_file.to_string(),
