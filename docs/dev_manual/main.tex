@@ -1,30 +1,41 @@
 \documentclass{article}
-
+\usepackage{lipsum}
+\usepackage{authblk}
 \input{packages}
 
 \title{\textbf{[Manuale di Sviluppo] Realizzazione di un ambiente di Fault Injection
 per applicazione ridondata }}
-\author{Carlo Migliaccio (s332937) - Federico Pretini (s) -\\
-Scavone Alessandro (s328782) -  Mattia Viglino (s)}
-\date{Gennaio 2024}
+\author{Carlo Migliaccio}
+\author{Federico Pretini}
+\author{Alessandro Scavone}
+\author{Mattia Viglino}
+\affil[1]{\small{Laurea Magistrale in Ingegneria Informatica, Politecnico di Torino}}
 
+\date{Gennaio 2025}
 \begin{document}
+
 \counterwithin{figure}{section}
 \counterwithin{equation}{section}
 \renewcommand{\labelenumii}{\arabic{enumi}.\arabic{enumii}}
 
 \maketitle
-
+\vspace{-0.8cm}
+%Da scrivere alla fine
+\begin{abstract}
+    \lipsum[1]
+\end{abstract}
 \tableofcontents
 
-\include{capitoli/Intro}
-\include{capitoli/Hardened}
-\include{capitoli/FaultEnv}
-\include{capitoli/FaultListManager}
-\include{capitoli/Iniettore}
-\include{capitoli/Analizzatore}
-\include{capitoli/CaseStudies}
+\input{capitoli/Intro}        %Carlo
+\input{capitoli/Hardened}     %Carlo
+\input{capitoli/FaultEnv}     %Carlo  
+\input{capitoli/FaultListManager} %Carlo
 
+\input{capitoli/Iniettore}        %Alessandro
+\input{capitoli/Analizzatore}     %Federico
+\input{capitoli/CaseStudies}      %Mattia
+
+\newpage
 \printbibliography
 
 

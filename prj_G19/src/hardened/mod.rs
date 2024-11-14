@@ -163,6 +163,7 @@ impl<T> PartialOrd for Hardened<T>
 where T:PartialEq+PartialOrd+Eq+Debug+Copy+Clone{
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         if other.incoherent(){
+            //TODO: Aggiungere conteggio
             panic!("Found an incoherence!")
         }
         self.cp1.partial_cmp(&other.cp1)
@@ -173,6 +174,7 @@ impl<T> Ord for Hardened<T>
 where T:PartialEq+PartialOrd+Ord+Eq+Debug+Copy+Clone{
     fn cmp(&self, other: &Self) -> Ordering {
         if other.incoherent(){
+            //TODO: Aggiungere conteggio
             panic!("Found an incoherence!");
         }
         self.cp1.cmp(&other.cp1)
