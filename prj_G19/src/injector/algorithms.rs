@@ -4,7 +4,6 @@ use crate::injector::{BubbleSortVariables, SelectionSortVariables};
 
 pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<(), IncoherenceError> {
 
-
     *variables.N.write().unwrap() = variables.vec.read().unwrap().len().into();
     tx_runner.send("i1").unwrap();
     rx_runner.recv().unwrap();
@@ -21,7 +20,6 @@ pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Send
     tx_runner.send("i4").unwrap();
     rx_runner.recv().unwrap();
 
-
     while *variables.i.read().unwrap() < (*variables.N.read().unwrap() - 1)? {
         tx_runner.send("i5").unwrap();
         rx_runner.recv().unwrap();
@@ -33,7 +31,6 @@ pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Send
         variables.j.write().unwrap().assign((*variables.i.read().unwrap() + 1)?)?;
         tx_runner.send("i7").unwrap();
         rx_runner.recv().unwrap();
-
 
         while *variables.j.read().unwrap() < *variables.N.read().unwrap() {
             tx_runner.send("i8").unwrap();
@@ -93,7 +90,6 @@ pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Send
 
 pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<(), IncoherenceError> {
 
-    println!("Entrato giusto!");
     *variables.N.write().unwrap() = Hardened::from(variables.vet.read().unwrap().len());
     tx_runner.send("i1").unwrap();
     rx_runner.recv().unwrap();
@@ -129,11 +125,13 @@ pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&st
                 *variables.swapped.write().unwrap() = Hardened::from(true);
                 tx_runner.send("i9").unwrap();
                 rx_runner.recv().unwrap();
+
             }
             let tmp = (*variables.j.read().unwrap() + 1)?;
             variables.j.write().unwrap().assign(tmp)?;
             tx_runner.send("i10").unwrap();
             rx_runner.recv().unwrap();
+
         }
 
         if !variables.swapped.read().unwrap().inner()? {
@@ -148,10 +146,7 @@ pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&st
         rx_runner.recv().unwrap();
     }
 
-    println!("{:?}", variables.vet.read().unwrap());
-
     Ok(())
-
 
     /*
     let n = Hardened::from(vet.len());

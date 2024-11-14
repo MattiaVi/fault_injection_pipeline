@@ -90,30 +90,6 @@ impl AlgorithmVariables {
     }
 }
 
-
-/*
-struct Variables {
-    i: RwLock<Hardened<usize>>,
-    j: RwLock<Hardened<usize>>,
-    N: RwLock<Hardened<usize>>,
-    min: RwLock<Hardened<usize>>,
-    vec: RwLock<Vec<Hardened<i32>>>
-}
-
-impl Variables {
-    fn new(vec: Vec<i32>) -> Self {
-        Variables {
-            i: RwLock::new(Hardened::from(0)),
-            j: RwLock::new(Hardened::from(0)),
-            min: RwLock::new(Hardened::from(0)),
-            N: RwLock::new(Hardened::from(0)),
-            vec: RwLock::new(Hardened::from_vec(vec))
-        }
-    }
-}
-*/
-
-
 fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> TestResult {
 
     let result = panic::catch_unwind(|| {
@@ -122,7 +98,6 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
                 runner_selection_sort(var, tx_runner, rx_runner)
             }
             AlgorithmVariables::BubbleSort(var) => {
-                println!("eseguo bubble sortttt");
                 runner_bubble_sort(var, tx_runner, rx_runner)
             }
             AlgorithmVariables::MatrixMultiplication(_) => {
@@ -131,6 +106,8 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
         }
 
     });
+
+
 
     match result {
         Ok(Ok(())) => TestResult {result: Ok(()), fault_list_entry},
@@ -157,6 +134,7 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
 
     while let Ok(msg) = rx_runner.recv() {
         counter += 1;
+
 
         if counter == fault_list_entry.time {
             match &*variables {
@@ -231,6 +209,9 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
                 AlgorithmVariables::MatrixMultiplication(_) => {}
             }
         }
+
+
+
         tx_injector.send("ricevuto").unwrap();
     }
 }
@@ -242,16 +223,16 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
                         target: String,
                         vec: Vec<i32>){            //per il momento lasciamolo, poi si vedrà...
 
+
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs
         eprintln!("A panic occurred!");
     }));
 
+
     let mut handles_runner = vec![];
     let mut handles_injector = vec![];
     let mut counter = 0;
-
-    println!("SONO ENTRATO NELL'INJECTOR MANAGER");
 
     while let Ok(fault_list_entry) = rx_chan_fm_inj.recv(){
 
@@ -270,7 +251,7 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
 
         handles_runner.push(thread::spawn(move || runner(runner_variables, fault_list_entry_runner, tx_1, rx_2)));     // lancio il thread che esegue l'algoritmo
         handles_injector.push(thread::spawn(move || injector(injector_variables, fault_list_entry, tx_2, rx_1)));      // lancio il thread iniettore
-        break;
+        //break;
     }
 
 
@@ -281,9 +262,11 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
         tx_chan_inj_anl.send(result).unwrap();
     }
 
+
     for handle in handles_injector {
         handle.join().unwrap();
     }
+
 
     drop(tx_chan_inj_anl);
 }
