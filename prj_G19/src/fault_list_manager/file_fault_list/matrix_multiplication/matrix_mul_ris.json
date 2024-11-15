@@ -14,34 +14,16 @@
       "start": 1
     },
     {
-      "name": "result",
-      "ty": "Vec < Vec < i32 > >",
-      "size": "4*nR*nC",
-      "start": 2
-    },
-    {
-      "name": "row",
-      "ty": "Vec < i32 >",
-      "size": "4*len",
-      "start": 1
-    },
-    {
-      "name": "k",
-      "ty": "i32",
-      "size": "4",
-      "start": 5
-    },
-    {
-      "name": "acc",
-      "ty": "i32",
-      "size": "4",
-      "start": 1
-    },
-    {
       "name": "size",
       "ty": "usize",
       "size": "4",
       "start": 1
+    },
+    {
+      "name": "result",
+      "ty": "Vec < Vec < i32 > >",
+      "size": "4*nR*nC",
+      "start": 2
     },
     {
       "name": "i",
@@ -54,6 +36,24 @@
       "ty": "i32",
       "size": "4",
       "start": 4
+    },
+    {
+      "name": "k",
+      "ty": "i32",
+      "size": "4",
+      "start": 5
+    },
+    {
+      "name": "row",
+      "ty": "Vec < i32 >",
+      "size": "4*len",
+      "start": 7
+    },
+    {
+      "name": "acc",
+      "ty": "i32",
+      "size": "4",
+      "start": 10
     }
   ]
 }

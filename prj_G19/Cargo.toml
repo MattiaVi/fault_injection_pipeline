@@ -25,6 +25,7 @@ charts-rs = "0.3.19"
 kaggle = "1.0.3"
 
 dialoguer = "0.11.0"
+itertools = "0.12.1"
 
 [features]
 images = []

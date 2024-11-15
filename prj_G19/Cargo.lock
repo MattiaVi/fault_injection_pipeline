@@ -2028,6 +2028,7 @@ dependencies = [
  "dialoguer",
  "genpdf",
  "image 0.25.5",
+ "itertools",
  "kaggle",
  "once_cell",
  "proc-macro2",
