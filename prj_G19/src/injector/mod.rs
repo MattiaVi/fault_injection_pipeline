@@ -2,7 +2,8 @@ mod algorithms;
 
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{channel, Receiver, Sender};
-use std::{panic, thread};
+use std::{panic, thread, vec};
+use dialoguer::Input;
 use crate::fault_list_manager::FaultListEntry;
 use crate::hardened::{Hardened, IncoherenceError};
 use algorithms::{runner_selection_sort};
@@ -42,20 +43,25 @@ struct BubbleSortVariables {
 }
 
 struct MatrixMultiplicationVariables {
+    size: RwLock<Hardened<usize>>,
     i: RwLock<Hardened<usize>>,
     j: RwLock<Hardened<usize>>,
-    N: RwLock<Hardened<usize>>,
-    mat_a: RwLock<Vec<Hardened<i32>>>,
-    mat_b: RwLock<Vec<Hardened<i32>>>,
-    result: RwLock<Vec<Hardened<i32>>>,
+    k: RwLock<Hardened<usize>>,
+    row: RwLock<Vec<Hardened<i32>>>,
+    acc: RwLock<Hardened<i32>>,
+    a: RwLock<Vec<Vec<Hardened<i32>>>>,
+    b: RwLock<Vec<Vec<Hardened<i32>>>>,
+    result: RwLock<Vec<Vec<Hardened<i32>>>>
 }
 
 // Common initialization trait
 trait VariableSet {
-    fn new(vec: Vec<i32>) -> Self;
+    type Input;
+    fn new(input: Self::Input) -> Self;
 }
 
 impl VariableSet for SelectionSortVariables {
+    type Input = Vec<i32>;
     fn new(vec: Vec<i32>) -> Self {
         SelectionSortVariables {
             i: RwLock::new(Hardened::from(0)),
@@ -68,6 +74,7 @@ impl VariableSet for SelectionSortVariables {
 }
 
 impl VariableSet for BubbleSortVariables {
+    type Input = Vec<i32>;
     fn new(vet: Vec<i32>) -> Self {
         BubbleSortVariables {
             i: RwLock::new(Hardened::from(0)),
@@ -75,6 +82,23 @@ impl VariableSet for BubbleSortVariables {
             swapped: RwLock::new(Hardened::from(false)),
             N: RwLock::new(Hardened::from(0)),
             vet: RwLock::new(Hardened::from_vec(vet))
+        }
+    }
+}
+
+impl VariableSet for MatrixMultiplicationVariables {
+    type Input = (Vec<Vec<i32>>, Vec<Vec<i32>>);
+    fn new((a, b): (Vec<Vec<i32>>, Vec<Vec<i32>>)) -> Self {
+        MatrixMultiplicationVariables {
+            size: RwLock::new(Hardened::from(0)),
+            i: RwLock::new(Hardened::from(0)),
+            j: RwLock::new(Hardened::from(0)),
+            k: RwLock::new(Hardened::from(0)),
+            row: RwLock::new(Hardened::from_vec(Vec::new())),
+            acc: RwLock::new(Hardened::from(0)),
+            a: RwLock::new(Hardened::from_mat(Vec::new())),
+            b: RwLock::new(Hardened::from_mat(Vec::new())),
+            result: RwLock::new(Hardened::from_mat(Vec::new()))
         }
     }
 }
@@ -134,7 +158,6 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
 
     while let Ok(msg) = rx_runner.recv() {
         counter += 1;
-
 
         if counter == fault_list_entry.time {
             match &*variables {
@@ -223,16 +246,13 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
                         target: String,
                         vec: Vec<i32>){            //per il momento lasciamolo, poi si vedrà...
 
-
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs
         eprintln!("A panic occurred!");
     }));
 
-
     let mut handles_runner = vec![];
     let mut handles_injector = vec![];
-    let mut counter = 0;
 
     while let Ok(fault_list_entry) = rx_chan_fm_inj.recv(){
 
@@ -251,7 +271,7 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
 
         handles_runner.push(thread::spawn(move || runner(runner_variables, fault_list_entry_runner, tx_1, rx_2)));     // lancio il thread che esegue l'algoritmo
         handles_injector.push(thread::spawn(move || injector(injector_variables, fault_list_entry, tx_2, rx_1)));      // lancio il thread iniettore
-        //break;
+        break;
     }
 
 

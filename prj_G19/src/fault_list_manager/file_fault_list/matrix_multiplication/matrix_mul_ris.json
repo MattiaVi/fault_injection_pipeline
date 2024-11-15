@@ -1,5 +1,5 @@
 {
-  "num_inst": 14,
+  "num_inst": 19,
   "vars": [
     {
       "name": "a",
@@ -14,16 +14,16 @@
       "start": 1
     },
     {
-      "name": "row",
-      "ty": "Vec < i32 >",
-      "size": "4*len",
+      "name": "acc",
+      "ty": "i32",
+      "size": "4",
       "start": 1
     },
     {
-      "name": "j",
-      "ty": "i32",
-      "size": "4",
-      "start": 5
+      "name": "size",
+      "ty": "unknown",
+      "size": "unknown",
+      "start": 1
     },
     {
       "name": "result",
@@ -32,27 +32,27 @@
       "start": 2
     },
     {
+      "name": "j",
+      "ty": "i32",
+      "size": "4",
+      "start": 4
+    },
+    {
+      "name": "k",
+      "ty": "i32",
+      "size": "4",
+      "start": 5
+    },
+    {
       "name": "i",
       "ty": "i32",
       "size": "4",
       "start": 3
     },
     {
-      "name": "acc",
-      "ty": "i32",
-      "size": "4",
-      "start": 1
-    },
-    {
-      "name": "k",
-      "ty": "i32",
-      "size": "4",
-      "start": 4
-    },
-    {
-      "name": "size",
-      "ty": "i32",
-      "size": "4",
+      "name": "row",
+      "ty": "Vec < i32 >",
+      "size": "4*len",
       "start": 1
     }
   ]
