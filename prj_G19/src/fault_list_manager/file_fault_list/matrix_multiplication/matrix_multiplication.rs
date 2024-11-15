@@ -1,5 +1,5 @@
 fn matrix_multiplication(a: Vec<Vec<i32>>, b: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
-    let size = a.len();
+    let size:usize = a.len();
     let mut result: Vec<Vec<i32>> = Vec::new();
 
     let mut i = 0;
