@@ -179,7 +179,7 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
     tx_runner.send("i1").unwrap();
     rx_runner.recv().unwrap();
 
-    *variables.result.write().unwrap() = Hardened::from_mat(Vec::new());
+    *variables.result.write().unwrap() = Hardened::from_mat(vec![vec![0; variables.size.read().unwrap().inner().unwrap()]; variables.size.read().unwrap().inner().unwrap()]);
     tx_runner.send("i2").unwrap();
     rx_runner.recv().unwrap();
 
@@ -199,7 +199,7 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
         tx_runner.send("i6").unwrap();
         rx_runner.recv().unwrap();
 
-        *variables.row.write().unwrap() = Hardened::from_vec(Vec::new());
+        *variables.row.write().unwrap() = Hardened::from_vec(vec![0; variables.size.read().unwrap().inner().unwrap()]);
         tx_runner.send("i7").unwrap();
         rx_runner.recv().unwrap();
 
@@ -223,10 +223,11 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
                 tx_runner.send("i12").unwrap();
                 rx_runner.recv().unwrap();
 
-                variables.acc.write().unwrap().assign((*variables.acc.read().unwrap() + Hardened::from(
+                let tmp = (*variables.acc.read().unwrap() + Hardened::from(
                     variables.a.read().unwrap()[variables.i.read().unwrap().inner()?][variables.k.read().unwrap().inner()?].inner()? *
                         variables.b.read().unwrap()[variables.k.read().unwrap().inner()?][variables.j.read().unwrap().inner()?].inner()?
-                ))?)?;
+                ))?;
+                variables.acc.write().unwrap().assign(tmp)?;
                 tx_runner.send("i13").unwrap();
                 rx_runner.recv().unwrap();
 
@@ -255,11 +256,6 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
         tx_runner.send("i18").unwrap();
         rx_runner.recv().unwrap();
     }
-
-
-    println!("a = {:?}", variables.a.read().unwrap());
-    println!("b = {:?}", variables.b.read().unwrap());
-    println!("result = {:?}", variables.result.read().unwrap());
 
     Ok(())
 

@@ -56,7 +56,7 @@ pub fn fault_injection_env(fault_list: String,      // nome file fault-list
 
     //Questi possono essere a loro volta wrapper che faranno delle cose
     fault_manager(tx_chan_fm_inj,fault_list);
-    injector_manager(rx_chan_fm_inj, tx_chan_inj_anl, target, data.into_Vector());
+    injector_manager(rx_chan_fm_inj, tx_chan_inj_anl, target, data);
     analyzer(rx_chan_inj_anl,file_path);
 }
 

@@ -7,7 +7,8 @@ use dialoguer::Input;
 use crate::fault_list_manager::FaultListEntry;
 use crate::hardened::{Hardened, IncoherenceError};
 use algorithms::{runner_selection_sort};
-use crate::injector::algorithms::runner_bubble_sort;
+use crate::fault_env::Data;
+use crate::injector::algorithms::{runner_bubble_sort, runner_matrix_multiplication};
 
 
 #[derive(Debug)]
@@ -96,8 +97,8 @@ impl VariableSet for MatrixMultiplicationVariables {
             k: RwLock::new(Hardened::from(0)),
             row: RwLock::new(Hardened::from_vec(Vec::new())),
             acc: RwLock::new(Hardened::from(0)),
-            a: RwLock::new(Hardened::from_mat(Vec::new())),
-            b: RwLock::new(Hardened::from_mat(Vec::new())),
+            a: RwLock::new(Hardened::from_mat(a)),
+            b: RwLock::new(Hardened::from_mat(b)),
             result: RwLock::new(Hardened::from_mat(Vec::new()))
         }
     }
@@ -105,10 +106,11 @@ impl VariableSet for MatrixMultiplicationVariables {
 
 
 impl AlgorithmVariables {
-    fn from_target(target: &str, vec: Vec<i32>) -> Arc<AlgorithmVariables> {
+    fn from_target(target: &str, data: Data<i32>) -> Arc<AlgorithmVariables> {
         match target {
-            "sel_sort" => Arc::new(AlgorithmVariables::SelectionSort(SelectionSortVariables::new(vec))),
-            "bubble_sort" => Arc::new(AlgorithmVariables::BubbleSort(BubbleSortVariables::new(vec))),
+            "sel_sort" => Arc::new(AlgorithmVariables::SelectionSort(SelectionSortVariables::new(data.into_Vector()))),
+            "bubble_sort" => Arc::new(AlgorithmVariables::BubbleSort(BubbleSortVariables::new(data.into_Vector()))),
+            "matrix_multiplication" => Arc::new(AlgorithmVariables::MatrixMultiplication(MatrixMultiplicationVariables::new(data.into_Matrices()))),
             _ => panic!("Unknown target algorithm"),
         }
     }
@@ -124,8 +126,8 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
             AlgorithmVariables::BubbleSort(var) => {
                 runner_bubble_sort(var, tx_runner, rx_runner)
             }
-            AlgorithmVariables::MatrixMultiplication(_) => {
-                Ok(())
+            AlgorithmVariables::MatrixMultiplication(var) => {
+                runner_matrix_multiplication(var, tx_runner, rx_runner)
             }
         }
 
@@ -229,7 +231,93 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
                         }
                     };
                 }
-                AlgorithmVariables::MatrixMultiplication(_) => {}
+                AlgorithmVariables::MatrixMultiplication(var) => {
+                    match fault_list_entry.var.as_str() {
+                        "i" => {
+                            let val = var.i.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                            let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
+                            var.i.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                        },
+                        "j" => {
+                            let val = var.j.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                            let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
+                            var.j.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                        },
+                        "k" => {
+                            let val = var.k.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                            let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
+                            var.k.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                        },
+                        "size" => {
+                            let val = var.size.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                            let new_val = !val;                                             // nuovo valore da salvare (XOR per il bitflip)
+                            var.size.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                        },
+                        "acc" => {
+                            let val = var.acc.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                            let new_val = !val;                                             // nuovo valore da salvare (XOR per il bitflip)
+                            var.acc.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                        },
+                        _ => {
+                            let str = fault_list_entry.var.as_str();
+                            if str.starts_with("row") {
+                                //println!("processo {:?}", str);
+                                let index = fault_list_entry.var
+                                    .split(|c| c == '[' || c == ']')
+                                    .collect::<Vec<_>>()[1]
+                                    .parse::<usize>().unwrap(); // ottengo l'indice dell'elemento nel vttore in cui iniettare l'errore
+
+                                let val = var.row.read().unwrap()[index].inner().unwrap().clone();
+                                //println!("continuo");
+                                let new_val = val ^ (mask as i32);
+                                var.row.write().unwrap()[index]["cp1"] = new_val;
+                                //println!("fatto {:?}", str);
+                            }
+                            else {
+                                let parts: Vec<&str> = fault_list_entry.var.split(|c| c == '[').collect();
+
+
+                                // Extract the matrix name
+                                let matrix_name = parts[0];
+
+                                // Extract indices
+                                let indices = fault_list_entry.var
+                                    .split(|c| c == '[' || c == ']')
+                                    .filter(|&s| !s.is_empty() && s.chars().all(|c| c.is_digit(10))) // Filter to get only numeric parts
+                                    .map(|s| s.parse::<usize>().unwrap())
+                                    .collect::<Vec<_>>();
+
+                                if indices.len() == 2 {
+                                    let row = indices[0];
+                                    let col = indices[1];
+
+                                    match matrix_name {
+                                        "a" => {
+                                            let val = var.a.read().unwrap()[row][col].inner().unwrap().clone();
+                                            let new_val = val ^ (mask as i32);
+                                            var.a.write().unwrap()[row][col]["cp1"] = new_val;
+                                        }
+                                        "b" => {
+                                            let val = var.b.read().unwrap()[row][col].inner().unwrap().clone();
+                                            let new_val = val ^ (mask as i32);
+                                            var.b.write().unwrap()[row][col]["cp1"] = new_val;
+                                        }
+                                        "result" => {
+                                            let val = var.result.read().unwrap()[row][col].inner().unwrap().clone();
+                                            let new_val = val ^ (mask as i32);
+                                            var.result.write().unwrap()[row][col]["cp1"] = new_val;
+                                        }
+                                        _ => {
+                                            println!("non e' una matrice che conosco")
+                                        }
+                                    }
+                                } else {
+                                    println!("numero di indici diverso da 2");
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -244,19 +332,22 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
 pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
                         tx_chan_inj_anl: Sender<TestResult>,
                         target: String,
-                        vec: Vec<i32>){            //per il momento lasciamolo, poi si vedrà...
+                        data: Data<i32>){            //per il momento lasciamolo, poi si vedrà...
+
 
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs
         eprintln!("A panic occurred!");
     }));
 
+
+
     let mut handles_runner = vec![];
     let mut handles_injector = vec![];
 
     while let Ok(fault_list_entry) = rx_chan_fm_inj.recv(){
 
-        let var = AlgorithmVariables::from_target(target.as_str(), vec.clone());
+        let var = AlgorithmVariables::from_target(target.as_str(), data.clone());
 
         // thread
         let (tx_1, rx_1) = channel();
@@ -271,7 +362,6 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
 
         handles_runner.push(thread::spawn(move || runner(runner_variables, fault_list_entry_runner, tx_1, rx_2)));     // lancio il thread che esegue l'algoritmo
         handles_injector.push(thread::spawn(move || injector(injector_variables, fault_list_entry, tx_2, rx_1)));      // lancio il thread iniettore
-        break;
     }
 
 
