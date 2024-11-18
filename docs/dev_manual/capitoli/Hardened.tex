@@ -1,17 +1,148 @@
-\section{Tipo \texttt{Hardened<T>} e irrobustimento del codice} \label{sec:hardened}
-
+\section{Software fault-tolerance} \label{sec:hardened}
+In generale le tecniche di software fault-tolerance, tendono a sfruttare modifiche di alto livello al codice sorgente in modo da poter rilevare comportamenti irregolari (faults) che riguardano \textbf{sia il codice che i dati}. Qui invece restringiamo l’attenzione esclusivamente su fault che riguardano i dati,  senza peraltro preoccuparci del fatto che questi si trovino in memoria centrale, memoria cache, registri o bus. Al codice target infatti vengono applicate semplici trasformazioni di alto livello che sono completamente indipendenti dal processore che esegue il programma. 
 \subsection{Tre regole per la trasformazione del codice}
+Le regole di trasformazione del codice citate sono quelle  proposte in \cite{802887}. Riportiamo qui quelle mirate al rilevamento di \textbf{errori sui dati}:
+\begin{enumerate}
+    \itemsep-0.2em
+    \item \textbf{Regola \#1}: Ogni variabile \texttt{x} deve essere duplicata: siano \texttt{cp1} e \texttt{cp2} i nomi delle due copie;
+    \item \textbf{Regola \#2}: Ogni operazione di scrittura su \texttt{x} deve essere eseguita su entrambe le copie \texttt{cp1} e \texttt{cp2};
+    \item \textbf{Regola \#3}:  dopo ogni operazione di lettura su $x$, deve essere controllata la consistenza delle copie \texttt{cp1} e \texttt{cp2}, nel caso in cui tale controllo fallisca deve essere sollevato un errore.
+\end{enumerate}
+Anche i parametri passati a una procedura, così come i valori di ritorno, sono variabili come tutte le altre a cui si applicano le stesse trasformazioni. L'implementazione di queste caratteristiche -- come spiegato in dettaglio nel paragrafo successivo -- si basano sulla programmazione generica e polimorfismo offerti dal linguaggio Rust. Dopo una prima analisi si descrivono le principali caratteristiche e i metodi offerti dal nuovo tipo, in un secondo momento si entra nel dettaglio del linguaggio e si pone l'attenzione all'implementazione della semantica richiesta da \textbf{(R1)-(R3)}.
+
+\subsection{Il tipo \texttt{Hardened<T>}}
+Le tre regole di trasformazione appena esposte sono espletate tramite l'implementazione di un \textbf{nuovo tipo}, che chiamiamo \texttt{Hardened<T>}, definito come segue: 
 
 \begin{lstlisting}[language=Rust, style=boxed]
+#[derive(Clone, Copy)]
 struct Hardened<T>{
     cp1: T, 
     cp2: T
 }
 \end{lstlisting}
+\noindent
+Poiché si vuole porre l'attenzione sul comportamento/algoritmo di questo nuovo tipo, si usa la programmazione generica infatti le due copie \texttt{cp1} e \texttt{cp2} hanno un tipo generico \texttt{T} a cui viene posto l'unico vincolo di essere confrontabile e copiabile.
+Con l'obiettivo di coprire il maggior numero di casistiche possibili in cui il dato viene acceduto in lettura e/o scrittura, sono stati implementati per \texttt{Hardened<T>} un numero significativo di \textbf{tratti della libreria standard}, in particolare: 
+\begin{itemize}
+    \itemsep-0.3em
+    \item \texttt{From<T>}: per ricavare una variabile ridondata a partire da una variabile 'semplice' di tipo T; 
+    \item I tratti per le \textbf{operazioni aritmetiche} \texttt{Add, Sub, Mul}. In particolare i primi sono stati implementati anche in \textit{versione mista} \texttt{Add<usize>} e \texttt{Sub<usize>} per semplificare le operazioni di sottrazione tra un \texttt{Hardened<T>} e un valore \textit{literal}; 
+    \item I tratti per le \textbf{operazioni di confronto} \texttt{Eq, PartialEq, Ord, PartialOrd}; 
+    \item I tratti \texttt{Index} e \texttt{IndexMut} sotto diverse forme per accedere alla singola copia della variabile (utile in fase di iniezione) e all'elemento i-esimo di una \textit{collezione} di \texttt{Hardened<T>}.
+    \item Il tratto \texttt{Debug} per la visualizzazione personalizzata di informazioni sul nuovo tipo di dato.
+\end{itemize}
 
-
+\noindent
+Oltre ai tratti della libreria standard appena elencati,  si è rivelata utile l'implementazione di funzioni personalizzate di cui si riporta una breve descrizione.
 \begin{lstlisting}[language=Rust, style=boxed]
 impl<T> Hardened<T>{
-    
+    fn incoherent(&self)->bool;
+    pub fn assign(&mut self, other: Hardened<T>)->Result<(), IncoherenceError>;
+    pub fn from_vec(vet: Vec<T>)->Vec<Hardened<T>>;
+    pub fn from_mat(mat: Vec<Vec<T>>) -> Vec<Vec<Hardened<T>>>;
+    pub fn inner(&self)->Result<T, IncoherenceError>;
 }
 \end{lstlisting}
+
+\begin{description}
+    \item[\texttt{fn incoherent(\&self)->bool}] Funzione privata per rilevare l'incoerenza tra le due copie della variabile irrobustita: in particolare viene utilizzata dai metodi di più alto livello che lavorano con i dati elementari.
+    \item[\texttt{pub fn assign(\&mut self, other: Hardened<T>)->Result<(), IncoherenceError>;}] Asserisce all'\textbf{asseegnazione} tra due variabili di tipo \texttt{Hardened<T>}. Questa è l'unica operazione che non si può ridefinire in Rust tramite l'implementazione del tratto opportuno, in quanto andrebbe ridefinita l'intera semantica legata al \textbf{movimento e possesso}.
+    \item[\texttt{ pub fn from\_vec(vet: Vec<T>)->Vec<Hardened<T>>;} ] Per estrarre collezioni di dati irrobustiti da collezioni di dati elementari. Un ruolo simile è svolto da \texttt{pub fn from\_mat(mat: Vec<Vec<T>>) -> Vec<Vec<Hardened<T>>>;} Queste funzioni sono indispensabili sia per l'implementazione che per l'analisi dei risultati dei casi di studio.
+    \item[\texttt{pub fn inner(\&self)->Result<T, IncoherenceError>;}] esegue una sorta di \textit{unwrap} del dato irrobustito, cioè dato un \texttt{Hardened<T>} restituisce il dato \texttt{T} incapsulato a sua volta in un \texttt{Result} in quanto le copie memorizzate possono essere incoerenti (vedi paragrafo dopo).
+\end{description}
+
+\section{Regole di trasformazione: implementazione}
+In questo paragrafo, tramite l'utilizzo di esempi significativi si presenta a grandi linee l'implementazione del set di trasformazioni che portano al tipo irrobustito. In particolare, dopo aver richiamato la regola, segue un esempio di codice con l'implementazione.\\
+
+\noindent
+\begin{center}
+\begin{tikzpicture}
+    \node [mybox] (box){%
+        \begin{minipage}{.96\textwidth}    
+                \begin{center}
+                    \large
+                \textbf{R1}: ogni variabile \texttt{x} \textbf {deve essere duplicata}: siano \texttt{cp1} e \texttt{cp2} i nomi delle due copie
+                \end{center}
+        \end{minipage}
+    };
+\end{tikzpicture}%
+\end{center}
+
+\noindent
+La realizzazione della prima regola è insita nella definizione del nuovo tipo, in quanto una dichiarazione l'inizializzazione di una variabile a partire da un dato elementare, crea una doppia copia del dato stesso. Si veda il seguente esempio: 
+\begin{lstlisting}[language=rust, style=boxed]
+let mut myvar=15; 
+let mut hard_myvar = Hardened::from(myvar);
+\end{lstlisting}
+Tramite il metodo \texttt{from()} del tratto \texttt{From} infatti vengono popolati i campi \texttt{cp1} e \texttt{cp2} della nuova variabile \texttt{hard\_myvar} nel modo seguente: 
+
+\begin{lstlisting}[language=rust, style=boxed]
+impl<T> From<T> for Hardened<T> where T:Copy{
+    fn from(value: T) -> Self {
+        // Regola 1: duplicazione delle variabili
+        Self{cp1: value, cp2: value}
+    }
+}   
+\end{lstlisting}
+
+\noindent
+\begin{center}
+    \begin{tikzpicture}
+        \node [mybox] (box){%
+            \begin{minipage}{.96\textwidth}    
+                \begin{center}
+                    \large
+                    \textbf{R2}: ogni \textbf{operazione di scrittura} su \texttt{x} deve essere eseguita su entrambe le copie \texttt{cp1} e \texttt{cp2}
+                \end{center}
+            \end{minipage}
+        };
+    \end{tikzpicture}%
+\end{center}
+Come esempio significativo si consideri il frammento di codice dell'operazione di \texttt{assign()}:
+
+\begin{lstlisting}[language=rust, style=boxed]
+pub fn assign(&mut self, other: Hardened<T>)->Result<(), IncoherenceError>{
+    //                  [... ]
+
+    //Regola 2: Ogni scrittura deve essere eseguita su entrambe le copie
+    self.cp1 = other.cp1;
+    self.cp2 = other.cp2;
+    Ok(())
+}
+\end{lstlisting}
+Dopo un controllo di coerenza della variabile da assegnare (paragrafo successivo), si scrive sia su una copia che sull'altra.
+
+\noindent
+\begin{center}
+    \begin{tikzpicture}
+        \node [mybox] (box){%
+            \begin{minipage}{.96\textwidth}    
+                \begin{center}
+                    \large
+                    \textbf{R3}:  dopo ogni \textbf{operazione di lettura} su $x$, deve essere controllata la consistenza delle copie \texttt{cp1} e \texttt{cp2}, nel caso in cui tale controllo fallisca deve essere sollevato un errore.
+                \end{center}
+            \end{minipage}
+        };
+    \end{tikzpicture}%
+\end{center}
+Per chiarire l'implementazione della terza regola, si riporta un frammento differente della funzione usata in precedenza: 
+
+\begin{lstlisting}[language=rust, style=boxed]
+//uso di assign()
+let mut a = Hardened::from(4); 
+let mut b = Hardened::from(2); 
+a.assign(b);  //'a=b'
+
+pub fn assign(&mut self, other: Hardened<T>)->Result<(), IncoherenceError>{
+    //Regola 3: lettura, controllo di coerenza, errori
+    if other.incoherent(){
+        return Err(IncoherenceError::AssignFail)
+    }
+    // [...]
+}
+fn incoherent(&self)->bool{ self.cp1 != self.cp2 }
+\end{lstlisting}
+Usando la funzione \texttt{assign()}, poiché leggo la variabile \texttt{b} è necessario un controllo di consistenza delle due copie, questo è espletato dalla funzione \texttt{incoherent()} che ritorna un booleano. In caso in cui questo test non viene passato, si ritorna un \texttt{Err(IncoherenceError)}.
+
+\subsubsection{Gestione degli errori}
+

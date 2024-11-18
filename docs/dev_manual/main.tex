@@ -3,8 +3,8 @@
 \usepackage{authblk}
 \input{packages}
 
-\title{\textbf{[Manuale di Sviluppo] Realizzazione di un ambiente di Fault Injection
-per applicazione ridondata }}
+\title{\textbf{ Realizzazione di un ambiente di Fault Injection
+per applicazione ridondata [Manuale di Sviluppo]}}
 \author{Carlo Migliaccio}
 \author{Federico Pretini}
 \author{Alessandro Scavone}
@@ -27,13 +27,17 @@ per applicazione ridondata }}
 \tableofcontents
 
 \input{capitoli/Intro}        %Carlo
+\section{Struttura del codice sorgente}
+
+\part{Irrobustimento del codice}
 \input{capitoli/Hardened}     %Carlo
+\input{capitoli/CaseStudies}      %Mattia
+
+\part{Ambiente di fault injection}
 \input{capitoli/FaultEnv}     %Carlo  
 \input{capitoli/FaultListManager} %Carlo
-
 \input{capitoli/Iniettore}        %Alessandro
 \input{capitoli/Analizzatore}     %Federico
-\input{capitoli/CaseStudies}      %Mattia
 
 \newpage
 \printbibliography
