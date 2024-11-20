@@ -144,5 +144,72 @@ fn incoherent(&self)->bool{ self.cp1 != self.cp2 }
 \end{lstlisting}
 Usando la funzione \texttt{assign()}, poiché leggo la variabile \texttt{b} è necessario un controllo di consistenza delle due copie, questo è espletato dalla funzione \texttt{incoherent()} che ritorna un booleano. In caso in cui questo test non viene passato, si ritorna un \texttt{Err(IncoherenceError)}.
 
-\subsubsection{Gestione degli errori}
+\subsection{Gestione degli errori}
+La regola \textbf{R3} richiede che, nel caso il controllo di coerenza fallisca, venga sollevato un errore. Si sono utilizzati principalmente due meccanismi per asserire a questo task:
+\begin{enumerate}
+    \item Propagazione di un errore di tipo \texttt{IncoherenceError} 
+    \item \textbf{Uso della macro \texttt{panic!(...)}}
+\end{enumerate}
+Il motivo per il quale si è avuta la necessità di distinguere questi due casi è legata alle caratteristiche del linguaggio Rust. In particolare, alcuni tratti della libreria standard permettono -- usando la programmazione generica -- di personalizzare sia il tipo dei dati su cui si opera sia il tipo dei valori di ritorno. In altre situazioni, ad esempi nei tratti associati alle \textit{operazioni di confronto}, non è possibile modificare la \textit{firma dei metodi}. Questo è il caso in cui ci si riserva la possibilità di generare un \texttt{panic!(...)} nel caso di anomalia rilevata, lasciando però invariata la firma dei metodi garantendo la correttezza sintattica.
+Di seguito si mostrano due esempio in cui si chiariscono meglio gli aspetti appena introdotti: 
+
+\begin{multicols}{2}
+\noindent
+\textbf{Uso di \texttt{IncoherenceError} }
+\begin{lstlisting}[language=Rust, style=boxed]
+impl Add<usize> for Hardened<usize>{
+  type Output = Result<Hardened<usize>, 
+                    IncoherenceError>;
+  fn add(self, rhs: usize) -> Self::Output {
+    if self.incoherent() {
+        return Err(IncoherenceError::AddFail);
+    }
+    Ok(Self{
+        cp1: self.cp1 + rhs,
+        cp2: self.cp2 + rhs,
+    })
+  }
+}
+\end{lstlisting}
+Si presenta qui l'implementazione del metodo \texttt{add()} del tratto omonimo. La presenza del tipo associato al tratto, permette di non essere vincolati sul tipo di ritorno che quindi è stato personalizzato secondo le nostre esigenze. In particolare poiché l'add come tutte le operazioni di lettura e modifica possono causare errori dovuti all'incoerenza tra le copie interne del dato, si sfrutta l'enumerazione generica \texttt{Result<T,E>} per gestire queste due situazioni. Il tipo \texttt{T} è \texttt{Hardened<T>} mentre il tipo \texttt{E} è quello personalizzato (\texttt{IncoherenceError} descritto in seguito). Un ragionamento analogo vale per tutti i metodi che hanno una struttura simile a quella presentata che abilita l'utilizzo di dati di ritorno personalizzati. 
+
+\newcolumn
+\noindent
+\textbf{Uso di \texttt{panic!(...)}}
+\begin{lstlisting}[language=Rust, style=boxed]
+impl<T> Ord for Hardened<T>{
+    fn cmp(&self, other: &Self) -> Ordering {
+        if other.incoherent(){
+            panic!("Found an incoherence!");
+        }
+        self.cp1.cmp(&other.cp1)
+    }
+}
+\end{lstlisting}
+Un esempio significativo del caso in cui siamo vincolati  sulla scelta del tipo di ritorno viene presentato. In particolare la funzione \texttt{cmp(...)} del tratto \texttt{Ord} per ovvi motivi vincola il tipo di ritorno ad essere l'enumerativo \texttt{Ordering}. Nel caso in cui il dato letto sia "incoerente", viene sollevato un \texttt{panic!(...)}. \\
+\hrule
+\vspace{0.5cm}
+\noindent
+Le due casistiche, come si vedrà, nel \textit{processo di fault injection} vengono gestite in modo diverso, mentre per l'analisi il tipo di informazione associato ai due eventi è analogo.
+
+\end{multicols}
+
+\subsubsection{Il tipo di errore \texttt{IncoherenceError}}
+Al fine di personalizzare la semantica degli errori e di facilitare il processo di analisi dei risultati, si è pensato di implementare un \textbf{tipo di errore personalizzato} denominato \texttt{IncoherenceError}. Il crate \textbf{\texttt{thiserror}} permette di derivare l'implementazione del tratto \texttt{Error} richiesta da altri meccanismi interni al linguaggio quali la propagazione tramite \textit{question mark operator} e la descrivibilità dell'errore stesso. Il tipo introdotto è un enumerativo: 
+
+\begin{lstlisting}[language=Rust, style=boxed]
+#[derive(Error, Debug, Clone)]
+pub enum IncoherenceError{
+    #[error("IncoherenceError::AssignFail: assignment failed")]
+    AssignFail,
+    #[error("IncoherenceError::AddFail: due to incoherence add failed")]
+    AddFail,
+    #[error("IncoherenceError::MulFail: due to incoherence mul failed")]
+    MulFail,
+    #[error("IncoherenceError::Generic: generic incoherence error")]
+    Generic
+}
+\end{lstlisting}
+Questo costituisce il tipo \texttt{E} integrato nella variante \texttt{Err(E)} di \texttt{Result}. Con quest'ultimo dettaglio si ha il quadro completo delle trasformazioni del codice atte ad introdurre ridondanza nei dati con le operazioni associate e la gestione degli errori. \\
+Nella prossima sezione si introducono i casi di studio, questi costituiscono l'applicazione di tutti i concetti che abbiamo visto finora sull'irrobustimento del codice. Inoltre, come presentiamo, non ci sono differenze sostanziali di sintassi tra la versione che utilizza i tipi \texttt{Hardened} e quella che utilizza i tipi standard, in quanto la ridondanza dei dati e le operazioni che questa porta con sè sono tutte \textbf{integrate} nell'implementazione del tipo argomento di discussione del presente paragrafo.
 
