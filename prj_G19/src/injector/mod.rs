@@ -130,7 +130,6 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
                 runner_matrix_multiplication(var, tx_runner, rx_runner)
             }
         }
-
     });
 
 
@@ -141,7 +140,18 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
             println!("Error found - {}", err);
             TestResult {result: Err(err), fault_list_entry}
         },
-        Err(_) => TestResult { result: Err(IncoherenceError::Generic), fault_list_entry }     //println!("runner_selection_sort panicked!")
+        Err(panic) => {
+            let msg = panic_message::panic_message(&panic);
+
+            return match msg {
+                m if m.contains("IndexMut") => TestResult { result: Err(IncoherenceError::IndexMutFail), fault_list_entry },
+                m if m.contains("Index") => TestResult { result: Err(IncoherenceError::IndexFail), fault_list_entry },
+                m if m.contains("PartialOrd") => TestResult { result: Err(IncoherenceError::PartialOrdFail), fault_list_entry },
+                m if m.contains("Ord") => TestResult { result: Err(IncoherenceError::OrdFail), fault_list_entry },
+                m if m.contains("PartialEq") => TestResult { result: Err(IncoherenceError::PartialEqFail), fault_list_entry },
+                _ => TestResult { result: Err(IncoherenceError::Generic), fault_list_entry }
+            }
+        }
     }
 }
 

@@ -325,6 +325,16 @@ pub enum IncoherenceError{
     AddFail,
     #[error("IncoherenceError::MulFail: due to incoherence mul failed")]
     MulFail,
+    #[error("IncoherenceError::IndexMutFail: ")]
+    IndexMutFail,
+    #[error("IncoherenceError::IndexFail: ")]
+    IndexFail,
+    #[error("IncoherenceError::OrdFail: ")]
+    OrdFail,
+    #[error("IncoherenceError::PartialOrdFail: ")]
+    PartialOrdFail,
+    #[error("IncoherenceError::PartialEqFail: ")]
+    PartialEqFail,
     #[error("IncoherenceError::Generic: generic incoherence error")]
     Generic
 }
