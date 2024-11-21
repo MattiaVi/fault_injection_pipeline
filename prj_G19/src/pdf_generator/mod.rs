@@ -48,7 +48,7 @@ pub fn print_pdf(file_path: String, analyzer: Analyzer) {
     let title_style =  style::Style::new().bold().with_font_size(20);
     let title_margins= Margins::trbl(0, 0,0,5);
     let text_style = style::Style::new().with_font_size(10);
-    let text_margins = Margins::trbl(0, 60, 0, 5);
+    let text_margins = Margins::trbl(0, 65, 0, 5);
 
 
     let font_dir = FONT_DIRS
@@ -79,7 +79,7 @@ pub fn print_pdf(file_path: String, analyzer: Analyzer) {
             );
             layout.push(elements::Break::new(1));
         }
-        layout.styled(style::Style::new().with_font_size(10))
+        layout.styled(style::Style::new().with_font_size(12))
     });
     doc.set_page_decorator(decorator);
 
@@ -105,8 +105,9 @@ pub fn print_pdf(file_path: String, analyzer: Analyzer) {
     doc.push(elements::Paragraph::new(
         "Grafico a torta contenente il totale di errori iniettati divisi per categoria",
     ).padded(text_margins).styled(text_style));
-    chart_generator::not_rose_radius_pie_chart(analyzer);
-    //chart_generator::pie_chart(analyzer);
+    // Generazione dei grafici
+    chart_generator::not_rose_radius_pie_chart(analyzer.clone());
+    chart_generator::pie_chart(analyzer);
 
     let image_path1: &'static str = "src/pdf_generator/images/pie_chart1.png";
     let image_path2: &'static str = "src/pdf_generator/images/pie_chart2.png";

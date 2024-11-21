@@ -27,18 +27,42 @@ pub fn pie_chart(anl: Analyzer) {
                     "data": [{}]
                 }},
                 {{
+                    "name": "Ord",
+                    "data": [{}]
+                }},
+                {{
+                    "name": "PartialOrd",
+                    "data": [{}]
+                }},
+                {{
+                    "name": "PartialEq",
+                    "data": [{}]
+                }},
+                {{
                     "name": "Generic",
+                    "data": [{}]
+                }},
+                {{
+                    "name": "Index",
+                    "data": [{}]
+                }},
+                {{
+                    "name": "IndexMut",
                     "data": [{}]
                 }}
             ]
         }}"###,
         anl.total_fault,
-        anl.n_silent_fault,
-        anl.n_assign_fault,
-        anl.n_mul_fault,
-        anl.n_add_fault,
-        anl.n_generic_fault,
-
+        anl.n_silent_fail,
+        anl.n_assign_fail,
+        anl.n_mul_fail,
+        anl.n_add_fail,
+        anl.n_ord_fail,
+        anl.n_partialord_fail,
+        anl.n_partialeq_fail,
+        anl.n_generic_fail,
+        anl.n_index_fail,
+        anl.n_indexmut_fail,
     );
     let pie_chart = PieChart::from_json(&pie_chart_json).unwrap();
     let res = pie_chart.svg().unwrap();
@@ -74,17 +98,42 @@ pub fn not_rose_radius_pie_chart(anl: Analyzer) {
                     "data": [{}]
                 }},
                 {{
+                    "name": "Ord",
+                    "data": [{}]
+                }},
+                {{
+                    "name": "PartialOrd",
+                    "data": [{}]
+                }},
+                {{
+                    "name": "PartialEq",
+                    "data": [{}]
+                }},
+                {{
                     "name": "Generic",
+                    "data": [{}]
+                }},
+                {{
+                    "name": "Index",
+                    "data": [{}]
+                }},
+                {{
+                    "name": "IndexMut",
                     "data": [{}]
                 }}
             ]
         }}"###,
         anl.total_fault,
-        anl.n_silent_fault,
-        anl.n_assign_fault,
-        anl.n_mul_fault,
-        anl.n_add_fault,
-        anl.n_generic_fault
+        anl.n_silent_fail,
+        anl.n_assign_fail,
+        anl.n_mul_fail,
+        anl.n_add_fail,
+        anl.n_ord_fail,
+        anl.n_partialord_fail,
+        anl.n_partialeq_fail,
+        anl.n_generic_fail,
+        anl.n_index_fail,
+        anl.n_indexmut_fail,
     );
     let pie_chart = PieChart::from_json(&pie_chart_json).unwrap();
     let res = pie_chart.svg().unwrap();
