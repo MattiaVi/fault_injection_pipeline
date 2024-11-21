@@ -150,7 +150,7 @@ impl<T> PartialEq for Hardened<T>
 where T:PartialEq+Eq+Debug+Copy+Clone{
     fn eq(&self, other: &Self) -> bool {
         if  other.incoherent(){
-            panic!("Found an incoherence!")
+            panic!("PartialEq::eq")
         }
         self.cp1.eq(&other.cp1)
     }
@@ -163,8 +163,7 @@ impl<T> PartialOrd for Hardened<T>
 where T:PartialEq+PartialOrd+Eq+Debug+Copy+Clone{
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         if other.incoherent(){
-            //TODO: Aggiungere conteggio
-            panic!("Found an incoherence!")
+            panic!("PartialOrd::partial_cmp")
         }
         self.cp1.partial_cmp(&other.cp1)
     }
@@ -174,7 +173,7 @@ impl<T> Ord for Hardened<T>
 where T:PartialEq+PartialOrd+Ord+Eq+Debug+Copy+Clone{
     fn cmp(&self, other: &Self) -> Ordering {
         if other.incoherent(){
-            panic!("Found an incoherence!");
+            panic!("Ord::cmp");
         }
         self.cp1.cmp(&other.cp1)
     }
@@ -186,7 +185,7 @@ impl<T> Index<Hardened<usize>> for Vec<Hardened<T>>{
     ///Estrae un riferimento immutabile
     fn index(&self, index: Hardened<usize>) -> &Self::Output {
         if index.incoherent(){
-            panic!("Found an incoherence!");
+            panic!("Index<Hardened<usize>>::index");
         }
         self.index(index.cp1)
     }
@@ -195,7 +194,7 @@ impl<T> Index<Hardened<usize>> for Vec<Hardened<T>>{
 impl<T> IndexMut<Hardened<usize>> for Vec<Hardened<T>>{
     fn index_mut(&mut self, index: Hardened<usize>) -> &mut Self::Output {
         if index.incoherent(){
-            panic!("Found an incoherence");
+            panic!("IndexMut<Hardened<usize>>::index_mut");
         }
         self.index_mut(index.cp1)
     }
@@ -222,13 +221,12 @@ impl<T> IndexMut<&str> for Hardened<T>{
     }
 }
 
-
 //Per poter stampare il tipo Hardened<T> con la macro println!() e il
 // modificatore {:?}
 impl<T> Debug for Hardened<T> where T:Debug+PartialEq+Eq+Copy+Clone{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if self.incoherent(){
-            panic!("Found an incoherence");
+            panic!("Debug::fmt");
         }
         self.cp1.fmt(f)
     }
@@ -441,6 +439,7 @@ pub fn run_for_count_matrix_mul(matrici: Data<i32>)->usize{
 
 #[cfg(test)]
 mod tests{
+    use std::panic::catch_unwind;
     use crate::Hardened;
     use crate::hardened::selection_sort;
     use crate::IncoherenceError;
@@ -640,6 +639,16 @@ mod tests{
 
  */
         }
+
+        #[test]
+        fn test_get_message(){
+            let payload = catch_unwind(|| {
+                panic!("funge"); }).unwrap_err();
+
+            let msg = panic_message::panic_message(&payload);
+            assert_eq!("funge", msg);
+        }
+
     }
 //}
 

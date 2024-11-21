@@ -46,7 +46,7 @@ impl<T> Hardened<T>{
 
 \begin{description}
     \item[\texttt{fn incoherent(\&self)->bool}] Funzione privata per rilevare l'incoerenza tra le due copie della variabile irrobustita: in particolare viene utilizzata dai metodi di più alto livello che lavorano con i dati elementari.
-    \item[\texttt{pub fn assign(\&mut self, other: Hardened<T>)->Result<(), IncoherenceError>;}] Asserisce all'\textbf{asseegnazione} tra due variabili di tipo \texttt{Hardened<T>}. Questa è l'unica operazione che non si può ridefinire in Rust tramite l'implementazione del tratto opportuno, in quanto andrebbe ridefinita l'intera semantica legata al \textbf{movimento e possesso}.
+    \item[\texttt{pub fn assign(\&mut self, other: Hardened<T>)->Result<(), IncoherenceError>;}]\quad \newline Asserisce all'\textbf{assegnazione} tra due variabili di tipo \texttt{Hardened<T>}. Questa è l'unica operazione che non si può ridefinire in Rust tramite l'implementazione del tratto opportuno, in quanto andrebbe ridefinita l'intera semantica legata al \textbf{movimento e possesso}.
     \item[\texttt{ pub fn from\_vec(vet: Vec<T>)->Vec<Hardened<T>>;} ] Per estrarre collezioni di dati irrobustiti da collezioni di dati elementari. Un ruolo simile è svolto da \texttt{pub fn from\_mat(mat: Vec<Vec<T>>) -> Vec<Vec<Hardened<T>>>;} Queste funzioni sono indispensabili sia per l'implementazione che per l'analisi dei risultati dei casi di studio.
     \item[\texttt{pub fn inner(\&self)->Result<T, IncoherenceError>;}] esegue una sorta di \textit{unwrap} del dato irrobustito, cioè dato un \texttt{Hardened<T>} restituisce il dato \texttt{T} incapsulato a sua volta in un \texttt{Result} in quanto le copie memorizzate possono essere incoerenti (vedi paragrafo dopo).
 \end{description}
@@ -151,7 +151,8 @@ La regola \textbf{R3} richiede che, nel caso il controllo di coerenza fallisca, 
     \item \textbf{Uso della macro \texttt{panic!(...)}}
 \end{enumerate}
 Il motivo per il quale si è avuta la necessità di distinguere questi due casi è legata alle caratteristiche del linguaggio Rust. In particolare, alcuni tratti della libreria standard permettono -- usando la programmazione generica -- di personalizzare sia il tipo dei dati su cui si opera sia il tipo dei valori di ritorno. In altre situazioni, ad esempi nei tratti associati alle \textit{operazioni di confronto}, non è possibile modificare la \textit{firma dei metodi}. Questo è il caso in cui ci si riserva la possibilità di generare un \texttt{panic!(...)} nel caso di anomalia rilevata, lasciando però invariata la firma dei metodi garantendo la correttezza sintattica.
-Di seguito si mostrano due esempio in cui si chiariscono meglio gli aspetti appena introdotti: 
+Di seguito si mostrano due esempio in cui si chiariscono meglio gli aspetti appena introdotti:
+\newpage 
 
 \begin{multicols}{2}
 \noindent
@@ -180,13 +181,13 @@ Si presenta qui l'implementazione del metodo \texttt{add()} del tratto omonimo. 
 impl<T> Ord for Hardened<T>{
     fn cmp(&self, other: &Self) -> Ordering {
         if other.incoherent(){
-            panic!("Found an incoherence!");
+            panic!("Ord::cmp");
         }
         self.cp1.cmp(&other.cp1)
     }
 }
 \end{lstlisting}
-Un esempio significativo del caso in cui siamo vincolati  sulla scelta del tipo di ritorno viene presentato. In particolare la funzione \texttt{cmp(...)} del tratto \texttt{Ord} per ovvi motivi vincola il tipo di ritorno ad essere l'enumerativo \texttt{Ordering}. Nel caso in cui il dato letto sia "incoerente", viene sollevato un \texttt{panic!(...)}. \\
+Un esempio significativo del caso in cui siamo vincolati  sulla scelta del tipo di ritorno viene presentato. In particolare la funzione \texttt{cmp(...)} del tratto \texttt{Ord} per ovvi motivi vincola il tipo di ritorno ad essere l'enumerativo \texttt{Ordering}. Nel caso in cui il dato letto sia "incoerente", viene sollevato un \texttt{panic!(...)}. Il messaggio è di cruciale importanza per l'invio dei risultati dell'iniettore verso l'analizzatore. \\
 \hrule
 \vspace{0.5cm}
 \noindent

@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{lipsum}
 \usepackage{authblk}
+\usepackage{dirtree}
 \input{packages}
 
 \title{\textbf{ Realizzazione di un ambiente di Fault Injection
@@ -12,6 +13,9 @@ per applicazione ridondata [Manuale di Sviluppo]}}
 \affil[1]{\small{Laurea Magistrale in Ingegneria Informatica, Politecnico di Torino}}
 
 \date{Gennaio 2025}
+
+\pagestyle{headings}
+
 \begin{document}
 
 \counterwithin{figure}{section}
@@ -19,6 +23,7 @@ per applicazione ridondata [Manuale di Sviluppo]}}
 \renewcommand{\labelenumii}{\arabic{enumi}.\arabic{enumii}}
 
 \maketitle
+\thispagestyle{empty}
 \vspace{-0.8cm}
 %Da scrivere alla fine
 \begin{abstract}
@@ -27,20 +32,20 @@ per applicazione ridondata [Manuale di Sviluppo]}}
 \tableofcontents
 
 \input{capitoli/Intro}        %Carlo
-\section{Struttura del codice sorgente}
-
 \part{Irrobustimento del codice}
 \input{capitoli/Hardened}     %Carlo
 \input{capitoli/CaseStudies}      %Mattia
 
+\newpage
 \part{Ambiente di fault injection}
 \input{capitoli/FaultEnv}     %Carlo  
 \input{capitoli/FaultListManager} %Carlo
 \input{capitoli/Iniettore}        %Alessandro
 \input{capitoli/Analizzatore}     %Federico
+\input{capitoli/Strutturacodice.tex}
 
 \newpage
-\printbibliography
+\printbibliography[title=Riferimenti]
 
 
 \end{document}

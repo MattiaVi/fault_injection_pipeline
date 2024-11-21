@@ -1,0 +1,26 @@
+\section{Struttura del codice sorgente}\label{sec:Struttura_Codice}
+Al fine di fornire un codice ben organizzato, data la media dimensione in termini di righe di codice del software sviluppato, si è deciso dal principio di strutturarlo in \textbf{moduli} e \textbf{sottomoduli}. Il seguente schema ne mostra l'organizzazione.\\
+
+\large{
+    \dirtree{%
+    .1 src/.
+    .2 hardened \ldots\ldots\ldots\ldots\ldots\ldots{} \begin{minipage}[t]{10cm}
+                            Definizione e implementazione del tipo \texttt{Hardened<T>}; definizione del tipo enumerativo \texttt{IncoherenceErorr}\\
+                          \end{minipage} . 
+    .2 fault\_list\_manager \ldots\ldots\ldots{} \begin{minipage}[t] {10 cm}
+        Generazione della fault list\\
+    \end{minipage}.
+    .3 static\_analysis \ldots\ldots\ldots{} \begin{minipage}[t]{10cm}
+          Analisi statica automatica del codice\\
+    \end{minipage}.
+    .2 injector \ldots\ldots\ldots\ldots\ldots\ldots{} \begin{minipage}[t]{10cm}
+        Iniettore dei fault\\
+    \end{minipage}.
+    .3 algorithms \ldots\ldots\ldots\ldots\quad{} \begin{minipage}[t]{10cm}
+        Adattamento del codice dei tre casi di studio alla fault injection software\\
+    \end{minipage}. 
+    .2 analizer \ldots\ldots\ldots\ldots\ldots\ldots{} \begin{minipage}[t]{10cm}
+        Calcoli di aggregati e statistiche, analisi dei risultati, generazione di report in pdf
+    \end{minipage}.
+}
+}
