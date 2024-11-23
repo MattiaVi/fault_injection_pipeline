@@ -1,11 +1,15 @@
 \documentclass{article}
 \usepackage{lipsum}
 \usepackage{authblk}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{dirtree}
+\usepackage{pifont}
 \input{packages}
 
 \title{\textbf{ Realizzazione di un ambiente di Fault Injection
-per applicazione ridondata [Manuale di Sviluppo]}}
+per applicazione ridondata
+[Manuale di Sviluppo]}}
 \author{Carlo Migliaccio}
 \author{Federico Pretini}
 \author{Alessandro Scavone}
@@ -36,7 +40,6 @@ per applicazione ridondata [Manuale di Sviluppo]}}
 \include{capitoli/Hardened}     %Carlo
 \include{capitoli/CaseStudies}      %Mattia
 
-\newpage
 \part{Ambiente di fault injection}
 \include{capitoli/FaultEnv}     %Carlo  
 \include{capitoli/FaultListManager} %Carlo

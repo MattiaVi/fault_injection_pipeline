@@ -1,6 +1,6 @@
 \section{Struttura del codice sorgente}\label{sec:Struttura_Codice}
 Al fine di fornire un codice ben organizzato, data la media dimensione in termini di righe di codice del software sviluppato, si è deciso dal principio di strutturarlo in \textbf{moduli} e \textbf{sottomoduli}. Il seguente schema ne mostra l'organizzazione.\\
-
+{
 \large{
     \dirtree{%
     .1 src/.
@@ -24,3 +24,31 @@ Al fine di fornire un codice ben organizzato, data la media dimensione in termin
     \end{minipage}.
 }
 }
+}
+
+\vspace{0.5em}
+\noindent
+Per ogni modulo, sono stati scritti dei \textbf{test d'unità} conformi al \textbf{paradigma AAA} (Arrange, Act, Assert), questo al fine di verificare che tutte le funzioni implementate dessero i risultati desiderati. Al fine di essere quanto più allineati con le convenzioni adottate dalla comunità di sviluppatori Rust, ognuno dei moduli ha un sottomodulo \texttt{tests} definito come segue: 
+
+\begin{lstlisting}[language=rust, style=boxed]
+#[cfg(test)]
+mod tests{
+    #[test]
+    fn test_add_ok(){
+        //Arrange
+        let a = Hardened::from(3);
+        let b = Hardened::from(2);
+        //Act
+        let c = (a+b);
+        //Assert
+        assert_eq!(c.is_ok(), true);
+        assert_eq!(c.unwrap().inner().unwrap(), 5);
+    }
+
+    #[test]
+    fn test_other(){
+        unimplemented!()
+    }
+}
+\end{lstlisting}
+Dove \texttt{\#[cfg(test)]} permette di eseguire tutti i test relativi ad un modulo quando viene lanciato da terminale il comando \texttt{cargo test}.

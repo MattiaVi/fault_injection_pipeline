@@ -152,7 +152,7 @@ La regola \textbf{R3} richiede che, nel caso il controllo di coerenza fallisca, 
 \end{enumerate}
 Il motivo per il quale si è avuta la necessità di distinguere questi due casi è legata alle caratteristiche del linguaggio Rust. In particolare, alcuni tratti della libreria standard permettono -- usando la programmazione generica -- di personalizzare sia il tipo dei dati su cui si opera sia il tipo dei valori di ritorno. In altre situazioni, ad esempi nei tratti associati alle \textit{operazioni di confronto}, non è possibile modificare la \textit{firma dei metodi}. Questo è il caso in cui ci si riserva la possibilità di generare un \texttt{panic!(...)} nel caso di anomalia rilevata, lasciando però invariata la firma dei metodi garantendo la correttezza sintattica.
 Di seguito si mostrano due esempio in cui si chiariscono meglio gli aspetti appena introdotti:
-\newpage 
+ 
 
 \begin{multicols}{2}
 \noindent

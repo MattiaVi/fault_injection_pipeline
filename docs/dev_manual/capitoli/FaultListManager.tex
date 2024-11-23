@@ -1,9 +1,193 @@
 \newpage
 \section{Data source}
-\subsection{Analisi statica automatica del codice}
+In questa sezione sono descritte le operazioni che precedono la generazione della fault list e l'init dello stage della pipeline preposto a generare le fault entry. Tutto il lavoro viene svolto essenzialmente da un sottomodulo di \texttt{mod fault\_list\_manager} denominato \texttt{mod static\_analysis}.
+
+\subsection{Sottomodulo \texttt{mod static\_analysis}: analisi statica automatica del codice}
+Come abbiamo chiarito dall'inizio, il nostro obiettivo -- dopo l'irrobustimento dei dati tramite ridondanza -- è quello di eseguire degli \textit{esperimenti di fault injection} dove i target dei fault sono le variabili coinvolte negli algoritmi scelti come casi di studio. Tuttavia affinché si possa generare una fault list servono delle informazioni che descrivono il codice del caso di studio stesso. Nello specifico serve poter rispondere alle seguenti domande: 
+\begin{itemize}
+    \itemsep-0.2em
+    \item[\ding{52}] \textbf{Quante istruzioni} ha l'algoritmo?
+    \item[\ding{52}] \textbf{Quante e quali variabili}?
+    \item[\ding{52}] Per ogni variabile, \textbf{qual è la sua etichetta}? La sua \textbf{dimensione}? 
+    \item[\ding{52}] Qual è la prima istruzione in cui compare quella variabile? 
+\end{itemize}
+
+\noindent
+Il sottomodulo \texttt{static\_anlysis} è preposto a rispondere a tutte queste domande. Il codice sorgente viene analizzato dalla \textbf{libreria di parsing} \texttt{syn} (vedi \cite{syn}); questa permette di trasformare una stringa contenente il codice stesso in un \textbf{syntax tree} da cui, utilizzando diversi metodi si possono ricavare le informazioni necessarie. In particolare, al modulo appena citato, vengono affidate in ordine le seguenti operazioni, dato il singolo caso di studio: 
+\begin{enumerate}
+    \itemsep-0.3em
+    \item Lettura da un file di testo la sua implementazione in linguaggio Rust (sono tutte contenute in \newline \texttt{file\_fault\_list/<casodistudio>}), dove 
+    \begin{center}
+        \texttt{<casodistudio>}$\in$ \texttt{\{selection\_sort, bubble\_sort, matrix\_multiplication\}}
+    \end{center}
+    \item Trasformazione della stringa contenente il codice in un \textbf{albero di sintassi}; 
+    \item Esecuzione di una visita in profondità del  \textbf{syntax tree} ottenuto al fine di ricavare le informazioni richieste; queste poi vengono salvate in una struttura dati di tipo \texttt{ResultAnalysis} di cui riportiamo la definzione dopo;
+    \item La struttura dati ottenuta viene infine \textbf{serializzata} in un file \texttt{json} usando il crate \texttt{serde} (si veda \cite{noauthor_serde_nodate} per la documentazione ufficiale) contenuto nella directory corrispondente al caso di studio sotto \texttt{file\_fault\_list}. Così facendo, l'analisi statica del codice può essere fatta indipendentemente dalla generazione della fault list e dall'esperimento di fault injection.
+\end{enumerate}
+
+\begin{lstlisting}[language=rust, style=boxed]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Variable {
+    pub name: String,        //nome 
+    pub ty: String,          //tipo       
+    pub size: String,        //dimensione
+    pub start: usize         //tempo di dichiarazione
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ResultAnalysis{
+    pub num_inst: usize,              
+    pub vars: Vec<Variable>         
+}
+\end{lstlisting}
+
+\noindent
+Il tipo \texttt{Variable} ha la funzione di descrivere tutte le informazioni legate alla singola variabile. Si fa notare che per restituire una dimensione parametrizzata di una certa variabile (vettori/matrici), il campo \texttt{size} è di tipo \texttt{String}. Per completezza si riporta di seguito un frammento del file risultato dell'analisi statica.
+
+\begin{lstlisting}[language=rust, style=boxed]
+"num_inst": 19,
+"vars": [{  "name": "a","ty": "Vec < Vec < i32 > >",
+            "size": "4*nR*nC","start": 1},
+         {  "name": "b","ty": "Vec < Vec < i32 > >",
+            "size": "4*nR*nC","start": 1},
+        {   "name": "size", "ty": "usize","size": "4",
+            "start": 1 }, ...]
+\end{lstlisting}
+
+\noindent
+
+\subsubsection{Metodi e descrizione}
+Si mostra di seguito la gerarchia delle funzioni presenti in \texttt{mod static\_analysis}, si riporta poi una tabella in cui per ognuna delle funzioni si fornisce una \textit{breve descrizione}.\\
+{
+\large{
+    \dirtree{%
+    .1 fn generate\_analysis\_file().
+    .2 fn analyze\_function().
+    .3 fn count\_statements().
+    .4 fn infer\_type\_from\_expr().
+    .3 fn extract\_variables().
+    .4 fn type\_size().
+    }
+}
+}
+
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{p{4.5cm} p{11cm}}
+        \toprule[1.5px]
+        \textbf{Funzione}&\textbf{Descrizione}\\
+        \midrule
+        \texttt{fn generate\_analysis\_file()}&{
+            Funzione wrapper che legge tutto il contenuto del file e lo memorizza in una stringa. Questa dopo essere stata trasformata in un formato compatibile con il parser, diventa l'input della funzione successiva. Per generalizzare quanto più possibile vengono cercate all'interno del codice le funzioni (\texttt{Item::Fn}). Tuttavia all'interno di ogni file c'è il codice di una sola funzione.
+        }\\
+        \midrule 
+        \texttt{fn analyze\_function()}&{
+            Chiama le funzioni \texttt{count\_statements()} e \texttt{extract\_variables()} per il conteggio delle istruzioni ed estrazione delle informazioni di variabili associate ai parametri formali della funzione o al corpo della funzione stessa. 
+        } \\
+        \midrule 
+        \texttt{fn count\_statements()}& {
+            [Funzione ricorsiva] Conta le istruzioni associati agli statement del \textit{blocco di codice} passato come parametro. Ogni statement può essere di tipo \texttt{Stmt::Local} o \texttt{Stmt::Expr}. Nel primo caso si tratta di un istruzione semplice di cui si possono già estrarre le informazioni sulle variabili usando le funzioni che seguono in questa descrizione. Nel secondo caso si tratta di un blocco di codice composto (\texttt{Expr::If, Expr::While, Expr::ForLoop}) in questo caso viene chiamata \textbf{in modo ricorsivo} la stessa \texttt{fn count\_statements()} e viene passato come input il blocco 'figlio' di questo tipo di espressione.
+        } \\
+        \midrule 
+        \texttt{fn infer\_type\_from\_expr()}&{
+            [Funzione ricorsiva] Funzione utilizzata per inferire il tipo di una certa espressione. Questa a sua volta può essere di tipo \texttt{Expr::Lit} (literal) o \texttt{Expr::Assign} (operazione di assegnazione), nel secondo caso viene chiamata ricorsivamente la stessa funzione per inferire il tipo del \textit{Right Hand Side}(RHS). L'output di questa funzione costituisce l'input della funzione \texttt{type\_size()}.
+        } \\
+        \midrule 
+        \texttt{fn extract\_variables()}&{
+            Si prende cura di analizzare le informazioni corrispondenti ai \textbf{parametri della funzione}.
+        } \\
+        \midrule 
+        \texttt{fn type\_size()}&{
+            Effettua il binding tipo-dimensione. Utilizzata da \texttt{count\_statement()} per popolare il campo \texttt{size} della struttura di tipo \texttt{ResultAnalysis}.
+        } \\
+        \bottomrule[1.5px]
+    \end{tabular}
+    \caption{\texttt{mod static\_analysis()}}
+\end{table}
+
+\subsubsection{Un piccolo CAVEAT per la scrittura del codice}
+Poiché il modulo di analisi statica prende in pasto un file con il codice dell'algoritmo (non irrobustito), questo deve essere scritto prestando attenzione ad un piccolo particolare che se non rispettato potrebbe far fallire l'inferenza del tipo. Più nello specifico, nella dichiarazione di una variabile, se questa viene ricavata tramite assegnazione di un'altra variabile già esistente, bisogna utilizzare un'\textbf{annotazione esplicita di tipo}. Si mostra di seguito un esempio: 
+\begin{lstlisting}[language=rust, style=boxed]
+let mut a=13; 
+let mut b=15; 
+let mut:i32 c=a+c; 
+\end{lstlisting}
+Mentre nei primi due casi il tipo viene inferito direttamente\footnote{
+    Nella funzione \texttt{infer\_type\_from\_expr()} mi accorgo che ho un \texttt{Expr::Assign}, quindi chiamo ricorsivamente la stessa funzione che a questo punto trova la \texttt{Expr::Literal} associata all'intero e viene ritornato il tipo corrispondente.
+}, nella terza istruzione bisogna aggiungerlo esplicitamente perché questo dipende da un'altra variabile. Questo dettaglio non è stato implementato per non aggiungere complessità ad un codice già non banale.
+
 
 \section{Fault List Manager}\label{sec:FLM}
+Dopo un percorso abbastanza articolato, abbiamo ottenuto \textit{in modo automatico} le informazioni sulle variabili facendo passare il codice sorgente del caso di studio attraverso i metodi dell'analisi statica. \\
+Il \textit{glossario} che viene dall'output di questa fase è di cruciale importanza per la generazione della fault list descritta in questo paragrafo. \\
+Prima di entrare in merito della discussione è doveroso aggiungere un dettaglio non trascurabile. Gli algoritmi (ordinamento/moltiplicazione di matrici) possono lavorare su \textbf{dati diversi} ad ogni esecuzione. Per cui per sapere effettivamente il numero di istruzioni che quel set di dati genera bisognerebbe eseguire quel codice! A questo scopo sono state implementate delle funzioni denominate \texttt{run\_for\_count\_<casodistudio>()} a cui è associata  un'esecuzione fittizia del codice in analisi. Il loro output è un intero associato al numero di istruzioni che un certo algoritmo applicato ad un certo set di dati (matrice o vettore) produce.\\
+
+\noindent
+Abbiamo accennato nell'introduzione che il modello di guasto che vogliamo adottare è quello del \textbf{single bit-flip}. Durante la vita dell'applicativo si possono verificare un certo numero di fault. Per simularne l'occorrenza ed eseguire gli esperimenti sul codice modificato, viene generata randomicamente una lista di guasti.
+
+\subsection{Fault list entry}
+La struttura dati preposta a contenere le informazioni sul singolo fault è la seguente: 
+\begin{lstlisting}[language=rust, style=boxed]
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct FaultListEntry{
+    pub var: String,
+    pub time: usize,
+    pub flipped_bit: usize,
+}
+\end{lstlisting}
+dove \texttt{var} è il \textbf{nome della variabile}, \texttt{time} è il \textbf{tempo di iniezione}, mentre \texttt{flipped\_bit} è il bit della variabile che è stato modificato dal guasto. Sul tipo \texttt{FaultListEntry} sono derivati, tra gli altri, i tratti \texttt{Serialize} e \texttt{Deserialize} utili per il \textit{marshalling} della fault list su file.
 
 \subsection{Generazione della fault list}
+L'algoritmo di generazione della  fault list è riportato di seguito.
+
+\begin{algorithm}
+    \caption{Algoritmo di \textit{Generazione della fault list}}
+    \begin{algorithmic}
+        \For {\texttt{i} in [0, NUM\_FAULT]}
+            \State $\underline{var} \gets$ rand(1,NUM\_VAR)\Comment{Scelgo una variabile tra quelle disponibili}
+            \If {var.type == 'matrix'}
+                \State $r \gets$ rand(0,var.nR) \Comment{Seleziono la riga}
+                \State $c \gets$ rand(0,var.nC) \Comment{Seleziono la colonna}
+                \State $\underline{var} \gets$ mat[r][c]
+                \State $\underline{flipped\_bit} \gets$ rand(0, var.size-1) \Comment{Scelgo il bit da flippare}
+                \State $\underline{time} \gets$ rand(var.start, N\_INST)\Comment{Scelgo il tempo di iniezione}
+            \ElsIf {var.type == 'vector'}
+                \State $index \gets$ rand(0, var.len)
+                \State $var \gets$ vec[index]
+                \State $\underline{flipped\_bit} \gets$ rand(0, var.size-1) \Comment{Scelgo il bit da flippare}
+                \State $\underline{time} \gets$  rand(var.start, N\_INST) \Comment{Scelgo il tempo di iniezione}
+            \Else
+                \State $\underline{flipped\_bit} \gets$ rand(0, var.size-1) \Comment{Scelgo il bit da flippare}
+                \State $\underline{time} \gets$  rand(var.start, N\_INST) \Comment{Scelgo il tempo di iniezione}
+            \EndIf \\
+            FaultList.insert($var.name,\ time, \  flipped\_bit$) \Comment{Creo la fault entry e la inserisco nella fault list}
+        \EndFor
+    \end{algorithmic}
+\end{algorithm}
+Alla fine della sua creazione, la fault list viene serializzata in formato \texttt{json} alla stregua di quanto fatto per il glossario di analisi statica. La costante NUM\_FAULT se non settata dall'utente da linea di comando viene impostata a 5000, mentre la costante N\_INST è l'output delle funzioni \texttt{run\_for\_count()}. Il tempo di iniezione viene scelto in modo compatibile, nel senso che non posso iniettare in una variabile se prima questa non è stata dichiarata, ecco perché si è scelto di ricavare durante l'analisi dell'albero di sintassi anche l'informazione memorizzata in \texttt{Variable::start}. Riportiamo uno stralcio di fault list nello snipppet che segue:
+
+\begin{lstlisting}[language=rust, style=boxed]
+    {   "var": "swapped",   "time": 218,    "flipped_bit": 6    },
+    {   "var": "j",         "time": 15,     "flipped_bit":      },
+    {   "var": "swapped",   "time": 102,    "flipped_bit": 4    },
+    {   "var": "n",         "time": 20,     "flipped_bit": 24   },
+\end{lstlisting}
 
 \subsection{Stage pipeline}
+Una volta creata, la fault list può essere utilizzata e possiamo far partire l'\textbf{esperimento di fault injection}. Lo stage della pipeline associata al \textsf{Fault list manager} è espletato dalla seguente funzione: 
+
+\begin{lstlisting}[language=rust, style=boxed]
+pub fn fault_manager(tx_chan_fm_inj: Sender<FaultListEntry>, fault_list:String){
+    let flist_string = fs::read_to_string(fault_list).unwrap();
+    let flist:Vec<FaultListEntry>=serde_json::from_str(&flist_string.trim()).unwrap();
+    flist.into_iter().for_each(|el|tx_chan_fm_inj.send(el).unwrap());
+    drop(tx_chan_fm_inj);
+}
+\end{lstlisting}
+Gli input di questo stage sono il path del file in cui è contenuta la fault list (data source) e l'estremità del canale (pipe) verso l'iniettore. Sono eseguite in ordine le seguenti operazioni: 
+\begin{enumerate}
+    \itemsep-0.3em
+    \item Lettura del file di testo in una stringa (\texttt{flist\_string});  
+    \item Deserializzazione della stringa in una collezione \texttt{Vec<FaultListEntry>} usando la funzione\newline \texttt{serde\_json::from\_str()}
+    \item La collezione viene trasformata in un \textbf{iteratore} di \texttt{FaultListEntry}. Ogni elemento estratto da questo iteratore tramite il metodo \texttt{for\_each()} viene mandato nel canale verso l'iniettore che lo utilizzerà in modo opportuno.
+\end{enumerate}

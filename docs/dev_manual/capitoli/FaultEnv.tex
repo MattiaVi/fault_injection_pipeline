@@ -38,9 +38,9 @@ Ogni componente della pipeline mostrata trova implementazione in Rust in opportu
     Questi in letteratura sono noti come \textit{filtri attivi} in quanto rispettano il seguente principio: "[...] the filter is active in a loop, pulling its input from
     and pushing its output down the pipeline."(cfr. \cite{schmidt2013pattern})
 } utilizza come struttura di \textbf{programmazione concorrente} i thread.
-In conclusione di questa sezione forniamo: (i) lo snippet di codice che riporta la \textbf{funzione di setup} della pipeline; una \textbf{tabella riassuntiva} (Tabella \ref{setup}) di tutti gli elementi della pipeline  descrizione, ruolo e sezione di codice a cui afferisce.
+In conclusione di questa sezione forniamo: (i) lo snippet di codice che riporta la \textbf{funzione di setup} della pipeline; una \textbf{tabella riassuntiva} (Tabella \ref{setup}) di tutti gli elementi della pipeline  descrizione, ruolo e sezione di codice a cui afferisce.\newpage
 
-\begin{lstlisting}[language=rust, style=boxed]
+\begin{lstlisting}[language=rust, style=boxed][h]
 pub fn fault_injection_env(fault_list: String,   //Data Source: Fault List
                         target: String,          //Data Source: Target program
                         file_path: String,       //Data Sink: Report
@@ -57,6 +57,7 @@ pub fn fault_injection_env(fault_list: String,   //Data Source: Fault List
 
 \begin{table}[h] 
     \centering
+    \small
     \begin{tabular}{p{4cm} p{2.5cm} p{8.5cm}}
         \toprule[1.5px]
         \textbf{\large Componente}&\textbf{\large Ruolo}&\textbf{\large Descrizione}\\
