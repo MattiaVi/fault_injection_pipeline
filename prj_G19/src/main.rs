@@ -8,8 +8,10 @@ mod pdf_generator;
 use hardened::{Hardened, IncoherenceError};
 use fault_list_manager::{FaultListEntry, static_analysis};
 use std::{fs, io, panic};
-use std::io::{Read, Write};
-use syn::{File, Item};
+use std::io::{BufRead, Error, Read, Write};
+use std::path::Path;
+use std::fs::File;
+use syn::{Item};
 use syn::visit::Visit;
 use crate::fault_env::{Data, fault_injection_env};
 use clap::Parser;
@@ -35,6 +37,134 @@ fn pause() {
     let _ = stdin.read(&mut [0u8]).unwrap();
 }
 
+pub struct InputData {
+    pub vector: Vec<i32>,
+    pub matrix_size: usize,
+    pub matrix1: Vec<Vec<i32>>,
+    pub matrix2: Vec<Vec<i32>>,
+}
+pub fn load_data_from_file(file_path: &str) -> Result<InputData, Error> {
+    let path = Path::new(file_path);
+    let file = File::open(path)?;
+    let mut lines = io::BufReader::new(file).lines();
+
+    // Saltiamo il testo iniziale fino a quando non incontriamo una linea che inizia con un numero
+    let mut current_line = String::new();
+    while let Some(Ok(line)) = lines.next() {
+        let trimmed_line = line.trim();
+        if !trimmed_line.is_empty() && trimmed_line.chars().next().map(|c| c.is_ascii_digit()).unwrap_or(false) {
+            current_line = trimmed_line.to_string();
+            break;
+        }
+    }
+    // Leggiamo la dimensione del vettore dalla riga corrente
+    let vector_size: usize = current_line
+        .parse::<usize>()
+        .map_err(|_| Error::new(io::ErrorKind::InvalidData, "Formato invalido per la dimensione del vettore"))?;
+
+
+    // Trova la riga del vettore, saltando righe vuote
+    let mut vector_line = String::new();
+    while let Some(Ok(line)) = lines.next() {
+        if !line.trim().is_empty() {
+            vector_line = line;
+            break;
+        }
+    }
+    
+    let vector: Vec<i32> = vector_line
+        .trim()
+        .split(',') 
+        .map(|n| n.trim()) 
+        .map(|n| n.parse::<i32>())
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| Error::new(io::ErrorKind::InvalidData, "Formato invalido nel vettore"))?;
+
+    // Verifica che la dimensione del vettore corrisponda a quella dichiarata
+    if vector.len() != vector_size {
+        return Err(Error::new(io::ErrorKind::InvalidData, format!("La dimensione del vettore ({}) non corrisponde ai dati forniti ({})", vector_size,vector.len())));
+    }
+
+    // Trova la dimensione della matrice, saltando righe vuote
+    let mut matrix_size_line = String::new();
+    while let Some(Ok(line)) = lines.next() {
+        if !line.trim().is_empty() {
+            matrix_size_line = line;
+            break;
+        }
+    }
+
+    // Leggi la dimensione delle matrici
+    let matrix_size: usize = matrix_size_line
+        .trim()
+        .parse::<usize>()
+        .map_err(|_| Error::new(io::ErrorKind::InvalidData, "Formato invalido per la dimensione della matrice"))?;
+
+
+    // Leggi la prima matrice
+    let mut matrix1 = Vec::new();
+    for _ in 0..matrix_size {
+        let row_line = loop {
+            if let Some(Ok(line)) = lines.next() {
+                if !line.trim().is_empty() {
+                    break line;
+                }
+            }
+        };
+
+        let row: Vec<i32> = row_line
+            .trim()
+            .split_whitespace()
+            .map(|n| n.parse::<i32>())
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Formato invalido nelle righe della matrice 1"))?;
+
+        if row.len() != matrix_size {
+            return Err(Error::new(io::ErrorKind::InvalidData, "La dimensione della matrice 1 non corrisponde ai dati forniti"));
+        }
+        matrix1.push(row);
+    }
+
+    // Leggi la seconda matrice
+    let mut matrix2 = Vec::new();
+    for _ in 0..matrix_size {
+        let row_line = loop {
+            if let Some(Ok(line)) = lines.next() {
+                if !line.trim().is_empty() {
+                    break line;
+                }
+            } else {
+                return Err(Error::new(
+                    io::ErrorKind::InvalidData,
+                    "Righe della matrice 2 mancanti",
+                ));
+            }
+        };
+
+        let row: Vec<i32> = row_line
+            .trim()
+            .split_whitespace()
+            .map(|n| n.parse::<i32>())
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Formato invalido nelle righe della matrice 2"))?;
+
+        if row.len() != matrix_size {
+            return Err(Error::new(
+                io::ErrorKind::InvalidData,
+                "La dimensione della matrice 2 non corrisponde ai dati forniti",
+            ));
+        }
+        matrix2.push(row);
+    }
+    
+    Ok(InputData {
+        vector,
+        matrix_size,
+        matrix1,
+        matrix2,
+    })
+}
+
 fn main(){
 
     //API KEY per prendere vettori per algoritmi di ordinamento
@@ -48,51 +178,14 @@ fn main(){
     }));
     */
 
-    //TODO: dati letti da file??
-    let mut vet = vec![10, 15, 27, -9, 19, 20, 16, 1, 3, -32];
-    
-    //Prova costruzione di matrici
-    let mut mat1 = vec![vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8,]];
-
-    let mut mat2 = vec![vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8],
-                        vec![10, 20, 30, 15, 10, 10, 9, 8,]];
-    //let mut data1= Data::Vector(vet);
-    //let mut data2 = Data::Matrices(mat1, mat2);
-
-    //TODO: rimuovi qua! Solo per debug (questo deve essere scelto dall'utente)
-    let cases = vec!["sel_sort", "bubble_sort", "matrix_multiplication"];
-    //Questo al momento simula il menu (TODO)
-   // args.case_study=String::from(cases[0]);
-
-
-
-    /*per provare analisi statica matrici
-    _=static_analysis::generate_analysis_file(
-        String::from("src/fault_list_manager/file_fault_list/prova_mat.rs"),
-        String::from("src/fault_list_manager/file_fault_list/prova_mat.json")
-    );
-    */
-
-    //IMPLEMENTAZIONE MENU UTENTE
+    //IMPLEMENTAZIONE MENU UTENTE---------------------------
     
     // Descrizione iniziale
     println!("Realizzazione di un ambiente di Fault Injection per applicazione ridondata");
 
     // Impostiamo un percorso di default per salvare il pdf generato
     let mut file_path:String = "results/".to_string();
+    let input_path:String = "src/data/input.txt".to_string();
 
     // Chiediamo all'utente di inserire il nome del file o usare quello di default
     let user_input: String = Input::new()
@@ -103,75 +196,169 @@ fn main(){
 
     file_path.push_str(&user_input);
     println!("{:?}",file_path);
+    
+    // Sorgente dei dati
+    let data_sources = vec!["Data file", "Dataset"];
+    let data_source_selection = Select::new()
+        .with_prompt("Seleziona la sorgente dei dati: ")
+        .items(&data_sources)
+        .default(0)
+        .interact()
+        .unwrap();
+    
+    // Caricamento dati in base alla sorgente scelta
+    let input_data = match data_source_selection {
+        
+        0 => match load_data_from_file(&input_path) {
+            Ok(data) => data, 
+            Err(e) => {
+                eprintln!("Errore: {}", e);
+                std::process::exit(1);
+            }
+        },
+        //TODO: implemetare API
+        1 => match load_data_from_file(&input_path) {
+            Ok(data) => data,
+            Err(e) => {
+                eprintln!("Errore: {}", e);
+                std::process::exit(1);
+            }
+        },
+        _ => unreachable!(),
+    };
 
-    println!("Scegli un algoritmo da utilizzare: ");
-    // Definiamo le opzioni del menu
-    let options = vec![
-        "Selection Sort",
-        "Bubble Sort",
-        "Matrix Multiplication"
-    ];
+    //println!("Dati caricati: {:?}", data);
 
-    // Menu di selezione
-    let selection = Select::new()
-        .with_prompt("Please select an operation")
-        .default(0) // Selezione predefinita
-        .items(&options)
+    // Scelta tra singolo algoritmo o tutti
+    println!("Scegli un'opzione:");
+    let operation_modes = vec!["Esegui un singolo algoritmo", "Esegui un'analisi comparativa tra tutti gli algoritmi"];
+    let mode_selection = Select::new()
+        .with_prompt("Seleziona il tipo di analisi: ")
+        .items(&operation_modes)
+        .default(0)
         .interact()
         .unwrap();
 
-    // Mostriamo l'opzione selezionata
-    println!("Hai selezionato: {} e lo stai salvando in {}", options[selection], user_input);
-       
-    match selection {
+    match mode_selection {
+
+        // Caso del singolo algoritmo
         0 => {
+            println!("Scegli un algoritmo da utilizzare: ");
+            // Definiamo le opzioni del menu
+            let options = vec![
+                "Selection Sort",
+                "Bubble Sort",
+                "Matrix Multiplication"
+            ];
+
+            // Menu di selezione
+            let selection = Select::new()
+                .with_prompt("Scegli un algoritmo da utilizzare: ")
+                .default(0) // Selezione predefinita
+                .items(&options)
+                .interact()
+                .unwrap();
+
+            // Mostriamo l'opzione selezionata
+            println!("Hai selezionato: {} e lo stai salvando in {}", options[selection], user_input);
+
+            match selection {
+                0 => {
+                    // Caso studio 1: Selection Sort
+                    let mut vettore= Data::Vector(input_data.vector.clone()); //let mut vettore= vet.clone();
+                    run_case_study(
+                        "sel_sort",
+                        &file_path,
+                        Data::Vector(input_data.vector.clone()),
+                        DimData::Vector(input_data.vector.len()),
+                        "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
+                        "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
+                        "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
+                        | vettore| run_for_count_selection_sort(vettore),
+                    );
+                }
+                1 => {
+                    // Caso studio 2: Bubble Sort
+                    let mut vettore= Data::Vector(input_data.vector.clone());
+                    run_case_study(
+                        "bubble_sort",
+                        &file_path,
+                        Data::Vector(input_data.vector.clone()),
+                        DimData::Vector(input_data.vector.len()),
+                        "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
+                        "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
+                        "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
+                        |vettore| run_for_count_bubble_sort(vettore),
+                    );
+                }
+                2 => {
+                    // Caso studio 3: Matrix Multiplication
+                    let mut matrici = Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone());
+                    run_case_study(
+                        "matrix_multiplication",
+                        &file_path,
+                        Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
+                        DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
+                        "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
+                        "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
+                        "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
+                        |matrici| run_for_count_matrix_mul(matrici),
+                    );
+                }
+                _ => println!("Invalid selection."),
+            }
+        }
+        
+        1 => {
+            // Esegui tutti gli algoritmi
+            
             // Caso studio 1: Selection Sort
-            let mut vettore= Data::Vector(vet.clone()); //let mut vettore= vet.clone();
+            let mut vettore= Data::Vector(input_data.vector.clone());
             run_case_study(
                 "sel_sort",
-                file_path,
-                Data::Vector(vet.clone()),
-                DimData::Vector(vet.len()),
+                &file_path,
+                Data::Vector(input_data.vector.clone()),
+                DimData::Vector(input_data.vector.len()),
                 "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
                 | vettore| run_for_count_selection_sort(vettore),
             );
-        }
-        1 => {
+
             // Caso studio 2: Bubble Sort
-            let mut vettore= Data::Vector(vet.clone());
+            let mut vettore= Data::Vector(input_data.vector.clone());
             run_case_study(
                 "bubble_sort",
-                file_path,
-                Data::Vector(vet.clone()),
-                DimData::Vector(vet.len()),
+                &file_path,
+                Data::Vector(input_data.vector.clone()),
+                DimData::Vector(input_data.vector.len()),
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
                 |vettore| run_for_count_bubble_sort(vettore),
             );
-        }
-        2 => {
+
             // Caso studio 3: Matrix Multiplication
-            let mut matrici = Data::Matrices(mat1.clone(), mat2.clone());
+            let mut matrici = Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone());
             run_case_study(
                 "matrix_multiplication",
-                file_path,
-                Data::Matrices(mat1.clone(), mat2.clone()),
-                DimData::Matrix((mat1.len(), mat1[0].len())),
+                &file_path,
+                Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
+                DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
                 |matrici| run_for_count_matrix_mul(matrici),
             );
+            
         }
-        _ => println!("Invalid selection."),
+        _ => unreachable!(),
     }
-
-    //
+    println!("Operazione completata. Report salvato in: {}", file_path);
+    
+    
     fn run_case_study(case_name: &str,
-                      file_path: String,
+                      file_path: &str,
                       input_data: Data<i32>,
                       dim_data: DimData,
                       analysis_input_file: &str,
@@ -199,87 +386,8 @@ fn main(){
         fault_injection_env(
             fault_list_file.to_string(),
             case_name.to_string(),
-            file_path,
+            file_path.to_string(),
             input_data.clone(),
         );
     }
-    
-    
-/*
-    match what {
-        //Caso studio 1: Selection Sort
-        "sel_sort" => {
-            //1. Analisi statica del codice (fornire nomi dei file INPUT/OUTPUT)
-            static_analysis::generate_analysis_file(
-                String::from("src/fault_list_manager/file_fault_list/selection_sort.json"),
-                String::from("src/fault_list_manager/file_fault_list/sel_sort_ris.json"));
-            //2. Generazione della fault list (FL)
-            fault_list_manager::create_fault_list(
-                String::from("sel_sort"),
-                String::from("src/fault_list_manager/file_fault_list/sel_sort_ris.json"),
-                DimData::Vector(vet.len()),
-                String::from ("src/fault_list_manager/file_fault_list/sel_sort_FL.json"),
-                run_for_count_selection_sort(&mut vet.clone())
-            );
-            //3. Faccio partire l'ambiente di fault injection
-            fault_injection_env(
-                String::from("src/fault_list_manager/file_fault_list/sel_sort_FL.json"),
-                String::from("sel_sort"),
-                String::from("abc"),                //nome file report
-                Data::Vector(vet));
-        },
-
-        //Caso studio 2: Bubble sort
-        "bubble_sort" => {
-            //1. Analisi statica del codice (fornire nomi dei file INPUT/OUTPUT)
-            static_analysis::generate_analysis_file(
-                String::from("src/fault_list_manager/file_fault_list/bubble_sort.rs"),
-                String::from("src/fault_list_manager/file_fault_list/bubble_sort_ris.json"));
-            //2. Generazione della fault list (FL)
-            fault_list_manager::create_fault_list(
-                String::from("bubble_sort"),
-                String::from("src/fault_list_manager/file_fault_list/bubble_sort_ris.json"),
-                DimData::Vector(vet.len()),
-                String::from("src/fault_list_manager/file_fault_list/bubble_sort_FL.json"),
-                run_for_count_bubble_sort(&mut vet.clone()));
-
-            //Faccio partire l'ambiente di fault injection
-            /*fault_injection_env(
-                String::from("src/fault_list_manager/file_fault_list/sel_sort_FL.json"),
-                String::from("bubble_sort"),
-                String::from("abc"),
-                Data::Vector(vet));
-            */
-        },
-        //Caso studio 3: Matrix multiplication
-        "matrix_multiplication" => {
-            //1. Analisi statica del codice (fornire nomi dei file INPUT/OUTPUT)
-            static_analysis::generate_analysis_file(
-                String::from("src/fault_list_manager/file_fault_list/matrix_multiplication.rs"),
-                String::from("src/fault_list_manager/file_fault_list/matrix_mul_ris.json"));
-
-            //2. Generazione della fault list (FL)
-            fault_list_manager::create_fault_list(
-                String::from("matrix_multiplication"),
-                String::from("src/fault_list_manager/file_fault_list/matrix_mul_ris.json"),
-                DimData::Matrix((mat1.len(), mat1[0].len())),
-                String::from("src/fault_list_manager/file_fault_list/matrix_mul_FL.json"),
-                run_for_count_matrix_mul(&mat1.clone(),&mat2.clone())
-            );
-
-            //Faccio partire l'ambiente di fault injection
-            /*fault_injection_env(
-                String::from("src/fault_list_manager/file_fault_list/matrix_mul_FL.json"),
-                String::from("matrix_multiplication"),
-                String::from("abc"),
-                Data::Matrices(mat1,mat2)
-            );*/
-        },
-
-        _ => {
-            println!("errore menu");
-        }
-    }
- */
-    
 }
