@@ -43,7 +43,7 @@ impl DimData{
 ///     - generazione casuale di un certo numero di entry +
 ///
 /// path_raw_info
-pub fn create_fault_list(case: String, path_raw_info: String, dims: DimData, file_path_dest: String,
+pub fn create_fault_list(num_faults:i32, case: String, path_raw_info: String, dims: DimData, file_path_dest: String,
                             num_instr_eff: usize)       //Number of actual instructions
     ->Vec<FaultListEntry>{
     //RETRIEVING INFORMAZIONI GREZZE
@@ -61,7 +61,7 @@ pub fn create_fault_list(case: String, path_raw_info: String, dims: DimData, fil
     //----------------------------------------------------------
 
     //--------------------------GENERAZIONE DELLA FAULT LIST-----------------------------
-    let NUM_FAULTS=2000;     //TODO: stabilire quanti!
+    let num_faults=2000;     //TODO: stabilire quanti!
     let mut fault_list:Vec<FaultListEntry> = Vec::new();
     //Ingrediente fondamentale: Generazione di numeri casuali
     //Fonte utile:
@@ -69,7 +69,7 @@ pub fn create_fault_list(case: String, path_raw_info: String, dims: DimData, fil
 
     let mut rnd=rand::thread_rng();
 
-    for i in 0..NUM_FAULTS{
+    for i in 0..num_faults{
         let what_var=rnd.gen_range(0..num_vars);
         //Caso 'vettore'
         if vars[what_var].ty==String::from("Vec < i32 >") {

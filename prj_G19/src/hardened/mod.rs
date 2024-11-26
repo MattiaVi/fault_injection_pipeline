@@ -286,7 +286,7 @@ fn bubble_sort(vet: &mut Vec<Hardened<i32>>) -> Result<(), IncoherenceError> {
 fn matrix_multiplication(a: &Vec<Vec<Hardened<i32>>>, b: &Vec<Vec<Hardened<i32>>>) -> Result<Vec<Vec<Hardened<i32>>>, IncoherenceError> {
 
     let size = Hardened::from(a.len());
-    let mut result: Vec<Vec<Hardened<i32>>> = Vec::new();
+    let mut result: Vec<Vec<Hardened<i32>>> = Hardened::from_mat(Vec::new());
 
     let mut i = Hardened::from(0);
     let mut j = Hardened::from(0);
