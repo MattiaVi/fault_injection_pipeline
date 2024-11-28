@@ -1,5 +1,5 @@
 \section{Software fault-tolerance} \label{sec:hardened}
-In generale le tecniche di software fault-tolerance, tendono a sfruttare modifiche di alto livello al codice sorgente in modo da poter rilevare comportamenti irregolari (faults) che riguardano \textbf{sia il codice che i dati}. Qui invece restringiamo l’attenzione esclusivamente su fault che riguardano i dati,  senza peraltro preoccuparci del fatto che questi si trovino in memoria centrale, memoria cache, registri o bus. Al codice target infatti vengono applicate semplici trasformazioni di alto livello che sono completamente indipendenti dal processore che esegue il programma. 
+In generale le tecniche di software fault-tolerance, tendono a sfruttare modifiche di alto livello al codice sorgente in modo da poter rilevare comportamenti irregolari (faults) che riguardano \textbf{sia il codice che i dati}. Qui invece \textit{poniamo l’attenzione esclusivamente su fault che riguardano i dati},  senza peraltro preoccuparci del fatto che questi si trovino in memoria centrale, memoria cache, registri o bus. Al codice target infatti vengono applicate semplici trasformazioni di alto livello che sono completamente indipendenti dal processore che esegue il programma. 
 \subsection{Tre regole per la trasformazione del codice}
 Le regole di trasformazione del codice citate sono quelle  proposte in \cite{802887}. Riportiamo qui quelle mirate al rilevamento di \textbf{errori sui dati}:
 \begin{enumerate}
@@ -47,11 +47,11 @@ impl<T> Hardened<T>{
 \begin{description}
     \item[\texttt{fn incoherent(\&self)->bool}] Funzione privata per rilevare l'incoerenza tra le due copie della variabile irrobustita: in particolare viene utilizzata dai metodi di più alto livello che lavorano con i dati elementari.
     \item[\texttt{pub fn assign(\&mut self, other: Hardened<T>)->Result<(), IncoherenceError>;}]\quad \newline Asserisce all'\textbf{assegnazione} tra due variabili di tipo \texttt{Hardened<T>}. Questa è l'unica operazione che non si può ridefinire in Rust tramite l'implementazione del tratto opportuno, in quanto andrebbe ridefinita l'intera semantica legata al \textbf{movimento e possesso}.
-    \item[\texttt{ pub fn from\_vec(vet: Vec<T>)->Vec<Hardened<T>>;} ] Per estrarre collezioni di dati irrobustiti da collezioni di dati elementari. Un ruolo simile è svolto da \texttt{pub fn from\_mat(mat: Vec<Vec<T>>) -> Vec<Vec<Hardened<T>>>;} Queste funzioni sono indispensabili sia per l'implementazione che per l'analisi dei risultati dei casi di studio.
+    \item[\texttt{ pub fn from\_vec(vet: Vec<T>)->Vec<Hardened<T>>;} ] Per estrarre collezioni di dati irrobustiti da collezioni di dati elementari. Un ruolo simile è svolto da \newline \texttt{pub fn from\_mat(mat: Vec<Vec<T>>) -> Vec<Vec<Hardened<T>>>;} Queste funzioni sono indispensabili sia per l'implementazione che per l'analisi dei risultati dei casi di studio.
     \item[\texttt{pub fn inner(\&self)->Result<T, IncoherenceError>;}] esegue una sorta di \textit{unwrap} del dato irrobustito, cioè dato un \texttt{Hardened<T>} restituisce il dato \texttt{T} incapsulato a sua volta in un \texttt{Result} in quanto le copie memorizzate possono essere incoerenti (vedi paragrafo dopo).
 \end{description}
 
-\section{Regole di trasformazione: implementazione}
+\section{Regole di trasformazione: implementazione}\label{sec:transf_impl}
 In questo paragrafo, tramite l'utilizzo di esempi significativi si presenta a grandi linee l'implementazione del set di trasformazioni che portano al tipo irrobustito. In particolare, dopo aver richiamato la regola, segue un esempio di codice con l'implementazione.\\
 
 \noindent

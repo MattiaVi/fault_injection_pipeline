@@ -110,7 +110,7 @@ Poiché il modulo di analisi statica prende in pasto un file con il codice dell'
 \begin{lstlisting}[language=rust, style=boxed]
 let mut a=13; 
 let mut b=15; 
-let mut:i32 c=a+c; 
+let mut c:i32 =a+c; 
 \end{lstlisting}
 Mentre nei primi due casi il tipo viene inferito direttamente\footnote{
     Nella funzione \texttt{infer\_type\_from\_expr()} mi accorgo che ho un \texttt{Expr::Assign}, quindi chiamo ricorsivamente la stessa funzione che a questo punto trova la \texttt{Expr::Literal} associata all'intero e viene ritornato il tipo corrispondente.
