@@ -4,7 +4,7 @@
 In questo file vengono specificati in ordine:
 - la dimensione del vettore
 - il vettore con i valori separati da virgole
-- la dimensione delle matrici quadrate
+- la dimensione delle due matrici quadrate
 - la prima matrice quadrata con i valori separati da spazi
 - la seconda matrice quadrata con i valori separati da spazi
 
