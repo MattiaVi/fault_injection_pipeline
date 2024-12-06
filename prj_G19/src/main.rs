@@ -7,19 +7,18 @@ mod pdf_generator;
 
 use hardened::{Hardened, IncoherenceError};
 use fault_list_manager::{FaultListEntry, static_analysis};
-use std::{fs, io, panic};
 use std::io::{BufRead, Error, Read, Write};
+use std::io;
 use std::path::Path;
 use std::fs::File;
-use syn::{Item};
 use syn::visit::Visit;
 use crate::fault_env::{Data, fault_injection_env};
 use clap::Parser;
-use std::process::Command;
 use crate::fault_list_manager::DimData;
 use crate::hardened::*;
 use dialoguer::{Select, Input};
-//use serde_json::Value::String;
+use regex::Regex;
+
 
 ///Ambiente di Fault Injection per applicazione ridondata
 
@@ -165,8 +164,7 @@ pub fn load_data_from_file(file_path: &str) -> Result<InputData, Error> {
     })
 }
 
-fn main(){
-
+fn main() {
     //API KEY per prendere vettori per algoritmi di ordinamento
 
     kaggle::Authentication::with_credentials("federicopretini", "5b7355de00b8dc63f52f18be16918e00");
@@ -179,38 +177,44 @@ fn main(){
     */
 
     //IMPLEMENTAZIONE MENU UTENTE---------------------------
-    
+
     // Descrizione iniziale
     println!("Realizzazione di un ambiente di Fault Injection per applicazione ridondata");
 
     // Impostiamo un percorso di default per salvare il pdf generato
-    let mut file_path:String = "results/".to_string();
-    let input_path:String = "src/data/input.txt".to_string();
+    let mut file_path: String = "results/".to_string();
+    let input_path: String = "src/data/input.txt".to_string();
 
-    // Chiediamo all'utente di inserire il nome del file o usare quello di default
     let mut nome_file: String = Input::new()
         .with_prompt("Inserisci il nome del file per il report senza estensione")
         .default("demo".to_string())  // Imposta il percorso di default
         .interact_text()
         .unwrap();
 
+    let regex = Regex::new(r"^[a-zA-Z0-9_-]+$").unwrap();
+
+    while !regex.is_match(&nome_file) {
+        println!("Nome file invalido, per favore ritenta");
+        nome_file = Input::new()
+            .with_prompt("Inserisci il nome del file per il report SENZA ESTENSIONE")
+            .default("demo".to_string())  // Imposta il percorso di default
+            .interact_text()
+            .unwrap();
+    }
     file_path.push_str(&nome_file);
 
-    
     // Sorgente dei dati
     let data_sources = vec!["Data file", "Dataset"];
     let data_source_selection = Select::new()
-        .with_prompt("Seleziona la sorgente dei dati: ")
+        .with_prompt("Seleziona la sorgente dei dati")
         .items(&data_sources)
-        .default(0)
         .interact()
         .unwrap();
-    
+
     // Caricamento dati in base alla sorgente scelta
     let input_data = match data_source_selection {
-        
         0 => match load_data_from_file(&input_path) {
-            Ok(data) => data, 
+            Ok(data) => data,
             Err(e) => {
                 eprintln!("Errore: {}", e);
                 std::process::exit(1);
@@ -231,10 +235,9 @@ fn main(){
     let mut num_faults: i32 = 2000;
 
     // Scelta tra singolo algoritmo o tutti
-    println!("Scegli un'opzione:");
     let operation_modes = vec!["Esegui un singolo algoritmo", "Esegui un'analisi comparativa tra tutti gli algoritmi"];
     let mode_selection = Select::new()
-        .with_prompt("Seleziona il tipo di analisi: ")
+        .with_prompt("Seleziona il tipo di analisi")
         .items(&operation_modes)
         .default(0)
         .interact()
@@ -244,10 +247,7 @@ fn main(){
 
         // Caso del singolo algoritmo
         0 => {
-
             file_path.push_str(".pdf");
-            println!("{:?}",file_path);
-
             //scegli algoritmo--------------------------------------------------------------------------
             let options = vec![
                 "Selection Sort",
@@ -257,7 +257,7 @@ fn main(){
 
             // Menu di selezione
             let algo_selection = Select::new()
-                .with_prompt("Scegli un algoritmo da utilizzare: ")
+                .with_prompt("Scegli un algoritmo da utilizzare")
                 .default(0) // Selezione predefinita
                 .items(&options)
                 .interact()
@@ -265,17 +265,17 @@ fn main(){
 
             // Mostriamo l'opzione selezionata
             println!("Hai selezionato: {} e lo stai salvando in {}", options[algo_selection], nome_file);
-            
+
             //--------------------------------------------------------------------------
-            
+
             //scelta tra H/non H, variazione tra #fault list
             let options = vec![
                 "Not Hardened vs Hardened",
                 "Variazione cardinalità fault list entries",
             ];
-            
+
             let single_algo_anlysis_selection = Select::new()
-                .with_prompt("Scegli una modalità di single analysis: ")
+                .with_prompt("Scegli una modalità di single analysis")
                 .default(0) // Selezione predefinita
                 .items(&options)
                 .interact()
@@ -283,20 +283,20 @@ fn main(){
 
             // Mostriamo l'opzione selezionata
             println!("Hai selezionato: {}", options[single_algo_anlysis_selection]);
-            
-            
+
+
             match single_algo_anlysis_selection {
                 0 => {
-                     num_faults = Input::new()
+                    num_faults = Input::new()
                         .with_prompt("Inserisci il numero di fault entries desiderate")
-                        .default(2000)  
+                        .default(2000)
                         .interact_text()
                         .unwrap();
 
                     match algo_selection {
                         0 => {
                             // Caso studio 1: Selection Sort
-                            let mut vettore= Data::Vector(input_data.vector.clone()); //let mut vettore= vet.clone();
+                            let mut vettore = Data::Vector(input_data.vector.clone()); //let mut vettore= vet.clone();
                             run_case_study(
                                 num_faults,
                                 "sel_sort",
@@ -306,12 +306,12 @@ fn main(){
                                 "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                                | vettore| run_for_count_selection_sort(vettore),
+                                |vettore| run_for_count_selection_sort(vettore),
                             );
                         }
                         1 => {
                             // Caso studio 2: Bubble Sort
-                            let mut vettore= Data::Vector(input_data.vector.clone());
+                            let mut vettore = Data::Vector(input_data.vector.clone());
                             run_case_study(
                                 num_faults,
                                 "bubble_sort",
@@ -341,7 +341,6 @@ fn main(){
                         }
                         _ => println!("Invalid selection."),
                     }
-                    
                 }
                 1 => {
                     //3 different run con 3 valori di num_faults 
@@ -352,7 +351,7 @@ fn main(){
                     match algo_selection {
                         0 => {
                             // Caso studio 1: Selection Sort
-                            let mut vettore= Data::Vector(input_data.vector.clone()); //let mut vettore= vet.clone();
+                            let mut vettore = Data::Vector(input_data.vector.clone()); //let mut vettore= vet.clone();
                             run_case_study(
                                 num_faults_1,
                                 "sel_sort",
@@ -362,7 +361,7 @@ fn main(){
                                 "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                                | vettore| run_for_count_selection_sort(vettore),
+                                |vettore| run_for_count_selection_sort(vettore),
                             );
 
                             run_case_study(
@@ -374,7 +373,7 @@ fn main(){
                                 "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                                | vettore| run_for_count_selection_sort(vettore),
+                                |vettore| run_for_count_selection_sort(vettore),
                             );
 
                             run_case_study(
@@ -386,13 +385,12 @@ fn main(){
                                 "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                                | vettore| run_for_count_selection_sort(vettore),
+                                |vettore| run_for_count_selection_sort(vettore),
                             );
-                            
                         }
                         1 => {
                             // Caso studio 2: Bubble Sort
-                            let mut vettore= Data::Vector(input_data.vector.clone());
+                            let mut vettore = Data::Vector(input_data.vector.clone());
                             run_case_study(
                                 num_faults_1,
                                 "bubble_sort",
@@ -468,23 +466,20 @@ fn main(){
                         }
                         _ => println!("Invalid selection."),
                     }
-                    
                 }
 
                 _ => println!("Invalid selection."),
             }
-
-            
         }
-        
+
         1 => {
             // Esegui tutti gli algoritmi
 
             file_path.push_str("_all.pdf");
-            println!("{:?}",file_path);
-            
+            println!("{:?}", file_path);
+
             // Caso studio 1: Selection Sort
-            let mut vettore= Data::Vector(input_data.vector.clone());
+            let mut vettore = Data::Vector(input_data.vector.clone());
             run_case_study(
                 num_faults,
                 "sel_sort",
@@ -494,11 +489,11 @@ fn main(){
                 "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                | vettore| run_for_count_selection_sort(vettore),
+                |vettore| run_for_count_selection_sort(vettore),
             );
 
             // Caso studio 2: Bubble Sort
-            let mut vettore= Data::Vector(input_data.vector.clone());
+            let mut vettore = Data::Vector(input_data.vector.clone());
             run_case_study(
                 num_faults,
                 "bubble_sort",
@@ -524,13 +519,12 @@ fn main(){
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
                 |matrici| run_for_count_matrix_mul(matrici),
             );
-            
         }
         _ => unreachable!(),
     }
     println!("Operazione completata. Report salvato in: {}", file_path);
-    
-    
+
+
     fn run_case_study(num_faults: i32,
                       case_name: &str,
                       file_path: &str,
@@ -539,7 +533,7 @@ fn main(){
                       analysis_input_file: &str,
                       analysis_output_file: &str,
                       fault_list_file: &str,
-                      fault_list_run: impl FnOnce(Data<i32>) -> usize){
+                      fault_list_run: impl FnOnce(Data<i32>) -> usize) {
         // 1. Analisi statica del codice
 
         // TODO: cercare di gestire l'errore magari con un expect

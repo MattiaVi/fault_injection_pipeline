@@ -2041,6 +2041,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rand 0.8.5",
+ "regex",
  "resvg",
  "serde",
  "serde_json",

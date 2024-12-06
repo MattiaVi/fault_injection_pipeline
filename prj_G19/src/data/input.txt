@@ -2,10 +2,13 @@
 ** INPUT FILE **
 
 In questo file vengono specificati in ordine:
-la dimensione del vettore e il vettore con i valori separati da virgole
-la dimensione delle matrici quadrate e le matrici con i valori separati da spazi
+- la dimensione del vettore
+- il vettore con i valori separati da virgole
+- la dimensione delle matrici quadrate
+- la prima matrice quadrata con i valori separati da spazi
+- la seconda matrice quadrata con i valori separati da spazi
 
-Se necessario modificare i dati, assicurarsi di rispettare e dimensioni specificate.
+Nel caso si vogliano modificare i dati, assicurarsi di rispettare le dimensioni specificate.
 ------------------------------------------------------------------------------------
 10
 
