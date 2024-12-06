@@ -262,11 +262,3 @@ fn generate_analysis_file()                          Genera il file contenente l
           \
           -->  fn type_size()                       Tipo<->Dimensione in byte
 **************************************************************************************************/
-
-#[cfg(test)]
-mod tests{
-    #[test]
-    fn test_prova(){
-        assert_eq!(2,2);
-    }
-}

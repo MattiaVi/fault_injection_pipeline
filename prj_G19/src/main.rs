@@ -188,14 +188,14 @@ fn main(){
     let input_path:String = "src/data/input.txt".to_string();
 
     // Chiediamo all'utente di inserire il nome del file o usare quello di default
-    let user_input: String = Input::new()
-        .with_prompt("Inserisci il nome del file per il report")
-        .default("demo.pdf".to_string())  // Imposta il percorso di default
+    let mut nome_file: String = Input::new()
+        .with_prompt("Inserisci il nome del file per il report senza estensione")
+        .default("demo".to_string())  // Imposta il percorso di default
         .interact_text()
         .unwrap();
 
-    file_path.push_str(&user_input);
-    println!("{:?}",file_path);
+    file_path.push_str(&nome_file);
+
     
     // Sorgente dei dati
     let data_sources = vec!["Data file", "Dataset"];
@@ -244,7 +244,10 @@ fn main(){
 
         // Caso del singolo algoritmo
         0 => {
-            
+
+            file_path.push_str(".pdf");
+            println!("{:?}",file_path);
+
             //scegli algoritmo--------------------------------------------------------------------------
             let options = vec![
                 "Selection Sort",
@@ -261,7 +264,7 @@ fn main(){
                 .unwrap();
 
             // Mostriamo l'opzione selezionata
-            println!("Hai selezionato: {} e lo stai salvando in {}", options[algo_selection], user_input);
+            println!("Hai selezionato: {} e lo stai salvando in {}", options[algo_selection], nome_file);
             
             //--------------------------------------------------------------------------
             
@@ -476,6 +479,9 @@ fn main(){
         
         1 => {
             // Esegui tutti gli algoritmi
+
+            file_path.push_str("_all.pdf");
+            println!("{:?}",file_path);
             
             // Caso studio 1: Selection Sort
             let mut vettore= Data::Vector(input_data.vector.clone());

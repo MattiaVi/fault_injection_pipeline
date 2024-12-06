@@ -1,3 +1,7 @@
+mod bubble_sort_hardened;
+mod matrix_multiplication_hardened;
+mod selection_sort_hardened;
+
 use std::cmp::Ordering;
 use std::fmt::{Display, Debug, Formatter};
 use std::ops::{Add, Index, IndexMut, Sub, Mul, AddAssign};
@@ -233,85 +237,6 @@ impl<T> Debug for Hardened<T> where T:Debug+PartialEq+Eq+Copy+Clone{
 }
 
 
-///Casi di studio
-/// <h3>Caso di studio 1: Selection Sort</h3>
-fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
-    let mut N:Hardened<usize> = vet.len().into();
-    let mut j= Hardened::from(0);
-    let mut min = Hardened::from(0);
-    //--------------SELECTION SORT-------------------------
-    let mut i= Hardened::from(0);
-    while i<(N-1)?{
-        min.assign(i)?;                 //min=i
-        j.assign((i+1)?)?;        //j=0
-        //Ricerca del minimo
-        while j<N{
-            if vet[j]<vet[min]  {   min.assign(j)?; }
-            j.assign((j+1)?)?;
-        }
-        //Scambio il minimo
-        vet.swap(i.inner()?, min.inner()?);
-        //Vado avanti
-        i.assign((i+1)?)?;
-    }
-    //------------------------------------------------------
-    Ok(())
-}
-/// <h3>Caso di studio 2: Bubble sort</h3>
-fn bubble_sort(vet: &mut Vec<Hardened<i32>>) -> Result<(), IncoherenceError> {
-
-    let n = Hardened::from(vet.len());
-    let mut i = Hardened::from(0);
-
-    while i < n {
-        let mut swapped = Hardened::from(false);
-        let mut j = Hardened::from(0);
-
-        while j < ((n - i)? - 1)? {
-            if vet[j].inner()? > vet[(j + 1)?].inner()? {
-                vet.swap(j.inner()?, (j + 1)?.inner()?);
-                swapped = Hardened::from(true);
-            }
-            j.assign((j + 1)?)?;
-        }
-        if !swapped.inner()? {
-            break;
-        }
-        i.assign((i + 1)?)?;
-    }
-    Ok(())
-}
-
-/// <h3>Caso di studio 3: moltiplicazioni tra matrici</h3>
-fn matrix_multiplication(a: &Vec<Vec<Hardened<i32>>>, b: &Vec<Vec<Hardened<i32>>>) -> Result<Vec<Vec<Hardened<i32>>>, IncoherenceError> {
-
-    let size = Hardened::from(a.len());
-    let mut result: Vec<Vec<Hardened<i32>>> = Hardened::from_mat(Vec::new());
-
-    let mut i = Hardened::from(0);
-    let mut j = Hardened::from(0);
-    let mut k = Hardened::from(0);
-
-    while i < size {
-        let mut row: Vec<Hardened<i32>> = Vec::new();
-        j.assign(Hardened::from(0))?;
-
-        while j < size {
-            let mut acc = Hardened::from(0);
-            k.assign(Hardened::from(0))?;
-
-            while k < size {
-                acc.assign((acc + Hardened::from(a[i.inner()?][k.inner()?].inner()?   *   b[k.inner()?][j.inner()?].inner()?) )? )?;
-                k.assign((k + 1)?)?;
-            }
-            row.push(acc); // Aggiunge il valore calcolato alla riga
-            j.assign((j + 1)?)?;
-        }
-        result.push(row); // Aggiunge la riga alla matrice risultante
-        i.assign((i + 1)?)?;
-    }
-    Ok(result)
-}
 
 //-------------------------------------------------------------
 ///Tipo di errore generato tutte le volte che fallisce il controllo
@@ -342,7 +267,7 @@ pub enum IncoherenceError{
 //Funzioni per il conteggio 'passivo' delle istruzioni eseguite
 
 pub fn run_for_count_selection_sort(vettore: Data<i32>) ->usize{
-    
+
     let mut vet = vettore.into_Vector();
     let mut N:usize = vet.len();
     let mut j=0;
@@ -418,7 +343,7 @@ pub fn run_for_count_matrix_mul(matrici: Data<i32>)->usize{
     let matrices = matrici.into_Matrices();
     let a = matrices.0;
     let b = matrices.1;
-    
+
     let size = 5; // Dimensione fissa 5x5
     let mut result: Vec<Vec<i32>> = Vec::new();
     let mut count=3;
@@ -447,11 +372,15 @@ pub fn run_for_count_matrix_mul(matrici: Data<i32>)->usize{
 }
 
 
+
+
+//------------------------------------------------------
+
 #[cfg(test)]
 mod tests{
     use std::panic::catch_unwind;
     use crate::Hardened;
-    use crate::hardened::selection_sort;
+
     use crate::IncoherenceError;
     #[test]
     fn test_add_ok(){
@@ -486,14 +415,7 @@ mod tests{
         assert!(ris.is_ok());
         assert_eq!(ris.unwrap().inner().unwrap(), 9);
     }
-    #[test]
-    //Provo a usare il nuovo tipo per ordinare un vettore
-    fn test_sort(){
-        let mut myvec = Hardened::from_vec(vec![31, 10, 15, 6, 4, 3]);
-        assert!(selection_sort(&mut myvec).is_ok());
-        let mut myvec2 = Hardened::from_vec(vec![3,4,6,10,15,31]);
-        assert_eq!(myvec, myvec2);
-    }
+
     #[test]
     //Test per verificare il corretto funzionamento di from_mat
     fn test_from_mat(){
@@ -550,49 +472,6 @@ mod tests{
         myvar["cpe2ejnkjndf"] = 2;
     }
     #[test]
-    /*
-    fn test_bubble_sort_hardened() {
-        let mut vec = vec![
-            Hardened::from(31),
-            Hardened::from(10),
-            Hardened::from(15),
-            Hardened::from(6),
-            Hardened::from(4),
-            Hardened::from(3),
-        ];
-
-        assert!(bubble_sort(&mut vec).is_ok());
-
-        let sorted_vec = vec![
-            crate::hardened::Hardened(3),
-            Hardened::from(4),
-            Hardened::from(6),
-            Hardened::from(10),
-            Hardened::from(15),
-            Hardened::from(31),
-        ];
-
-        assert_eq!(vec, sorted_vec);
-
-
-    }
-
-     */
-    #[test]
-    fn test_sort_hardened() {
-        // Creazione di un vettore Hardened non ordinato
-        let mut myvec = Hardened::from_vec(vec![31, 10, 15, 6, 4, 3]);
-
-        // Ordinamento del vettore e controllo che l'operazione vada a buon fine
-        assert!(selection_sort(&mut myvec).is_ok());
-
-        // Vettore Hardened atteso dopo l'ordinamento
-        let myvec_sorted = Hardened::from_vec(vec![3, 4, 6, 10, 15, 31]);
-
-        // Confronto tra il vettore ordinato e il risultato atteso
-        assert_eq!(myvec, myvec_sorted);
-    }
-    #[test]
     fn test_from_mat_hardened() {
         // Matrice di input con valori interi
         let input_matrix = vec![
@@ -612,44 +491,6 @@ mod tests{
         let output_matrix = Hardened::from_mat(input_matrix);
         assert_eq!(output_matrix, expected_output);
     }
-    #[test]
-    fn test_matrix_multiplication_hardened_simple_5x5() {
-        // Matrice Hardened A (5x5)
-        let a = Hardened::from_mat(vec![
-            vec![1, 0, 0, 0, 0],
-            vec![0, 1, 0, 0, 0],
-            vec![0, 0, 1, 0, 0],
-            vec![0, 0, 0, 1, 0],
-            vec![0, 0, 0, 0, 1],
-        ]);
-
-        // Matrice Hardened B (5x5)
-        let b = Hardened::from_mat(vec![
-            vec![1, 2, 3, 4, 5],
-            vec![6, 7, 8, 9, 10],
-            vec![11, 12, 13, 14, 15],
-            vec![16, 17, 18, 19, 20],
-            vec![21, 22, 23, 24, 25],
-        ]);
-
-        // Matrice Hardened attesa per il risultato
-        // Risultato di moltiplicare una matrice identità per B dovrebbe essere B stessa
-        let expected_output = Hardened::from_mat(vec![
-            vec![1, 2, 3, 4, 5],
-            vec![6, 7, 8, 9, 10],
-            vec![11, 12, 13, 14, 15],
-            vec![16, 17, 18, 19, 20],
-            vec![21, 22, 23, 24, 25],
-        ]);
-/*
-        // Esecuzione della moltiplicazione e verifica del risultato
-        match matrix_multiplication(&a, &b) {
-            Ok(result) => assert_eq!(result, expected_output),
-            Err(e) => panic!("Errore di incoerenza: {:?}", e),
-
- */
-        }
-
         #[test]
         fn test_get_message(){
             let payload = catch_unwind(|| {
@@ -661,4 +502,3 @@ mod tests{
 
     }
 //}
-
