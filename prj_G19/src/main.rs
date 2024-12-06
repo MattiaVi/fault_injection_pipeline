@@ -296,7 +296,7 @@ fn main() {
                     match algo_selection {
                         0 => {
                             // Caso studio 1: Selection Sort
-                            let mut vettore = Data::Vector(input_data.vector.clone()); //let mut vettore= vet.clone();
+                            //let mut vettore = Data::Vector(input_data.vector.clone()); //let mut vettore= vet.clone();
                             run_case_study(
                                 num_faults,
                                 "sel_sort",
@@ -343,138 +343,73 @@ fn main() {
                     }
                 }
                 1 => {
-                    //3 different run con 3 valori di num_faults 
-                    let num_faults_1: i32 = 1000;
-                    let num_faults_2: i32 = 1000;
-                    let num_faults_3: i32 = 1000;
-
+                    let cardinalities: Vec<i32> = vec![1000, 2000, 3000];
+                    let mut vettore = Data::Vector(input_data.vector.clone());
                     match algo_selection {
                         0 => {
                             // Caso studio 1: Selection Sort
-                            let mut vettore = Data::Vector(input_data.vector.clone()); //let mut vettore= vet.clone();
-                            run_case_study(
-                                num_faults_1,
-                                "sel_sort",
-                                &file_path,
-                                Data::Vector(input_data.vector.clone()),
-                                DimData::Vector(input_data.vector.len()),
-                                "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
-                                "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
-                                "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                                |vettore| run_for_count_selection_sort(vettore),
-                            );
-
-                            run_case_study(
-                                num_faults_2,
-                                "sel_sort",
-                                &file_path,
-                                Data::Vector(input_data.vector.clone()),
-                                DimData::Vector(input_data.vector.len()),
-                                "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
-                                "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
-                                "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                                |vettore| run_for_count_selection_sort(vettore),
-                            );
-
-                            run_case_study(
-                                num_faults_3,
-                                "sel_sort",
-                                &file_path,
-                                Data::Vector(input_data.vector.clone()),
-                                DimData::Vector(input_data.vector.len()),
-                                "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
-                                "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
-                                "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                                |vettore| run_for_count_selection_sort(vettore),
-                            );
+                            for cardinality in cardinalities{
+                                run_case_study(
+                                    cardinality,
+                                    "sel_sort",
+                                    &file_path,
+                                    Data::Vector(input_data.vector.clone()),
+                                    DimData::Vector(input_data.vector.len()),
+                                    "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
+                                    "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
+                                    "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
+                                    |vettore| run_for_count_selection_sort(vettore),
+                                );
+                            }
                         }
                         1 => {
                             // Caso studio 2: Bubble Sort
-                            let mut vettore = Data::Vector(input_data.vector.clone());
-                            run_case_study(
-                                num_faults_1,
-                                "bubble_sort",
-                                &file_path,
-                                Data::Vector(input_data.vector.clone()),
-                                DimData::Vector(input_data.vector.len()),
-                                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
-                                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
-                                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
-                                |vettore| run_for_count_bubble_sort(vettore),
-                            );
-                            run_case_study(
-                                num_faults_2,
-                                "bubble_sort",
-                                &file_path,
-                                Data::Vector(input_data.vector.clone()),
-                                DimData::Vector(input_data.vector.len()),
-                                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
-                                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
-                                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
-                                |vettore| run_for_count_bubble_sort(vettore),
-                            );
-                            run_case_study(
-                                num_faults_3,
-                                "bubble_sort",
-                                &file_path,
-                                Data::Vector(input_data.vector.clone()),
-                                DimData::Vector(input_data.vector.len()),
-                                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
-                                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
-                                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
-                                |vettore| run_for_count_bubble_sort(vettore),
-                            );
+                            //let mut vettore = Data::Vector(input_data.vector.clone());
+                            for cardinality in cardinalities{
+                                run_case_study(
+                                    cardinality,
+                                    "bubble_sort",
+                                    &file_path,
+                                    Data::Vector(input_data.vector.clone()),
+                                    DimData::Vector(input_data.vector.len()),
+                                    "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
+                                    "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
+                                    "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
+                                    |vettore| run_for_count_bubble_sort(vettore),
+                                );
+                            }
                         }
                         2 => {
                             // Caso studio 3: Matrix Multiplication
                             let mut matrici = Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone());
-                            run_case_study(
-                                num_faults_1,
-                                "matrix_multiplication",
-                                &file_path,
-                                Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
-                                DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
-                                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
-                                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
-                                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
-                                |matrici| run_for_count_matrix_mul(matrici),
-                            );
-
-                            run_case_study(
-                                num_faults_2,
-                                "matrix_multiplication",
-                                &file_path,
-                                Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
-                                DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
-                                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
-                                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
-                                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
-                                |matrici| run_for_count_matrix_mul(matrici),
-                            );
-
-                            run_case_study(
-                                num_faults_3,
-                                "matrix_multiplication",
-                                &file_path,
-                                Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
-                                DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
-                                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
-                                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
-                                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
-                                |matrici| run_for_count_matrix_mul(matrici),
-                            );
+                            for cardinality in cardinalities {
+                                run_case_study(
+                                    cardinality,
+                                    "matrix_multiplication",
+                                    &file_path,
+                                    Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
+                                    DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
+                                    "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
+                                    "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
+                                    "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
+                                    |matrici| run_for_count_matrix_mul(matrici),
+                                );
+                            }
                         }
                         _ => println!("Invalid selection."),
                     }
                 }
-
                 _ => println!("Invalid selection."),
             }
         }
 
         1 => {
             // Esegui tutti gli algoritmi
-
+            num_faults = Input::new()
+                .with_prompt("Inserisci il numero di fault entries desiderate")
+                .default(2000)
+                .interact_text()
+                .unwrap();
             file_path.push_str("_all.pdf");
             println!("{:?}", file_path);
 
