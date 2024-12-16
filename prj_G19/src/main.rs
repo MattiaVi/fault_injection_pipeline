@@ -17,6 +17,7 @@ use clap::Parser;
 use crate::fault_list_manager::DimData;
 use crate::hardened::*;
 use dialoguer::{Select, Input};
+use rand::Rng;
 use regex::Regex;
 
 
@@ -41,6 +42,72 @@ pub struct InputData {
     pub matrix_size: usize,
     pub matrix1: Vec<Vec<i32>>,
     pub matrix2: Vec<Vec<i32>>,
+}
+pub fn load_data_from_dataset()-> Result<InputData, Error> {
+
+    // Apri il file
+    let file = File::open("src/data/dataset/dataset_vector.txt")?;
+    let reader = io::BufReader::new(file);
+
+    // Leggi tutte le righe del file in un vettore
+    let lines: Vec<String> = reader.lines().filter_map(Result::ok).collect();
+
+    // Genera un indice casuale per selezionare una linea
+    let mut rng = rand::thread_rng();
+    let random_index = rng.gen_range(0..lines.len());
+
+    // Seleziona la linea e convertila in un vettore di i32
+    let selected_line = &lines[random_index];
+    let vector: Vec<i32> = selected_line
+        .split(",") // Dividi la linea su ","
+        .filter_map(|x| x.parse::<i32>().ok()) // Converte ogni elemento in i32
+        .collect();
+
+
+
+    // Apri il file matrici
+    let file = File::open("src/data/dataset/dataset_matrix.txt")?;
+    let reader2 = io::BufReader::new(file);
+
+    // Leggi tutte le righe del file in un vettore
+    let lines: Vec<String> = reader2.lines().filter_map(Result::ok).collect();
+
+    // Genera un indice casuale per selezionare una linea
+    let random_index = rand::thread_rng().gen_range(0..16) * 4;
+
+    let matrix1: Vec<Vec<i32>> = (random_index..random_index + 3)
+        .filter_map(|idx| lines.get(idx)) // Recupera la linea, se esiste
+        .map(|line| {
+            line.split(" ") // Dividi la linea su " "
+                .filter_map(|x| x.parse::<i32>().ok()) // Converte ogni elemento in i32
+                .collect()
+        })
+        .collect();
+
+    let scale_factor: i32 = rng.gen_range(1..=10);
+
+    // Crea la matrice identità 3x3
+    let mut identity_matrix: Vec<Vec<i32>> = vec![
+        vec![1, 0, 0], // prima riga
+        vec![0, 1, 0], // seconda riga
+        vec![0, 0, 1], // terza riga
+    ];
+
+    // Moltiplica ogni elemento della matrice per il fattore di scala
+    // Matrix2 è la scaled matrix
+    let matrix2: Vec<Vec<i32>> = identity_matrix
+        .into_iter()
+        .map(|row| row.into_iter().map(|value| value * scale_factor).collect())
+        .collect();
+
+    let matrix_size = 3;
+
+    Ok(InputData {
+        vector,
+        matrix_size,
+        matrix1,
+        matrix2,
+    })
 }
 pub fn load_data_from_file(file_path: &str) -> Result<InputData, Error> {
     let path = Path::new(file_path);
@@ -220,8 +287,7 @@ fn main() {
                 std::process::exit(1);
             }
         },
-        //TODO: implemetare API
-        1 => match load_data_from_file(&input_path) {
+        1 => match load_data_from_dataset() {
             Ok(data) => data,
             Err(e) => {
                 eprintln!("Errore: {}", e);
