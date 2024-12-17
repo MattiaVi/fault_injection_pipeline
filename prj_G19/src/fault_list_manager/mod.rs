@@ -19,7 +19,7 @@ pub(crate) mod file_fault_list;
 #[derive(Copy, Clone)]
 pub enum DimData{
     Vector(usize),              //caso vettore
-    Matrix((usize,usize))       //caso matrice
+    Matrices((usize,usize))       //caso matrice
 }
 
 impl DimData{

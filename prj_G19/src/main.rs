@@ -45,6 +45,23 @@ pub struct InputData {
     pub matrix1: Vec<Vec<i32>>,
     pub matrix2: Vec<Vec<i32>>,
 }
+impl InputData {
+    fn into_data(&self, ty:&str) -> Data<i32> {
+        match ty {
+            "vector" => Data::Vector(self.vector.clone()),
+            "matrices" => Data::Matrices(self.matrix1.clone(), self.matrix2.clone()),
+            _ => panic!("Unknown input type {}", ty),
+        }
+    }
+    fn into_dimdata(&self, ty:&str) -> DimData {
+        match ty {
+            "vector" => DimData::Vector(self.vector.len()),
+            "matrices" => DimData::Matrices((self.matrix1.len(), self.matrix2.len())),
+            _ => panic!("Unknown input type {}", ty),
+        }
+    }
+}
+
 pub fn load_data_from_dataset()-> Result<InputData, Error> {
     // Apri il file
     let file = File::open("src/data/dataset/dataset_vector.txt")?;
@@ -357,14 +374,13 @@ fn main() {
                     match algo_selection {
                         0 => {
                             // Caso studio 1: Selection Sort
-                            //let mut vettore = Data::Vector(input_data.vector.clone()); //let mut vettore= vet.clone();
                             run_case_study(
                                 -1, //Nel caso singolo non esiste esecuzione
                                 num_faults,
                                 "sel_sort",
                                 &file_path,
-                                Data::Vector(input_data.vector.clone()),
-                                DimData::Vector(input_data.vector.len()),
+                                input_data.into_data("vector"),
+                                input_data.into_dimdata("vector"),
                                 Instant::now(),
                                 "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
@@ -375,14 +391,13 @@ fn main() {
                         }
                         1 => {
                             // Caso studio 2: Bubble Sort
-                            let mut vettore = Data::Vector(input_data.vector.clone());
                             run_case_study(
                                 -1, //Nel caso singolo non esiste esecuzione
                                 num_faults,
                                 "bubble_sort",
                                 &file_path,
-                                Data::Vector(input_data.vector.clone()),
-                                DimData::Vector(input_data.vector.len()),
+                                input_data.into_data("vector"),
+                                input_data.into_dimdata("vector"),
                                 Instant::now(),
                                 "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
@@ -392,14 +407,13 @@ fn main() {
                         }
                         2 => {
                             // Caso studio 3: Matrix Multiplication
-                            let mut matrici = Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone());
                             run_case_study(
                                 -1,
                                 num_faults,
                                 "matrix_multiplication",
                                 &file_path,
-                                Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
-                                DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
+                                input_data.into_data("matrices"),
+                                input_data.into_dimdata("matrices"),
                                 Instant::now(),
                                 "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
@@ -413,7 +427,6 @@ fn main() {
                 1 => {
                     file_path.push_str("_diffcard.pdf");
                     let cardinalities: Vec<i32> = vec![10, 20, 30];
-                    let mut vettore = Data::Vector(input_data.vector.clone());
                     match algo_selection {
                         0 => {
                             let mut esecuzione = 0;
@@ -424,8 +437,8 @@ fn main() {
                                     cardinality,
                                     "sel_sort",
                                     &file_path,
-                                    Data::Vector(input_data.vector.clone()),
-                                    DimData::Vector(input_data.vector.len()),
+                                    input_data.into_data("vector"),
+                                    input_data.into_dimdata("vector"),
                                     Instant::now(),
                                     "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                                     "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
@@ -438,15 +451,14 @@ fn main() {
                         1 => {
                             // Caso studio 2: Bubble Sort
                             let mut esecuzione = 0;
-                            //let mut vettore = Data::Vector(input_data.vector.clone());
                             for cardinality in cardinalities{
                                 run_case_study(
                                     esecuzione,
                                     cardinality,
                                     "bubble_sort",
                                     &file_path,
-                                    Data::Vector(input_data.vector.clone()),
-                                    DimData::Vector(input_data.vector.len()),
+                                    input_data.into_data("vector"),
+                                    input_data.into_dimdata("vector"),
                                     Instant::now(),
                                     "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                                     "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
@@ -459,15 +471,14 @@ fn main() {
                         2 => {
                             // Caso studio 3: Matrix Multiplication
                             let mut esecuzione = 0;
-                            let mut matrici = Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone());
                             for cardinality in cardinalities {
                                 run_case_study(
                                     esecuzione,
                                     cardinality,
                                     "matrix_multiplication",
                                     &file_path,
-                                    Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
-                                    DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
+                                    input_data.into_data("matrices"),
+                                    input_data.into_dimdata("matrices"),
                                     Instant::now(),
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
@@ -496,15 +507,14 @@ fn main() {
 
             // Caso studio 1: Selection Sort
             let mut esecuzione = 0;
-            let mut vettore = Data::Vector(input_data.vector.clone());
             println!("Esecuzione: {}",esecuzione);
             run_case_study(
                 esecuzione,
                 num_faults,
                 "sel_sort",
                 &file_path,
-                Data::Vector(input_data.vector.clone()),
-                DimData::Vector(input_data.vector.len()),
+                input_data.into_data("vector"),
+                input_data.into_dimdata("vector"),
                 Instant::now(),
                 "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
@@ -515,14 +525,13 @@ fn main() {
             esecuzione += 1;
             println!("Esecuzione: {}",esecuzione);
             // Caso studio 2: Bubble Sort
-            let mut vettore = Data::Vector(input_data.vector.clone());
             run_case_study(
                 esecuzione,
                 num_faults,
                 "bubble_sort",
                 &file_path,
-                Data::Vector(input_data.vector.clone()),
-                DimData::Vector(input_data.vector.len()),
+                input_data.into_data("vector"),
+                input_data.into_dimdata("vector"),
                 Instant::now(),
                 "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
@@ -533,14 +542,13 @@ fn main() {
             esecuzione += 1;
             println!("Esecuzione: {}",esecuzione);
             // Caso studio 3: Matrix Multiplication
-            let mut matrici = Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone());
             run_case_study(
                 esecuzione,
                 num_faults,
                 "matrix_multiplication",
                 &file_path,
-                Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
-                DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
+                input_data.into_data("matrices"),
+                input_data.into_dimdata("matrices"),
                 Instant::now(),
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",

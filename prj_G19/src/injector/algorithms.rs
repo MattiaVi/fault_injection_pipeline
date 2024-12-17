@@ -64,7 +64,7 @@ pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Send
 
 
     /*
-    let mut N:Hardened<usize> = vet.len().into();
+    let mut N:Hardened<usize> = vet.len().into_data();
     let mut j= Hardened::from(0);
     let mut min = Hardened::from(0);
     //--------------SELECTION SORT-------------------------
