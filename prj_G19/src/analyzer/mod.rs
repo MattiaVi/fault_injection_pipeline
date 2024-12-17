@@ -104,7 +104,7 @@ pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: D
     let times = get_data_for_time_table(&target, data).unwrap();
 
     let analyzer = Analyzer::new(faults,times,bytes,time_experiment, n_esecuzione);
-    let json_path = "src/results/tmp.json";
+    let json_path = "results/tmp.json";
     // 1. Leggi il contenuto esistente del file (o array vuoto se è stato appena creato)
     let mut data_list: Vec<Analyzer> = match fs::read_to_string(json_path) {
         Ok(content) => serde_json::from_str(&content).unwrap_or_default(),
@@ -132,8 +132,10 @@ pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: D
                pdf_generator::print_pdf_diffcard(&file_path,data_list);
            }
         }
+    }else{
+        pdf_generator::print_pdf(&file_path,analyzer);
     }
-    pdf_generator::print_pdf(&file_path,analyzer);
+
 }
 fn get_data_for_dimension_table(target:&str) -> Result<Vec<f64>,String>{
     let mut dimensions:Vec<f64> = Vec::new();
@@ -168,8 +170,6 @@ fn get_data_for_dimension_table(target:&str) -> Result<Vec<f64>,String>{
 fn get_data_for_time_table(target:&str, data:Data<i32>) -> Result<Vec<f64>,String>{
     let mut times:Vec<f64> = Vec::new();
     let mut data_hard= data.clone();
-    println!("data: {:?}",data.clone().into_Vector());
-    println!("data hard: {:?}",data.clone().into_Vector());
     let elapsed_time_not_hard= match target {
         "sel_sort" => {
             let start_sel_sort = Instant::now();
@@ -191,7 +191,7 @@ fn get_data_for_time_table(target:&str, data:Data<i32>) -> Result<Vec<f64>,Strin
     };
     times.push(elapsed_time_not_hard);
 
-    println!("data hard: {:?}",data_hard.clone().into_Vector());
+
     let elapsed_time_hard= match target {
         "sel_sort" => {
             let start_sel_sort = Instant::now();

@@ -38,6 +38,7 @@ fn pause() {
     let _ = stdin.read(&mut [0u8]).unwrap();
 }
 
+#[derive(Debug)]
 pub struct InputData {
     pub vector: Vec<i32>,
     pub matrix_size: usize,
@@ -297,7 +298,7 @@ fn main() {
         },
         _ => unreachable!(),
     };
-
+    println!("Input data: {:?}",input_data);
     let mut num_faults: i32 = 2000;
 
     // Scelta tra singolo algoritmo o tutti
@@ -358,6 +359,7 @@ fn main() {
                             // Caso studio 1: Selection Sort
                             //let mut vettore = Data::Vector(input_data.vector.clone()); //let mut vettore= vet.clone();
                             run_case_study(
+                                -1, //Nel caso singolo non esiste esecuzione
                                 num_faults,
                                 "sel_sort",
                                 &file_path,
@@ -368,12 +370,14 @@ fn main() {
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
                                 |vettore| run_for_count_selection_sort(vettore),
+
                             );
                         }
                         1 => {
                             // Caso studio 2: Bubble Sort
                             let mut vettore = Data::Vector(input_data.vector.clone());
                             run_case_study(
+                                -1, //Nel caso singolo non esiste esecuzione
                                 num_faults,
                                 "bubble_sort",
                                 &file_path,
@@ -390,6 +394,7 @@ fn main() {
                             // Caso studio 3: Matrix Multiplication
                             let mut matrici = Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone());
                             run_case_study(
+                                -1,
                                 num_faults,
                                 "matrix_multiplication",
                                 &file_path,
@@ -407,13 +412,15 @@ fn main() {
                 }
                 1 => {
                     file_path.push_str("_diffcard.pdf");
-                    let cardinalities: Vec<i32> = vec![1000, 2000, 3000];
+                    let cardinalities: Vec<i32> = vec![10, 20, 30];
                     let mut vettore = Data::Vector(input_data.vector.clone());
                     match algo_selection {
                         0 => {
+                            let mut esecuzione = 0;
                             // Caso studio 1: Selection Sort
                             for cardinality in cardinalities{
                                 run_case_study(
+                                    esecuzione,
                                     cardinality,
                                     "sel_sort",
                                     &file_path,
@@ -425,13 +432,16 @@ fn main() {
                                     "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
                                     |vettore| run_for_count_selection_sort(vettore),
                                 );
+                                esecuzione += 1;
                             }
                         }
                         1 => {
                             // Caso studio 2: Bubble Sort
+                            let mut esecuzione = 0;
                             //let mut vettore = Data::Vector(input_data.vector.clone());
                             for cardinality in cardinalities{
                                 run_case_study(
+                                    esecuzione,
                                     cardinality,
                                     "bubble_sort",
                                     &file_path,
@@ -443,13 +453,16 @@ fn main() {
                                     "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
                                     |vettore| run_for_count_bubble_sort(vettore),
                                 );
+                            esecuzione += 1;
                             }
                         }
                         2 => {
                             // Caso studio 3: Matrix Multiplication
+                            let mut esecuzione = 0;
                             let mut matrici = Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone());
                             for cardinality in cardinalities {
                                 run_case_study(
+                                    esecuzione,
                                     cardinality,
                                     "matrix_multiplication",
                                     &file_path,
@@ -461,6 +474,7 @@ fn main() {
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
                                     |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size),
                                 );
+                                esecuzione += 1;
                             }
                         }
                         _ => println!("Invalid selection."),
@@ -479,9 +493,13 @@ fn main() {
                 .unwrap();
             file_path.push_str("_all.pdf");
 
+
             // Caso studio 1: Selection Sort
+            let mut esecuzione = 0;
             let mut vettore = Data::Vector(input_data.vector.clone());
+            println!("Esecuzione: {}",esecuzione);
             run_case_study(
+                esecuzione,
                 num_faults,
                 "sel_sort",
                 &file_path,
@@ -494,9 +512,12 @@ fn main() {
                 |vettore| run_for_count_selection_sort(vettore),
             );
 
+            esecuzione += 1;
+            println!("Esecuzione: {}",esecuzione);
             // Caso studio 2: Bubble Sort
             let mut vettore = Data::Vector(input_data.vector.clone());
             run_case_study(
+                esecuzione,
                 num_faults,
                 "bubble_sort",
                 &file_path,
@@ -509,9 +530,12 @@ fn main() {
                 |vettore| run_for_count_bubble_sort(vettore),
             );
 
+            esecuzione += 1;
+            println!("Esecuzione: {}",esecuzione);
             // Caso studio 3: Matrix Multiplication
             let mut matrici = Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone());
             run_case_study(
+                esecuzione,
                 num_faults,
                 "matrix_multiplication",
                 &file_path,
