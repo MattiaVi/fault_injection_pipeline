@@ -315,8 +315,7 @@ fn main() {
         },
         _ => unreachable!(),
     };
-    println!("Input data: {:?}",input_data);
-    let mut num_faults: i32 = 2000;
+
 
     // Scelta tra singolo algoritmo o tutti
     let operation_modes = vec!["Esegui un singolo algoritmo", "Esegui un'analisi comparativa tra tutti gli algoritmi"];
@@ -363,7 +362,7 @@ fn main() {
 
             match single_algo_anlysis_selection {
                 0 => {
-                        num_faults = Input::new()
+                        let num_faults = Input::new()
                         .with_prompt("Inserisci il numero di fault entries desiderate")
                         .default(2000)
                         .interact_text()
@@ -497,7 +496,7 @@ fn main() {
 
         1 => {
             // Esegui tutti gli algoritmi
-            num_faults = Input::new()
+            let num_faults = Input::new()
                 .with_prompt("Inserisci il numero di fault entries desiderate")
                 .default(2000)
                 .interact_text()
@@ -580,6 +579,7 @@ fn main() {
             analysis_output_file.to_string(),
         );
 
+        println!("Analisi statica fatta");
 
         // 2. Generazione della fault list (FL)
         fault_list_manager::create_fault_list(
@@ -590,6 +590,7 @@ fn main() {
             fault_list_file.to_string(),
             fault_list_run(input_data.clone()),
         );
+        println!("Fault list creata");
 
         // 3. Faccio partire l'ambiente di fault injection
         fault_injection_env(
@@ -599,6 +600,6 @@ fn main() {
             input_data.clone(),
             start,
             esecuzione);
-        return;
+        println!("Fault injection finito");
     }
 }

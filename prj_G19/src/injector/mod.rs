@@ -342,8 +342,7 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
 pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
                         tx_chan_inj_anl: Sender<TestResult>,
                         target: String,
-                        data: Data<i32>){            //per il momento lasciamolo, poi si vedrà...
-
+                        data: Data<i32>){
 
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs

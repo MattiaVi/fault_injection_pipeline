@@ -1,42 +1,7 @@
 [
   {
-    "var": "swapped",
-    "time": 137,
-    "flipped_bit": 1
-  },
-  {
-    "var": "j",
-    "time": 184,
-    "flipped_bit": 22
-  },
-  {
-    "var": "j",
-    "time": 56,
-    "flipped_bit": 19
-  },
-  {
-    "var": "swapped",
-    "time": 60,
-    "flipped_bit": 5
-  },
-  {
-    "var": "swapped",
-    "time": 49,
-    "flipped_bit": 1
-  },
-  {
     "var": "n",
-    "time": 39,
-    "flipped_bit": 31
-  },
-  {
-    "var": "swapped",
-    "time": 107,
-    "flipped_bit": 7
-  },
-  {
-    "var": "j",
-    "time": 87,
-    "flipped_bit": 6
+    "time": 27,
+    "flipped_bit": 13
   }
 ]
