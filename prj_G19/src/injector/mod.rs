@@ -30,7 +30,7 @@ enum AlgorithmVariables {
 struct SelectionSortVariables {
     i: RwLock<Hardened<usize>>,
     j: RwLock<Hardened<usize>>,
-    N: RwLock<Hardened<usize>>,
+    n: RwLock<Hardened<usize>>,
     min: RwLock<Hardened<usize>>,
     vec: RwLock<Vec<Hardened<i32>>>,
 }
@@ -38,7 +38,7 @@ struct SelectionSortVariables {
 struct BubbleSortVariables {
     i: RwLock<Hardened<usize>>,
     j: RwLock<Hardened<usize>>,
-    N: RwLock<Hardened<usize>>,
+    n: RwLock<Hardened<usize>>,
     swapped: RwLock<Hardened<bool>>,
     vet: RwLock<Vec<Hardened<i32>>>,
 }
@@ -68,7 +68,7 @@ impl VariableSet for SelectionSortVariables {
             i: RwLock::new(Hardened::from(0)),
             j: RwLock::new(Hardened::from(0)),
             min: RwLock::new(Hardened::from(0)),
-            N: RwLock::new(Hardened::from(0)),
+            n: RwLock::new(Hardened::from(0)),
             vec: RwLock::new(Hardened::from_vec(vec))
         }
     }
@@ -81,7 +81,7 @@ impl VariableSet for BubbleSortVariables {
             i: RwLock::new(Hardened::from(0)),
             j: RwLock::new(Hardened::from(0)),
             swapped: RwLock::new(Hardened::from(false)),
-            N: RwLock::new(Hardened::from(0)),
+            n: RwLock::new(Hardened::from(0)),
             vet: RwLock::new(Hardened::from_vec(vet))
         }
     }
@@ -185,10 +185,10 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
                             let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
                             var.j.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
                         },
-                        "N" => {
-                            let val = var.N.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                        "n" => {
+                            let val = var.n.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
                             let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
-                            var.N.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                            var.n.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
                         },
                         "min" => {
                             let val = var.min.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
@@ -219,10 +219,10 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
                             let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
                             var.j.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
                         },
-                        "N" => {
-                            let val = var.N.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
+                        "n" => {
+                            let val = var.n.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
                             let new_val = val ^ mask;                                           // nuovo valore da salvare (XOR per il bitflip)
-                            var.N.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
+                            var.n.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
                         },
                         "swapped" => {
                             let val = var.swapped.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile

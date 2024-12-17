@@ -8,7 +8,7 @@
       "start": 1
     },
     {
-      "name": "N",
+      "name": "n",
       "ty": "usize",
       "size": "4",
       "start": 1

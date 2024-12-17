@@ -11,5 +11,5 @@ Index<Hardened<usize>>::index
 IndexMut<Hardened<usize>>::index_mut
 ```
 
-Il primo carattere è l'intero N, seguono N stringhe associate ai casi 
+Il primo carattere è l'intero n, seguono n stringhe associate ai casi 
 possibili messaggi di errore generate dai panic.

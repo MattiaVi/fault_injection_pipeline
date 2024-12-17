@@ -573,13 +573,10 @@ fn main() {
                       fault_list_run: impl FnOnce(Data<i32>) -> usize) {
         // 1. Analisi statica del codice
 
-        // TODO: cercare di gestire l'errore magari con un expect
         static_analysis::generate_analysis_file(
             analysis_input_file.to_string(),
             analysis_output_file.to_string(),
-        );
-
-        println!("Analisi statica fatta");
+        ).expect("Analisi statica del codice fallita");
 
         // 2. Generazione della fault list (FL)
         fault_list_manager::create_fault_list(
@@ -590,7 +587,6 @@ fn main() {
             fault_list_file.to_string(),
             fault_list_run(input_data.clone()),
         );
-        println!("Fault list creata");
 
         // 3. Faccio partire l'ambiente di fault injection
         fault_injection_env(
@@ -600,6 +596,5 @@ fn main() {
             input_data.clone(),
             start,
             esecuzione);
-        println!("Fault injection finito");
     }
 }

@@ -1,7 +1,112 @@
 [
   {
+    "var": "vet[2]",
+    "time": 64,
+    "flipped_bit": 0
+  },
+  {
+    "var": "j",
+    "time": 142,
+    "flipped_bit": 1
+  },
+  {
     "var": "n",
-    "time": 27,
+    "time": 204,
+    "flipped_bit": 3
+  },
+  {
+    "var": "j",
+    "time": 69,
+    "flipped_bit": 15
+  },
+  {
+    "var": "n",
+    "time": 188,
+    "flipped_bit": 7
+  },
+  {
+    "var": "vet[9]",
+    "time": 41,
+    "flipped_bit": 1
+  },
+  {
+    "var": "i",
+    "time": 191,
+    "flipped_bit": 28
+  },
+  {
+    "var": "swapped",
+    "time": 39,
+    "flipped_bit": 1
+  },
+  {
+    "var": "n",
+    "time": 32,
+    "flipped_bit": 29
+  },
+  {
+    "var": "swapped",
+    "time": 214,
+    "flipped_bit": 7
+  },
+  {
+    "var": "i",
+    "time": 49,
+    "flipped_bit": 23
+  },
+  {
+    "var": "n",
+    "time": 44,
+    "flipped_bit": 27
+  },
+  {
+    "var": "vet[1]",
+    "time": 168,
+    "flipped_bit": 1
+  },
+  {
+    "var": "swapped",
+    "time": 173,
+    "flipped_bit": 0
+  },
+  {
+    "var": "n",
+    "time": 86,
+    "flipped_bit": 5
+  },
+  {
+    "var": "vet[2]",
+    "time": 93,
+    "flipped_bit": 1
+  },
+  {
+    "var": "swapped",
+    "time": 7,
+    "flipped_bit": 4
+  },
+  {
+    "var": "swapped",
+    "time": 107,
+    "flipped_bit": 1
+  },
+  {
+    "var": "i",
+    "time": 50,
+    "flipped_bit": 27
+  },
+  {
+    "var": "n",
+    "time": 212,
     "flipped_bit": 13
+  },
+  {
+    "var": "swapped",
+    "time": 158,
+    "flipped_bit": 7
+  },
+  {
+    "var": "j",
+    "time": 145,
+    "flipped_bit": 11
   }
 ]

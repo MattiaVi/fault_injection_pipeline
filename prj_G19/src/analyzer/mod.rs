@@ -133,7 +133,7 @@ pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: D
            }
         }
     }else{
-        pdf_generator::print_pdf(&file_path,analyzer);
+        //pdf_generator::print_pdf(&file_path,analyzer);
     }
 
 }

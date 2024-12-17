@@ -5,7 +5,7 @@ use crate::injector::{BubbleSortVariables, MatrixMultiplicationVariables, Select
 
 pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<(), IncoherenceError> {
 
-    *variables.N.write().unwrap() = variables.vec.read().unwrap().len().into();
+    *variables.n.write().unwrap() = variables.vec.read().unwrap().len().into();
     tx_runner.send("i1").unwrap();
     rx_runner.recv().unwrap();
 
@@ -21,7 +21,7 @@ pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Send
     tx_runner.send("i4").unwrap();
     rx_runner.recv().unwrap();
 
-    while *variables.i.read().unwrap() < (*variables.N.read().unwrap() - 1)? {
+    while *variables.i.read().unwrap() < (*variables.n.read().unwrap() - 1)? {
         tx_runner.send("i5").unwrap();
         rx_runner.recv().unwrap();
 
@@ -33,7 +33,7 @@ pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Send
         tx_runner.send("i7").unwrap();
         rx_runner.recv().unwrap();
 
-        while *variables.j.read().unwrap() < *variables.N.read().unwrap() {
+        while *variables.j.read().unwrap() < *variables.n.read().unwrap() {
             tx_runner.send("i8").unwrap();
             rx_runner.recv().unwrap();
 
@@ -64,16 +64,16 @@ pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Send
 
 
     /*
-    let mut N:Hardened<usize> = vet.len().into_data();
+    let mut n:Hardened<usize> = vet.len().into_data();
     let mut j= Hardened::from(0);
     let mut min = Hardened::from(0);
     //--------------SELECTION SORT-------------------------
     let mut i= Hardened::from(0);
-    while i<(N-1)?{
+    while i<(n-1)?{
         min.assign(i)?;                 //min=i
         j.assign((i+1)?)?;        //j=0
         //Ricerca del minimo
-        while j<N{
+        while j<n{
             if vet[j]<vet[min]  {   min.assign(j)?; }
             j.assign((j+1)?)?;
         }
@@ -91,7 +91,7 @@ pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Send
 
 pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<(), IncoherenceError> {
 
-    *variables.N.write().unwrap() = Hardened::from(variables.vet.read().unwrap().len());
+    *variables.n.write().unwrap() = Hardened::from(variables.vet.read().unwrap().len());
     tx_runner.send("i1").unwrap();
     rx_runner.recv().unwrap();
 
@@ -99,7 +99,7 @@ pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&st
     tx_runner.send("i2").unwrap();
     rx_runner.recv().unwrap();
 
-    while *variables.i.read().unwrap() < *variables.N.read().unwrap() {
+    while *variables.i.read().unwrap() < *variables.n.read().unwrap() {
         tx_runner.send("i3").unwrap();
         rx_runner.recv().unwrap();
 
@@ -111,7 +111,7 @@ pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&st
         tx_runner.send("i5").unwrap();
         rx_runner.recv().unwrap();
 
-        while *variables.j.read().unwrap() < ((*variables.N.read().unwrap() - *variables.i.read().unwrap())? - 1)? {
+        while *variables.j.read().unwrap() < ((*variables.n.read().unwrap() - *variables.i.read().unwrap())? - 1)? {
             tx_runner.send("i6").unwrap();
             rx_runner.recv().unwrap();
 
