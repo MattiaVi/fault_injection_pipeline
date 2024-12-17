@@ -25,7 +25,7 @@ pub enum DimData{
 impl DimData{
     fn into_tuple(self)->(usize,usize){
         match self{
-            DimData::Matrix((a,b)) => {
+            DimData::Matrices((a,b)) => {
                 (a,b)
             }
             _ => { panic!("not expected a tuple here") }

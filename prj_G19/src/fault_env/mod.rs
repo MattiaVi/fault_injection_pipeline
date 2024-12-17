@@ -41,7 +41,7 @@ impl<T> Data<T>{
                 DimData::Vector(a.len())
             },
             Data::Matrices(a,_)=>{
-                DimData::Matrix((a.len(), a[0].len()))
+                DimData::Matrices((a.len(), a[0].len()))
             }
         }
     }
