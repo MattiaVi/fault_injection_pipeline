@@ -45,9 +45,13 @@ const LOREM_IPSUM: &'static str =
     voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat \
     non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
-
-
-pub fn print_pdf(file_path: String, analyzer: Analyzer) {
+pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
+    todo!()
+}
+pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
+    todo!()
+}
+pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
     let title_style =  style::Style::new().bold().with_font_size(20);
     let title_margins= Margins::trbl(0, 0,0,5);
     let text_style = style::Style::new().with_font_size(10);

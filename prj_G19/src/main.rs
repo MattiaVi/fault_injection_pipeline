@@ -11,6 +11,7 @@ use std::io::{BufRead, Error, Read, Write};
 use std::io;
 use std::path::Path;
 use std::fs::File;
+use std::time::Instant;
 use syn::visit::Visit;
 use crate::fault_env::{Data, fault_injection_env};
 use clap::Parser;
@@ -362,6 +363,7 @@ fn main() {
                                 &file_path,
                                 Data::Vector(input_data.vector.clone()),
                                 DimData::Vector(input_data.vector.len()),
+                                Instant::now(),
                                 "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
@@ -377,6 +379,7 @@ fn main() {
                                 &file_path,
                                 Data::Vector(input_data.vector.clone()),
                                 DimData::Vector(input_data.vector.len()),
+                                Instant::now(),
                                 "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
@@ -392,6 +395,7 @@ fn main() {
                                 &file_path,
                                 Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
                                 DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
+                                Instant::now(),
                                 "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
@@ -415,6 +419,7 @@ fn main() {
                                     &file_path,
                                     Data::Vector(input_data.vector.clone()),
                                     DimData::Vector(input_data.vector.len()),
+                                    Instant::now(),
                                     "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                                     "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                     "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
@@ -432,6 +437,7 @@ fn main() {
                                     &file_path,
                                     Data::Vector(input_data.vector.clone()),
                                     DimData::Vector(input_data.vector.len()),
+                                    Instant::now(),
                                     "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                                     "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                                     "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
@@ -449,6 +455,7 @@ fn main() {
                                     &file_path,
                                     Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
                                     DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
+                                    Instant::now(),
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
@@ -480,6 +487,7 @@ fn main() {
                 &file_path,
                 Data::Vector(input_data.vector.clone()),
                 DimData::Vector(input_data.vector.len()),
+                Instant::now(),
                 "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
@@ -494,6 +502,7 @@ fn main() {
                 &file_path,
                 Data::Vector(input_data.vector.clone()),
                 DimData::Vector(input_data.vector.len()),
+                Instant::now(),
                 "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
@@ -508,6 +517,7 @@ fn main() {
                 &file_path,
                 Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
                 DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
+                Instant::now(),
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
@@ -519,11 +529,13 @@ fn main() {
     println!("Operazione completata. Report salvato in: {}", file_path);
 
 
-    fn run_case_study(num_faults: i32,
+    fn run_case_study(esecuzione:i8,
+                      num_faults: i32,
                       case_name: &str,
                       file_path: &str,
                       input_data: Data<i32>,
                       dim_data: DimData,
+                      start: Instant,
                       analysis_input_file: &str,
                       analysis_output_file: &str,
                       fault_list_file: &str,
@@ -553,7 +565,8 @@ fn main() {
             case_name.to_string(),
             file_path.to_string(),
             input_data.clone(),
-        );
+            start,
+            esecuzione);
         return;
     }
 }

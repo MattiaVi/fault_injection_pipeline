@@ -1,4 +1,5 @@
 use std::sync::mpsc::channel;
+use std::time::Instant;
 use crate::analyzer::analyzer;
 use crate::fault_list_manager::{DimData, fault_manager};
 use crate::injector::injector_manager;
@@ -49,15 +50,16 @@ impl<T> Data<T>{
 pub fn fault_injection_env(fault_list: String,      // nome file fault-list
                            target: String,          // nome programma target
                            file_path: String,       // nome file report
-                           data: Data<i32>) {       // dati del problema
+                           data: Data<i32>,
+                           timer:Instant,
+                           esecuzione:i8) {       // dati del problema
 
     let (tx_chan_fm_inj, rx_chan_fm_inj) = channel();
     let (tx_chan_inj_anl, rx_chan_inj_anl) = channel();
-
     fault_manager(tx_chan_fm_inj,fault_list);
-    injector_manager(rx_chan_fm_inj, tx_chan_inj_anl, target, data.clone());
-    analyzer(rx_chan_inj_anl,file_path,data,target);
-
+    injector_manager(rx_chan_fm_inj, tx_chan_inj_anl, target.clone(), data.clone());
+    let execution_time = timer.elapsed().as_millis()as f64;
+    analyzer(rx_chan_inj_anl,file_path,data,target,esecuzione,execution_time);
 }
 
 /*

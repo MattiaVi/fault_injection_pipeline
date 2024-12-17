@@ -52,17 +52,17 @@ pub fn pie_chart(anl: Analyzer) {
                 }}
             ]
         }}"###,
-        anl.total_fault,
-        anl.n_silent_fail,
-        anl.n_assign_fail,
-        anl.n_mul_fail,
-        anl.n_add_fail,
-        anl.n_ord_fail,
-        anl.n_partialord_fail,
-        anl.n_partialeq_fail,
-        anl.n_generic_fail,
-        anl.n_index_fail,
-        anl.n_indexmut_fail,
+        anl.faults.total_fault,
+        anl.faults.n_silent_fault,
+        anl.faults.n_assign_fault,
+        anl.faults.n_mul_fault,
+        anl.faults.n_add_fault,
+        anl.faults.n_ord_fault,
+        anl.faults.n_partialord_fault,
+        anl.faults.n_partialeq_fault,
+        anl.faults.n_generic_fault,
+        anl.faults.n_index_fault,
+        anl.faults.n_indexmut_fault,
     );
     let pie_chart = PieChart::from_json(&pie_chart_json).unwrap();
     let res = pie_chart.svg().unwrap();
@@ -123,17 +123,17 @@ pub fn not_rose_radius_pie_chart(anl: Analyzer) {
                 }}
             ]
         }}"###,
-        anl.total_fault,
-        anl.n_silent_fail,
-        anl.n_assign_fail,
-        anl.n_mul_fail,
-        anl.n_add_fail,
-        anl.n_ord_fail,
-        anl.n_partialord_fail,
-        anl.n_partialeq_fail,
-        anl.n_generic_fail,
-        anl.n_index_fail,
-        anl.n_indexmut_fail,
+        anl.faults.total_fault,
+        anl.faults.n_silent_fault,
+        anl.faults.n_assign_fault,
+        anl.faults.n_mul_fault,
+        anl.faults.n_add_fault,
+        anl.faults.n_ord_fault,
+        anl.faults.n_partialord_fault,
+        anl.faults.n_partialeq_fault,
+        anl.faults.n_generic_fault,
+        anl.faults.n_index_fault,
+        anl.faults.n_indexmut_fault,
     );
     let pie_chart = PieChart::from_json(&pie_chart_json).unwrap();
     let res = pie_chart.svg().unwrap();
