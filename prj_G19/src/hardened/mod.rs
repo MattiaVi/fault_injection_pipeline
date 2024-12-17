@@ -1,6 +1,6 @@
-mod bubble_sort_hardened;
-mod matrix_multiplication_hardened;
-mod selection_sort_hardened;
+pub(crate) mod bubble_sort_hardened;
+pub(crate) mod matrix_multiplication_hardened;
+pub(crate) mod selection_sort_hardened;
 
 use std::cmp::Ordering;
 use std::fmt::{Display, Debug, Formatter};
@@ -338,16 +338,14 @@ pub fn run_for_count_bubble_sort(vettore: Data<i32>) ->usize{
     count
 }
 //a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>
-pub fn run_for_count_matrix_mul(matrici: Data<i32>)->usize{
+pub fn run_for_count_matrix_mul(matrici: Data<i32>, size:usize)->usize{
 
     let matrices = matrici.into_Matrices();
     let a = matrices.0;
     let b = matrices.1;
 
-    let size = 5; // Dimensione fissa 5x5
     let mut result: Vec<Vec<i32>> = Vec::new();
     let mut count=3;
-
     for i in 0..size {
         count+=1;
         let mut row: Vec<i32> = Vec::new(); // Crea una nuova riga

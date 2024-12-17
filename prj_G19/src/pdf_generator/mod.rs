@@ -17,15 +17,19 @@
 mod encoder;
 mod chart_generator;
 
-use std::env;
-
+use std::{env, fs};
+use std::time::Instant;
 use genpdf::{Alignment, Margins};
 use genpdf::Element as _;
 use genpdf::{elements, fonts, style};
 use genpdf::elements::{CellDecorator, LinearLayout};
-use genpdf::render::Area;
-use genpdf::style::Style;
+use crate::hardened::{bubble_sort_hardened, matrix_multiplication_hardened, selection_sort_hardened, Hardened};
+
+use crate::fault_list_manager::file_fault_list::{bubble_sort,
+                                                 matrix_multiplication,
+                                                 selection_sort};
 use crate::analyzer::Analyzer;
+use crate::fault_env::Data;
 
 const FONT_DIRS: &[&str] = &[
     "src/pdf_generator/fonts/times_new_roman",
@@ -44,7 +48,6 @@ const LOREM_IPSUM: &'static str =
 
 
 pub fn print_pdf(file_path: String, analyzer: Analyzer) {
-
     let title_style =  style::Style::new().bold().with_font_size(20);
     let title_margins= Margins::trbl(0, 0,0,5);
     let text_style = style::Style::new().with_font_size(10);
@@ -347,8 +350,9 @@ pub fn print_pdf(file_path: String, analyzer: Analyzer) {
         .expect("Failed to write output file");
 }
 
-// Only import the images if the feature is enabled. This helps verify our handling of feature toggles.
 
+
+// Only import the images if the feature is enabled. This helps verify our handling of feature toggles.
 mod images {
     use super::*;
 

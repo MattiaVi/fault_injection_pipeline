@@ -11,7 +11,9 @@ use rand::prelude::*;
 
 
 pub mod static_analysis;
+pub(crate) mod file_fault_list;
 
+//mod file_fault_list;
 
 //Dimensioni di array/matrici per la generazione della fault list
 #[derive(Copy, Clone)]

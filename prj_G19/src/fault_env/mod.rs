@@ -55,8 +55,9 @@ pub fn fault_injection_env(fault_list: String,      // nome file fault-list
     let (tx_chan_inj_anl, rx_chan_inj_anl) = channel();
 
     fault_manager(tx_chan_fm_inj,fault_list);
-    injector_manager(rx_chan_fm_inj, tx_chan_inj_anl, target, data);
-    analyzer(rx_chan_inj_anl,file_path);
+    injector_manager(rx_chan_fm_inj, tx_chan_inj_anl, target, data.clone());
+    analyzer(rx_chan_inj_anl,file_path,data,target);
+
 }
 
 /*

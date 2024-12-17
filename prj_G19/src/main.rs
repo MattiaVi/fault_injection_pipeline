@@ -44,7 +44,6 @@ pub struct InputData {
     pub matrix2: Vec<Vec<i32>>,
 }
 pub fn load_data_from_dataset()-> Result<InputData, Error> {
-
     // Apri il file
     let file = File::open("src/data/dataset/dataset_vector.txt")?;
     let reader = io::BufReader::new(file);
@@ -274,12 +273,13 @@ fn main() {
     let data_sources = vec!["Data file", "Dataset"];
     let data_source_selection = Select::new()
         .with_prompt("Seleziona la sorgente dei dati")
+        .default(0)
         .items(&data_sources)
         .interact()
         .unwrap();
 
     // Caricamento dati in base alla sorgente scelta
-    let input_data = match data_source_selection {
+    let input_data: InputData = match data_source_selection {
         0 => match load_data_from_file(&input_path) {
             Ok(data) => data,
             Err(e) => {
@@ -297,7 +297,6 @@ fn main() {
         _ => unreachable!(),
     };
 
-    //println!("Dati caricati: {:?}", data);
     let mut num_faults: i32 = 2000;
 
     // Scelta tra singolo algoritmo o tutti
@@ -313,7 +312,6 @@ fn main() {
 
         // Caso del singolo algoritmo
         0 => {
-            file_path.push_str(".pdf");
             //scegli algoritmo--------------------------------------------------------------------------
             let options = vec![
                 "Selection Sort",
@@ -329,15 +327,12 @@ fn main() {
                 .interact()
                 .unwrap();
 
-            // Mostriamo l'opzione selezionata
-            println!("Hai selezionato: {} e lo stai salvando in {}", options[algo_selection], nome_file);
-
             //--------------------------------------------------------------------------
 
             //scelta tra H/non H, variazione tra #fault list
             let options = vec![
-                "Not Hardened vs Hardened",
-                "Variazione cardinalità fault list entries",
+                "Digita una cardinalità a piacere per la fault list entry",
+                "Tre esecuzioni con cardinalità della fault list entry che varia [1000, 2000, 3000]",
             ];
 
             let single_algo_anlysis_selection = Select::new()
@@ -347,17 +342,15 @@ fn main() {
                 .interact()
                 .unwrap();
 
-            // Mostriamo l'opzione selezionata
-            println!("Hai selezionato: {}", options[single_algo_anlysis_selection]);
-
-
             match single_algo_anlysis_selection {
                 0 => {
-                    num_faults = Input::new()
+                        num_faults = Input::new()
                         .with_prompt("Inserisci il numero di fault entries desiderate")
                         .default(2000)
                         .interact_text()
                         .unwrap();
+
+                        file_path.push_str(".pdf");
 
                     match algo_selection {
                         0 => {
@@ -369,7 +362,7 @@ fn main() {
                                 &file_path,
                                 Data::Vector(input_data.vector.clone()),
                                 DimData::Vector(input_data.vector.len()),
-                                "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
+                                "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
                                 |vettore| run_for_count_selection_sort(vettore),
@@ -384,7 +377,7 @@ fn main() {
                                 &file_path,
                                 Data::Vector(input_data.vector.clone()),
                                 DimData::Vector(input_data.vector.len()),
-                                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
+                                "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
                                 |vettore| run_for_count_bubble_sort(vettore),
@@ -399,16 +392,17 @@ fn main() {
                                 &file_path,
                                 Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
                                 DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
-                                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
+                                "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
-                                |matrici| run_for_count_matrix_mul(matrici),
+                                |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size),
                             );
                         }
                         _ => println!("Invalid selection."),
                     }
                 }
                 1 => {
+                    file_path.push_str("_diffcard.pdf");
                     let cardinalities: Vec<i32> = vec![1000, 2000, 3000];
                     let mut vettore = Data::Vector(input_data.vector.clone());
                     match algo_selection {
@@ -421,7 +415,7 @@ fn main() {
                                     &file_path,
                                     Data::Vector(input_data.vector.clone()),
                                     DimData::Vector(input_data.vector.len()),
-                                    "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
+                                    "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                                     "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                     "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
                                     |vettore| run_for_count_selection_sort(vettore),
@@ -438,7 +432,7 @@ fn main() {
                                     &file_path,
                                     Data::Vector(input_data.vector.clone()),
                                     DimData::Vector(input_data.vector.len()),
-                                    "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
+                                    "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                                     "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                                     "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
                                     |vettore| run_for_count_bubble_sort(vettore),
@@ -455,10 +449,10 @@ fn main() {
                                     &file_path,
                                     Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
                                     DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
-                                    "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
+                                    "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
-                                    |matrici| run_for_count_matrix_mul(matrici),
+                                    |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size),
                                 );
                             }
                         }
@@ -477,7 +471,6 @@ fn main() {
                 .interact_text()
                 .unwrap();
             file_path.push_str("_all.pdf");
-            println!("{:?}", file_path);
 
             // Caso studio 1: Selection Sort
             let mut vettore = Data::Vector(input_data.vector.clone());
@@ -487,7 +480,7 @@ fn main() {
                 &file_path,
                 Data::Vector(input_data.vector.clone()),
                 DimData::Vector(input_data.vector.len()),
-                "src/fault_list_manager/file_fault_list/selection_sort/selection_sort.json",
+                "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
                 |vettore| run_for_count_selection_sort(vettore),
@@ -501,7 +494,7 @@ fn main() {
                 &file_path,
                 Data::Vector(input_data.vector.clone()),
                 DimData::Vector(input_data.vector.len()),
-                "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort.rs",
+                "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
                 |vettore| run_for_count_bubble_sort(vettore),
@@ -515,10 +508,10 @@ fn main() {
                 &file_path,
                 Data::Matrices(input_data.matrix1.clone(), input_data.matrix2.clone()),
                 DimData::Matrix((input_data.matrix1.len(), input_data.matrix_size)),
-                "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_multiplication.rs",
+                "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
-                |matrici| run_for_count_matrix_mul(matrici),
+                |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size),
             );
         }
         _ => unreachable!(),
@@ -543,6 +536,7 @@ fn main() {
             analysis_output_file.to_string(),
         );
 
+
         // 2. Generazione della fault list (FL)
         fault_list_manager::create_fault_list(
             num_faults,
@@ -560,5 +554,6 @@ fn main() {
             file_path.to_string(),
             input_data.clone(),
         );
+        return;
     }
 }
