@@ -23,9 +23,45 @@ pub struct Faults{
      pub(crate) n_partialeq_fault: usize,
      pub(crate) total_fault: usize,
 }
+pub struct FaultsIter<'a> {
+    faults: &'a Faults,
+    index: usize,
+}
+
+impl Faults {
+    // Metodo per creare l'iteratore
+    pub fn iter(&self) -> FaultsIter {
+        FaultsIter {
+            faults: self,
+            index: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for FaultsIter<'a> {
+    type Item = (&'static str, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let result = match self.index {
+            0 => Some(("n_silent_fault", self.faults.n_silent_fault)),
+            1 => Some(("n_assign_fault", self.faults.n_assign_fault)),
+            2 => Some(("n_mul_fault", self.faults.n_mul_fault)),
+            3 => Some(("n_generic_fault", self.faults.n_generic_fault)),
+            4 => Some(("n_add_fault", self.faults.n_add_fault)),
+            5 => Some(("n_indexmut_fault", self.faults.n_indexmut_fault)),
+            6 => Some(("n_index_fault", self.faults.n_index_fault)),
+            7 => Some(("n_ord_fault", self.faults.n_ord_fault)),
+            8 => Some(("n_partialord_fault", self.faults.n_partialord_fault)),
+            9 => Some(("n_partialeq_fault", self.faults.n_partialeq_fault)),
+            _ => None,
+        };
+        self.index += 1;
+        result
+    }
+}
 #[derive(Serialize,Deserialize,Debug,Clone)]
 pub struct Analyzer{
-    n_esecuzione: i8,
+    pub(crate) n_esecuzione: i8,
     pub(crate) faults: Faults,
     time_experiment: f64,
     time_alg_hardened: f64,
@@ -35,7 +71,7 @@ pub struct Analyzer{
 }
 
 impl Analyzer{
-    fn new(faults: Faults, times: Vec<f64>, bytes:Vec<f64>,time_exp:f64,n_esecuzione:i8)-> Self{
+    pub(crate) fn new(faults: Faults, times: Vec<f64>, bytes:Vec<f64>, time_exp:f64, n_esecuzione:i8) -> Self{
         Analyzer{
             n_esecuzione,
             faults,
@@ -215,7 +251,7 @@ fn get_data_for_time_table(target:&str, data:Data<i32>) -> Result<Vec<f64>,Strin
 #[cfg(test)]
 mod tests{
     use rand::Rng;
-    use crate::analyzer::{get_data_for_dimension_table, get_data_for_time_table};
+    use crate::analyzer::{get_data_for_dimension_table, get_data_for_time_table, Faults};
     use crate::fault_env::Data;
     #[test]
     fn try_get_execution_times(){
@@ -240,6 +276,27 @@ mod tests{
             assert!(dimensions[0] >= 0.0 && dimensions[1] >= 0.0);
         }else{
             println!("{}",dim.unwrap_err());
+        }
+    }
+
+    #[test]
+    fn try_iterator_faults(){
+        let faults = Faults {
+            n_silent_fault: 1,
+            n_assign_fault: 2,
+            n_mul_fault: 3,
+            n_generic_fault: 4,
+            n_add_fault: 5,
+            n_indexmut_fault: 6,
+            n_index_fault: 7,
+            n_ord_fault: 8,
+            n_partialord_fault: 9,
+            n_partialeq_fault: 10,
+            total_fault: 55,
+        };
+        let ref_iter = &faults;
+        for (name, value) in ref_iter.iter() {
+            println!("{}: {}", name, value.to_string());
         }
     }
 }
