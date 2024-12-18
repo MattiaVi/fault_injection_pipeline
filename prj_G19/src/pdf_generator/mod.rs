@@ -22,7 +22,7 @@ use std::time::Instant;
 use genpdf::{Alignment, Margins};
 use genpdf::Element as _;
 use genpdf::{elements, fonts, style};
-use genpdf::elements::{CellDecorator, LinearLayout};
+use genpdf::elements::{CellDecorator, LinearLayout, TableLayout};
 use crate::hardened::{bubble_sort_hardened, matrix_multiplication_hardened, selection_sort_hardened, Hardened};
 
 use crate::fault_list_manager::file_fault_list::{bubble_sort,
@@ -325,36 +325,54 @@ pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
         "Now let’s print a long table to demonstrate how page wrapping works:",
     ));
 
-    let mut table = elements::TableLayout::new(vec![1, 5]);
-    table.set_cell_decorator(elements::FrameCellDecorator::new(true, true, false));
-    table
-        .row()
-        .element(
-            elements::Paragraph::new("Index")
-                .styled(style::Effect::Bold)
-                .padded(1),
-        )
-        .element(
-            elements::Paragraph::new("Text")
-                .styled(style::Effect::Bold)
-                .padded(1),
-        )
-        .push()
-        .expect("Invalid table row");
-    for i in 0..10 {
-        table
-            .row()
-            .element(elements::Paragraph::new(format!("#{}", i)).padded(1))
-            .element(elements::Paragraph::new(LOREM_IPSUM).padded(1))
-            .push()
-            .expect("Invalid table row");
-    }
-    doc.push(table);
+
 
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
 }
 
+pub fn gen_tables(mut dim: Vec<f64>, mut time: Vec<f64>,
+                  top_headers: Vec<&str>, side_headers: Vec<&str>) -> Vec<TableLayout>{
+
+    dim.push(f64::trunc((dim[1]/dim[0])*100.0)/100.0);
+    time.push(f64::trunc((time[1]/time[0])*100.0)/100.0);
+
+    let mut tables = Vec::new();
+    let mut dim_table = elements::TableLayout::new(vec![1, 5]);
+    dim_table.set_cell_decorator(elements::FrameCellDecorator::new(true, true, false));
+    dim_table.row().element(
+        elements::Paragraph::new("")
+    ).push().expect("Invalid table row");
+
+    //Costruisco l'header della tabella
+    for header in top_headers{
+        dim_table.row().element(
+            elements::Paragraph::new(header)
+                .styled(style::Effect::Bold)
+                .padded(1),
+        ).push().expect("Invalid table row");
+    }
+
+    for header in side_headers{
+        dim_table.row().element(
+            elements::Paragraph::new(header)
+                .styled(style::Effect::Bold)
+                .padded(1),
+        ).push().expect("Invalid table row");
+        for info in dim.iter(){
+            dim_table.row().element(
+                elements::Paragraph::new(info.to_string())
+                    .padded(1),
+            ).push().expect("Invalid table row");
+
+        }
+
+    }
+    // TODO:tabella per i tempi
+    tables.push(dim_table);
+    tables
+
+}
 
 
 // Only import the images if the feature is enabled. This helps verify our handling of feature toggles.
@@ -382,5 +400,15 @@ mod images {
         doc.push(elements::Break::new(1.5));
          */
    }
+
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn try_gen_table(){
+
+    }
 
 }

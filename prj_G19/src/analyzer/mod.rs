@@ -159,8 +159,6 @@ fn get_data_for_dimension_table(target:&str) -> Result<Vec<f64>,String>{
         dimensions.push(dim_not_hard);
         let dim_hard = metadata_hard.unwrap().len() as f64;
         dimensions.push(dim_hard);
-        let div_res =  f64::trunc((dim_hard/dim_not_hard)*100.0)/100.0;
-        dimensions.push(div_res);
     }else{
         return Err(format!("il path del file: {} non è valido",file_path_nothardened));
     }
@@ -212,7 +210,6 @@ fn get_data_for_time_table(target:&str, data:Data<i32>) -> Result<Vec<f64>,Strin
         _ => return Err("Indice non valido".to_string()),
     };
     times.push(elapsed_time_hard);
-    times.push(f64::trunc((elapsed_time_hard/elapsed_time_not_hard)*100.0)/100.0);
     Ok(times)
 }
 #[cfg(test)]
