@@ -1,6 +1,8 @@
 pub fn selection_sort(mut vet:Vec<i32>)->Vec<i32>{
-    let mut n:usize = vet.len();
+    let n:usize = vet.len();
+    #[allow(unused_assignments)]
     let mut j=0;
+    #[allow(unused_assignments)]
     let mut min=0;
 
     //-----------------------SELECTION SORT-------------------------

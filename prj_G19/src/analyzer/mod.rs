@@ -205,21 +205,21 @@ fn get_data_for_dimension_table(target:&str) -> Result<Vec<f64>,String>{
 
 fn get_data_for_time_table(target:&str, data:Data<i32>) -> Result<Vec<f64>,String>{
     let mut times:Vec<f64> = Vec::new();
-    let mut data_hard= data.clone();
+    let data_hard= data.clone();
     let elapsed_time_not_hard= match target {
         "sel_sort" => {
             let start_sel_sort = Instant::now();
-            selection_sort::selection_sort(data.into_Vector());
+            selection_sort::selection_sort(data.into_vector());
             (start_sel_sort.elapsed().as_nanos() as f64)/1000.0
         },
         "bubble_sort" => {
             let start_bb_sort = Instant::now();
-            bubble_sort::bubble_sort(data.into_Vector());
+            bubble_sort::bubble_sort(data.into_vector());
             (start_bb_sort.elapsed().as_nanos() as f64)/1000.0
         },
         "matrix_multiplication" => {
             let start_mat_multiplication =  Instant::now();
-            let matrices=  data.into_Matrices();
+            let matrices=  data.into_matrices();
             matrix_multiplication::matrix_multiplication(matrices.0,matrices.1);
             (start_mat_multiplication.elapsed().as_nanos() as f64)/1000.0
         },
@@ -231,17 +231,17 @@ fn get_data_for_time_table(target:&str, data:Data<i32>) -> Result<Vec<f64>,Strin
     let elapsed_time_hard= match target {
         "sel_sort" => {
             let start_sel_sort = Instant::now();
-            selection_sort_hardened::selection_sort(&mut Hardened::from_vec(data_hard.into_Vector())).unwrap();
+            selection_sort_hardened::selection_sort(&mut Hardened::from_vec(data_hard.into_vector())).unwrap();
             (start_sel_sort.elapsed().as_nanos() as f64)/1000.0
         },
         "bubble_sort" => {
             let start_bb_sort = Instant::now();
-            bubble_sort_hardened::bubble_sort(&mut Hardened::from_vec(data_hard.into_Vector())).unwrap();
+            bubble_sort_hardened::bubble_sort(&mut Hardened::from_vec(data_hard.into_vector())).unwrap();
             (start_bb_sort.elapsed().as_nanos() as f64)/1000.0
         },
         "matrix_multiplication" => {
             let start_mat_multiplication =  Instant::now();
-            let matrices=  data_hard.into_Matrices();
+            let matrices=  data_hard.into_matrices();
             matrix_multiplication_hardened::matrix_multiplication(&mut Hardened::from_mat(matrices.0),&mut Hardened::from_mat(matrices.1)).unwrap();
             (start_mat_multiplication.elapsed().as_nanos() as f64)/1000.0
         },

@@ -1,9 +1,11 @@
 pub fn matrix_multiplication(a: Vec<Vec<i32>>, b: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
     let size:usize = a.len();
     let mut result: Vec<Vec<i32>> = Vec::new();
-
+    #[allow(unused_assignments)]
     let mut i = 0;
+    #[allow(unused_assignments)]
     let mut j = 0;
+    #[allow(unused_assignments)]
     let mut k = 0;
 
     while i < size {

@@ -31,7 +31,7 @@ impl DimData{
             _ => { panic!("not expected a tuple here") }
         }
     }
-    fn into_N(self)->usize{
+    fn into_n(self)->usize{
         if let DimData::Vector(a)=self{
             return a;
         }
@@ -70,22 +70,22 @@ pub fn create_fault_list(num_faults:i32, case: String, path_raw_info: String, di
 
     let mut rnd=rand::thread_rng();
 
-    for i in 0..num_faults{
+    for _ in 0..num_faults{
         let what_var=rnd.gen_range(0..num_vars);
         //Caso 'vettore'
         if vars[what_var].ty==String::from("Vec < i32 >") {
-            let mut N=0;
+            #[allow(unused_assignments)]
+            let mut n=0;
             //vettore accessorio usato dall'algoritmo di matrix_multiplication
             if case=="matrix_multiplication"{
                 let tupla=dims.into_tuple();
-                N=tupla.0;
+                n=tupla.0;
             }
             else{
-                N = dims.into_N();
+                n = dims.into_n();
             }
-            //let N = dims.into_N();
             //Quale variabile del vettore voglio iniettare?
-            let what_el = rnd.gen_range(0..N);
+            let what_el = rnd.gen_range(0..n);
             let it = FaultListEntry {
                 var: format!("{}[{}]", vars[what_var].name, what_el),
                 time: rnd.gen_range(vars[what_var].start..num_instr_eff),
@@ -96,10 +96,10 @@ pub fn create_fault_list(num_faults:i32, case: String, path_raw_info: String, di
         //Caso 'matrice'
         else if vars[what_var].ty==String::from("Vec < Vec < i32 > >"){
             //Quale variabile del vettore voglio iniettare?
-            let (nR, nC) = dims.into_tuple();
+            let (n_r, n_c) = dims.into_tuple();
             //Genero un elemento a caso (riga/colonna)
-            let r = rnd.gen_range(0..nR);       //Scelgo a caso la riga
-            let c = rnd.gen_range(0..nC);       //Scelgo a caso la colonna
+            let r = rnd.gen_range(0..n_r);       //Scelgo a caso la riga
+            let c = rnd.gen_range(0..n_c);       //Scelgo a caso la colonna
 
             let it = FaultListEntry {
                 var: format!("{}[{}][{}]", vars[what_var].name, r,c),
@@ -133,8 +133,8 @@ pub fn create_fault_list(num_faults:i32, case: String, path_raw_info: String, di
         .create(true)
         .open(file_path_dest)
         .unwrap();
-    let ris_JSON = serde_json::to_string_pretty(&fault_list).unwrap();
-    fl.write_all(ris_JSON.as_bytes()).unwrap();
+    let ris_json = serde_json::to_string_pretty(&fault_list).unwrap();
+    fl.write_all(ris_json.as_bytes()).unwrap();
 
     return fault_list;
 }
@@ -145,21 +145,6 @@ pub struct FaultListEntry{
     pub time: usize,
     pub flipped_bit: usize,
 }
-
-impl FaultListEntry{
-    fn get_var(&self)->&str{
-        &self.var
-    }
-    fn get_time(&self)->usize{
-        self.time
-    }
-
-    fn get_flipped_bit(&self)->usize{
-        self.flipped_bit
-    }
-}
-
-//Fault List Manager (Stage pipeline)
 
 //Stage della pipeline: Fault List Manager
 pub fn fault_manager(tx_chan_fm_inj: Sender<FaultListEntry>, fault_list:String){

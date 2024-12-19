@@ -118,7 +118,7 @@ fn count_statements_in_expr(expr: &Expr, variable_types: &mut HashMap<String, (S
     match expr {
         Expr::Block(block_expr) => count_statements(&block_expr.block, variable_types, current),
         Expr::If(if_expr) => {
-            let mut count = count_statements(&if_expr.then_branch, variable_types,current);
+            //let mut count = count_statements(&if_expr.then_branch, variable_types,current);
             if let Some((_, else_branch)) = &if_expr.else_branch {
                 count_statements_in_expr(else_branch, variable_types, current);
             }
@@ -210,7 +210,7 @@ fn extract_variables(func: &ItemFn, variable_types: &HashMap<String, (String,usi
                 "parameter".to_string()
             };
 
-            ty.trim();
+            let _ = ty.trim();
             variables.push(Variable {
                 name,
                 ty: ty.clone(),

@@ -267,8 +267,8 @@ pub enum IncoherenceError{
 
 pub fn run_for_count_selection_sort(vettore: Data<i32>) ->usize{
 
-    let mut vet = vettore.into_Vector();
-    let mut n:usize = vet.len();
+    let mut vet = vettore.into_vector();
+    let n:usize = vet.len();
     let mut j;
     let mut min;
 
@@ -304,7 +304,7 @@ pub fn run_for_count_selection_sort(vettore: Data<i32>) ->usize{
 }
 pub fn run_for_count_bubble_sort(vettore: Data<i32>) ->usize{
     let mut count=2;
-    let mut vet=vettore.into_Vector();
+    let mut vet=vettore.into_vector();
     let n = vet.len();
     let mut i = 0;
 
@@ -339,7 +339,7 @@ pub fn run_for_count_bubble_sort(vettore: Data<i32>) ->usize{
 //a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>
 pub fn run_for_count_matrix_mul(matrici: Data<i32>, size:usize)->usize{
 
-    let matrices = matrici.into_Matrices();
+    let matrices = matrici.into_matrices();
     let a = matrices.0;
     let b = matrices.1;
 

@@ -5,16 +5,13 @@ mod injector;
 mod analyzer;
 mod pdf_generator;
 
-use hardened::{Hardened, IncoherenceError};
-use fault_list_manager::{FaultListEntry, static_analysis};
-use std::io::{BufRead, Error, Read, Write};
+use fault_list_manager::static_analysis;
+use std::io::{BufRead, Error};
 use std::io;
 use std::path::Path;
 use std::fs::File;
 use std::time::Instant;
-use syn::visit::Visit;
 use crate::fault_env::{Data, fault_injection_env};
-use clap::Parser;
 use crate::fault_list_manager::DimData;
 use crate::hardened::*;
 use dialoguer::{Select, Input};
@@ -23,20 +20,6 @@ use regex::Regex;
 
 
 ///Ambiente di Fault Injection per applicazione ridondata
-
-
-//Per uso futuro...
-fn pause() {
-    let mut stdin = io::stdin();
-    let mut stdout = io::stdout();
-
-    // We want the cursor to stay at the end of the line, so we print without a newline and flush manually.
-    write!(stdout, "Press any key to continue...").unwrap();
-    stdout.flush().unwrap();
-
-    // Read a single byte and discard
-    let _ = stdin.read(&mut [0u8]).unwrap();
-}
 
 #[derive(Debug)]
 pub struct InputData {
@@ -105,7 +88,7 @@ pub fn load_data_from_dataset()-> Result<InputData, Error> {
     let scale_factor: i32 = rng.gen_range(1..=10);
 
     // Crea la matrice identità 3x3
-    let mut identity_matrix: Vec<Vec<i32>> = vec![
+    let identity_matrix: Vec<Vec<i32>> = vec![
         vec![1, 0, 0], // prima riga
         vec![0, 1, 0], // seconda riga
         vec![0, 0, 1], // terza riga

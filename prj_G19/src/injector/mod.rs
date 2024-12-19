@@ -9,8 +9,7 @@ use algorithms::{runner_selection_sort};
 use crate::fault_env::Data;
 use crate::injector::algorithms::{runner_bubble_sort, runner_matrix_multiplication};
 
-
-#[derive(Debug)]
+#[allow(dead_code)]
 pub struct TestResult {
     fault_list_entry: FaultListEntry,
     result: Result<(), IncoherenceError>
@@ -107,9 +106,9 @@ impl VariableSet for MatrixMultiplicationVariables {
 impl AlgorithmVariables {
     fn from_target(target: &str, data: Data<i32>) -> Arc<AlgorithmVariables> {
         match target {
-            "sel_sort" => Arc::new(AlgorithmVariables::SelectionSort(SelectionSortVariables::new(data.into_Vector()))),
-            "bubble_sort" => Arc::new(AlgorithmVariables::BubbleSort(BubbleSortVariables::new(data.into_Vector()))),
-            "matrix_multiplication" => Arc::new(AlgorithmVariables::MatrixMultiplication(MatrixMultiplicationVariables::new(data.into_Matrices()))),
+            "sel_sort" => Arc::new(AlgorithmVariables::SelectionSort(SelectionSortVariables::new(data.into_vector()))),
+            "bubble_sort" => Arc::new(AlgorithmVariables::BubbleSort(BubbleSortVariables::new(data.into_vector()))),
+            "matrix_multiplication" => Arc::new(AlgorithmVariables::MatrixMultiplication(MatrixMultiplicationVariables::new(data.into_matrices()))),
             _ => panic!("Unknown target algorithm"),
         }
     }
@@ -163,11 +162,11 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
     println!("error to inject: {:?}", fault_list_entry);
 
     // dato che fault_mask mi dice la posizione del bit da modificare, per ottenere la maschera devo calcolare 2^fault_mask
-    let mut mask = 1 << (fault_list_entry.flipped_bit);
+    let mask = 1 << (fault_list_entry.flipped_bit);
 
     //println!("mask: {}", 1 << (fault_list_entry.fault_mask));       // ottengo la maschera
 
-    while let Ok(msg) = rx_runner.recv() {
+    while let Ok(_) = rx_runner.recv() {
         counter += 1;
 
         if counter == fault_list_entry.time {

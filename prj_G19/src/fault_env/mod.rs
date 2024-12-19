@@ -1,7 +1,7 @@
 use std::sync::mpsc::channel;
 use std::time::Instant;
 use crate::analyzer::analyzer;
-use crate::fault_list_manager::{DimData, fault_manager};
+use crate::fault_list_manager::fault_manager;
 use crate::injector::injector_manager;
 
 //Al fine di generalizzare passo dei dati anziché un vec specifico
@@ -12,7 +12,7 @@ pub enum Data<T>{
 }
 
 impl<T> Data<T>{
-    pub fn into_Vector(self)->Vec<T>{
+    pub fn into_vector(self) ->Vec<T>{
         match self{
             Data::Vector(ris) =>{
                 ris
@@ -23,7 +23,7 @@ impl<T> Data<T>{
         }
     }
 
-    pub fn into_Matrices(self)->(Vec<Vec<T>>, Vec<Vec<T>>){
+    pub fn into_matrices(self) ->(Vec<Vec<T>>, Vec<Vec<T>>){
         match self{
             Data::Matrices(a,b)=>{
                 (a,b)
@@ -32,17 +32,6 @@ impl<T> Data<T>{
                 panic!("Not a matrices variant");
             }
 
-        }
-    }
-
-    pub fn get_dim(self)->DimData{
-        match self{
-            Data::Vector(a)=>{
-                DimData::Vector(a.len())
-            },
-            Data::Matrices(a,_)=>{
-                DimData::Matrices((a.len(), a[0].len()))
-            }
         }
     }
 }
@@ -73,7 +62,7 @@ fn try_build_Matrices(){
     let data = Data::Matrices(vec![1,2], vec![1,2]);
 
     //ricavo le matrici dal tipo enumerativo
-    let (mat1,mat2) = data.into_Matrices();
+    let (mat1,mat2) = data.into_matrices();
 
     //faccio qualcosa
     assert_eq!(mat1[1],2);
