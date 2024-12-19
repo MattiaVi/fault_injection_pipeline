@@ -52,7 +52,7 @@ pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
     let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
     let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
 
-    let images_paths = gen_pie_chart(&data_list);
+    let images_paths = gen_pie_chart(&data_list,);
     add_image_to_pdf(images_paths,&mut doc);
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
@@ -339,7 +339,7 @@ pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
         .expect("Failed to write output file");
 }
 
-pub fn gen_table(data: Vec<f64>, top_headers: &Vec<&str>, side_headers: &Vec<&str>) -> TableLayout{
+pub fn gen_table_dim_time(data: Vec<f64> , top_headers: &Vec<&str>, side_headers: &Vec<&str>) -> TableLayout{
 
     let mut data = data;  //Uso lo shadowing
     data.push(f64::trunc((data[1]/data[0])*100.0)/100.0);
@@ -378,8 +378,6 @@ pub fn gen_table(data: Vec<f64>, top_headers: &Vec<&str>, side_headers: &Vec<&st
         row.push().expect("Invalid table row");
     }
     table
-
-
 }
 
 pub fn gen_pie_chart(data: &Vec<Analyzer>)->Vec<&'static str> {
@@ -392,9 +390,13 @@ pub fn gen_pie_chart(data: &Vec<Analyzer>)->Vec<&'static str> {
         chart_generator::not_rose_pie_chart(&anl.faults, file_name.as_str(),target[i]);
     }
     let mut image_paths = Vec::new();
-    image_paths.push("src/pdf_generator/images/pie_chart0.png");
-    image_paths.push("src/pdf_generator/images/pie_chart1.png");
-    image_paths.push("src/pdf_generator/images/pie_chart2.png");
+    if data.len()>1{
+        image_paths.push("src/pdf_generator/images/pie_chart0.png");
+        image_paths.push("src/pdf_generator/images/pie_chart1.png");
+        image_paths.push("src/pdf_generator/images/pie_chart2.png");
+    }else{
+        image_paths.push("src/pdf_generator/images/pie_chart0.png");
+    }
     image_paths
 }
 
@@ -523,7 +525,7 @@ fn setup_document()->Document{
     let mut decorator = genpdf::SimplePageDecorator::new();
     decorator.set_margins(10);
     decorator.set_header(|page| {
-        let mut layout = elements::LinearLayout::vertical();
+        let mut layout = LinearLayout::vertical();
         if page > 1 {
             layout.push(
                 elements::Paragraph::new(format!("Page {}", page)).aligned(Alignment::Right),
@@ -534,7 +536,7 @@ fn setup_document()->Document{
     });
     doc.set_page_decorator(decorator);
     doc.push(
-        elements::Paragraph::new("Risultati Analizzatore")
+       Paragraph::new("Risultati Analizzatore")
             .padded(title_margins)
             .styled(title_style)
             .styled(red),
