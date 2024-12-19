@@ -3,7 +3,6 @@ mod algorithms;
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::{panic, thread, vec};
-use dialoguer::Input;
 use crate::fault_list_manager::FaultListEntry;
 use crate::hardened::{Hardened, IncoherenceError};
 use algorithms::{runner_selection_sort};

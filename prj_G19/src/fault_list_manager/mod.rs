@@ -2,7 +2,7 @@ use core::mem::size_of;
 use std::sync::mpsc::Sender;
 use std::fs;
 use serde::{Deserialize, Serialize};
-use std::fmt::{Debug, format};
+use std::fmt::Debug;
 use std::fs::OpenOptions;
 use std::io::Write;
 use serde_json;

@@ -2,12 +2,11 @@ use syn::{File, ItemFn, Block, Stmt, Pat, Type, Expr, FnArg};
 use quote::ToTokens;
 use std::collections::HashMap;
 use std::fs;
-use std::fmt::{Display, Debug};
+use std::fmt::Debug;
 use std::fs::OpenOptions;
 use std::io::Write;
 use serde::{Deserialize, Serialize};
 use serde_json;
-use crate::fault_list_manager::static_analysis;
 use itertools::Itertools;
 
 //Analizza la funzione

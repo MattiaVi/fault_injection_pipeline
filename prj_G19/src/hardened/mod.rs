@@ -3,9 +3,8 @@ pub(crate) mod matrix_multiplication_hardened;
 pub(crate) mod selection_sort_hardened;
 
 use std::cmp::Ordering;
-use std::fmt::{Display, Debug, Formatter};
-use std::ops::{Add, Index, IndexMut, Sub, Mul, AddAssign};
-use std::process::Output;
+use std::fmt::{Debug, Formatter};
+use std::ops::{Add, Index, IndexMut, Sub, Mul};
 use thiserror::Error;
 use crate::fault_env::Data;
 
@@ -269,21 +268,21 @@ pub enum IncoherenceError{
 pub fn run_for_count_selection_sort(vettore: Data<i32>) ->usize{
 
     let mut vet = vettore.into_Vector();
-    let mut N:usize = vet.len();
-    let mut j=0;
-    let mut min=0;
+    let mut n:usize = vet.len();
+    let mut j;
+    let mut min;
 
     let mut count=5;
     //-----------------------SELECTION SORT-------------------------
     let mut i=0;
-    while i<N-1{
+    while i< n -1{
         count=count+1;
         min=i;
         count=count+1;
         j=i+1;
         //Ricerca del minimo
         count=count+1;
-        while j<N{
+        while j< n {
             count=count+1;
             if vet[j] < vet[min]{
                 count=count+1;
@@ -299,7 +298,7 @@ pub fn run_for_count_selection_sort(vettore: Data<i32>) ->usize{
         i=i+1;
 
         //conto il while di dopo (se necessario)
-        if(i<N-1){count=count+1}
+        if i< n -1 {count=count+1}
     }
     count
 }

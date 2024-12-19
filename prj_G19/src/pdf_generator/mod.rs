@@ -17,29 +17,18 @@
 mod encoder;
 mod chart_generator;
 
-use std::{env, fs};
-use std::time::Instant;
 use genpdf::{Alignment, Margins,Document};
 use genpdf::Element as _;
 use genpdf::{elements, fonts};
-use genpdf::elements::{CellDecorator, FrameCellDecorator, LinearLayout, Paragraph, TableLayout};
-use genpdf::style::{Color, Effect,Style};
-use crate::hardened::{bubble_sort_hardened, matrix_multiplication_hardened, selection_sort_hardened, Hardened};
-
-use crate::fault_list_manager::file_fault_list::{bubble_sort,
-                                                 matrix_multiplication,
-                                                 selection_sort};
-use crate::analyzer::{Analyzer, Faults};
-use crate::fault_env::Data;
+use genpdf::elements::{FrameCellDecorator, LinearLayout, Paragraph, TableLayout};
+use genpdf::style::{Color, Style};
+use crate::analyzer::{Analyzer};
 
 const FONT_DIRS: &[&str] = &[
-    "src/pdf_generator/fonts/times_new_roman",
-    "src/pdf_generator/fonts/times_new_roman",
+    "src/pdf_generator/fonts/times_new_roman"
 ];
 const DEFAULT_FONT_NAME: &'static str = "TimesNewRoman";
-const MONO_FONT_NAME: &'static str = "TimesNewRoman";
 pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
-    let text_margins = Margins::trbl(0, 65, 0, 5);
     let mut doc = setup_document();
     let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
     let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
@@ -65,7 +54,6 @@ pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
 
 
 pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
-    let text_margins = Margins::trbl(0, 65, 0, 5);
     let mut doc = setup_document();
 
     let mut chart_headers:Vec<&str> = Vec::new();
@@ -83,7 +71,7 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
 
-    let top_headers =  vec!["NOT HARDENED(Byte)", "HARDENED(Byte)", "HARD / NOT HARD","NOT HARDENED(uS)","HARDENED(uS)","HARD / NOT HARD"];
+    let top_headers =  vec!["NOT HARD(B)", "HARD(B)", "HARD/NOT HARD","NOT HARD (us)","HARD (us)","HARD/NOT HARD"];
     let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
     doc.push(elements::Break::new(1.5));
     doc.push(dim_time_table);
@@ -92,7 +80,6 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
         .expect("Failed to write output file");
 }
 pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
-    let text_margins = Margins::trbl(0, 65, 0, 5);
     let mut doc = setup_document();
     let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
     let mut data_list:Vec<Analyzer> = Vec::new();
@@ -104,304 +91,33 @@ pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
         _ => {}
     }
     data_list.push(analyzer.clone());
-
-    let important_style =  Style::new().bold();
-    let red = Color::Rgb(255, 0, 0);
+    let italic = Style::new().italic().with_font_size(10);
+    let bold_italic = Style::new().bold().italic().with_font_size(10);
     let text_margins= Margins::trbl(0, 65,0,0);
 
     doc.push(elements::Break::new(0.3));
-    doc.push(elements::Paragraph::new("Tipologia di esperimento: SINGLE ANALYSIS ").padded(text_margins).styled(important_style));
-    doc.push(elements::Paragraph::new(format!("Algortimo scelto: {}", side_headers[0])).padded(text_margins).styled(important_style));
-    doc.push(elements::Paragraph::new(format!("Numero di faults:  {}",analyzer.faults.total_fault)).padded(text_margins).styled(important_style));
+    doc.push(Paragraph::default().styled_string("Tipologia di esperimento: ",bold_italic).styled_string("SINGLE ANALYSIS ",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Algortimo scelto: ", bold_italic).styled_string(side_headers[0].to_string(),italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Numero di faults: ",bold_italic).styled_string(analyzer.faults.total_fault.to_string(),italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
-    doc.push(elements::Paragraph::new("Report finale dell'esperimento condotto sulla Fault Injection Pipeline:").padded(text_margins).styled(red));
+    doc.push(Paragraph::default().styled_string("Report finale dell'esperimento condotto sulla Fault Injection Pipeline:",bold_italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
     let images_paths = gen_pie_chart(&data_list, &side_headers);
     doc.push(elements::Image::from_path(images_paths[0]).expect("Unable to load image").with_alignment(Alignment::Center));
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
-    doc.push(elements::Break::new(0.1));
-    doc.push(elements::Paragraph::new(format!("Tempo esecuzione Fault Injection Pipeline: {} microsec", analyzer.time_experiment)).padded(text_margins));
-
-    doc.render_to_file(file_path)
-        .expect("Failed to write output file");
-
-    /*println!("{:?}",analyzer);
-    let title_style:Style =  Style::new().bold().with_font_size(20);
-    let title_margins= Margins::trbl(0, 0,0,5);
-    let text_style = Style::new().with_font_size(10);
-    let text_margins = Margins::trbl(0, 65, 0, 5);
-
-
-    let font_dir = FONT_DIRS
-        .iter()
-        .filter(|path| std::path::Path::new(path).exists())
-        .next()
-        .expect("Could not find font directory");
-
-    let default_font =
-        fonts::from_files(font_dir, DEFAULT_FONT_NAME, Some(fonts::Builtin::Times))
-            .expect("Failed to load the default font family");
-    let monospace_font = fonts::from_files(font_dir, MONO_FONT_NAME, Some(fonts::Builtin::Times))
-        .expect("Failed to load the monospace font family");
-
-    let mut doc = genpdf::Document::new(default_font);
-    doc.set_title("genpdf Demo Document");
-    doc.set_minimal_conformance();
-    doc.set_line_spacing(1.25);
-
-
-    let mut decorator = genpdf::SimplePageDecorator::new();
-    decorator.set_margins(10);
-    decorator.set_header(|page| {
-        let mut layout = elements::LinearLayout::vertical();
-        if page > 1 {
-            layout.push(
-                elements::Paragraph::new(format!("Page {}", page)).aligned(Alignment::Right),
-            );
-            layout.push(elements::Break::new(1));
-        }
-        layout.styled(Style::new().with_font_size(12))
-    });
-    doc.set_page_decorator(decorator);
-
-    let monospace = doc.add_font_family(monospace_font);
-    let code = Style::from(monospace).bold();
-    let red = Color::Rgb(255, 0, 0);
-    let blue = Color::Rgb(0, 0, 255);
-
-    doc.push(
-        elements::Paragraph::new("Risultati Analizzatore")
-            .padded(title_margins)
-            .styled(title_style)
-            .styled(red),
-    );
-    doc.push(elements::Break::new(1.5));
-    doc.push(elements::Paragraph::new(
-        "Questo è un documento di prova per mostrare come sarebbe possibile mostrare i dati \
-              estratti dall'analizzatore direttamente in un pdf.",
-    ).padded(text_margins).styled(text_style));
-
     doc.push(elements::Break::new(0.5));
+    let top_headers =  vec!["NOT HARD(B)", "HARD(B)", "HARD/NOT HARD","NOT HARD (us)","HARD (us)","HARD/NOT HARD"];
+    let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
+    doc.push(dim_time_table);
+    doc.push(elements::Break::new(0.1));
+    doc.push(Paragraph::default().styled_string("Tempo esecuzione Fault Injection Pipeline:",bold_italic).styled_string(analyzer.time_experiment.to_string(),italic).styled_string(" micro secondi",italic).padded(text_margins));
 
-    doc.push(elements::Paragraph::new(
-        "Grafico a torta contenente il totale di errori iniettati divisi per categoria",
-    ).padded(text_margins).styled(text_style));
-    // Generazione dei grafici
-    //chart_generator::not_rose_radius_pie_chart(analyzer.clone());
-    //chart_generator::pie_chart(analyzer);
-
-    let image_path1: &'static str = "src/pdf_generator/images/pie_chart1.png";
-    let image_path2: &'static str = "src/pdf_generator/images/pie_chart2.png";
-
-    // Metto una sola immagine
-    doc.push(elements::Image::from_path(image_path2).expect("Unable to load image").
-        with_alignment(Alignment::Center));
-
-    //Metto due immagini una di fianco all'altra
-    let mut table = elements::TableLayout::new(vec![5, 5]);
-    table.set_cell_decorator(elements::FrameCellDecorator::new(false, false, false));
-    let mut linear_layout = elements::LinearLayout::vertical();
-
-    table
-        .row()
-        .element(
-            elements::PaddedElement::new(
-                elements::Image::from_path(image_path1)
-                    .expect("Unable to load image")
-                    .with_alignment(Alignment::Center), Margins::trbl(0,40,0,0)),
-        )
-        .element(
-            elements::PaddedElement::new(
-                elements::Image::from_path(image_path2)
-                    .expect("Unable to load image")
-                    .with_alignment(Alignment::Center), Margins::trbl(0,0,0,0)),
-        )
-        .push()
-        .expect("Invalid table row");
-    doc.push(table.padded(Margins::trbl(5,0,0,20)));
-
-
-
-    let mut list = elements::UnorderedList::new();
-
-    list.push(
-        elements::Paragraph::default()
-            .styled_string("Text", code)
-            .string(", a single line of formatted text without wrapping."),
-    );
-    list.push(
-        elements::Paragraph::default()
-            .styled_string("Paragraph", code)
-            .string(
-                ", one or more lines of formatted text with wrapping and an alignment (left, \
-                 center, right).",
-            ),
-    );
-    list.push(
-        elements::Paragraph::default()
-            .styled_string("FramedElement", code)
-            .string(", a frame drawn around other elements."),
-    );
-    list.push(
-        elements::Paragraph::default()
-            .styled_string("PaddedElement", code)
-            .string(", an element with an additional padding."),
-    );
-    list.push(
-        elements::Paragraph::default()
-            .styled_string("StyledElement", code)
-            .string(", an element with new default style."),
-    );
-
-    list.push(
-        elements::Paragraph::default()
-            .styled_string("UnorderedList", code)
-            .string(", an unordered list of bullet points."),
-    );
-
-    list.push(
-        elements::LinearLayout::vertical()
-            .element(
-                elements::Paragraph::default()
-                    .styled_string("OrderedList", code)
-                    .string(", an ordered list of bullet points."),
-            )
-            .element(
-                elements::OrderedList::new()
-                    .element(elements::Paragraph::new("Just like this."))
-                    .element(elements::Paragraph::new("And this.")),
-            ),
-    );
-
-    list.push(
-        elements::LinearLayout::vertical()
-            .element(
-                elements::Paragraph::default()
-                    .styled_string("BulletPoint", code)
-                    .string(", an element with a bullet point, just like in this list."),
-            )
-            .element(elements::BulletPoint::new(elements::Paragraph::new(
-                "Of course, lists can also be nested.",
-            )))
-            .element(
-                elements::BulletPoint::new(elements::Paragraph::new(
-                    "And you can change the bullet symbol.",
-                ))
-                    .with_bullet("•"),
-            ),
-    );
-
-    list.push(
-        elements::Paragraph::default()
-            .styled_string("LinearLayout", code)
-            .string(
-                ", a container that vertically stacks its elements. The root element of a \
-                 document is always a LinearLayout.",
-            ),
-    );
-    list.push(
-        elements::Paragraph::default()
-            .styled_string("TableLayout", code)
-            .string(", a container that arranges its elements in rows and columns."),
-    );
-    list.push(elements::Paragraph::new("And some more utility elements …"));
-    doc.push(list);
-    doc.push(elements::Break::new(1.5));
-
-    doc.push(elements::Paragraph::new(
-        "You already saw lists and formatted centered text. Here are some other examples:",
-    ));
-    doc.push(elements::Paragraph::new("This is right-aligned text.").aligned(Alignment::Right));
-    doc.push(
-        elements::Paragraph::new("And this paragraph has a frame drawn around it and is colored.")
-            .padded(genpdf::Margins::vh(0, 1))
-            .framed()
-            .styled(red),
-    );
-    doc.push(
-        elements::Paragraph::new("You can also use other fonts if you want to.").styled(monospace),
-    );
-    doc.push(
-        elements::Paragraph::default()
-            .string("You can also ")
-            .styled_string("combine ", red)
-            .styled_string("multiple ", Style::from(blue).italic())
-            .styled_string("formats", code)
-            .string(" in one paragraph.")
-            .styled(Style::new().with_font_size(16)),
-    );
-    doc.push(elements::Break::new(1.5));
-
-    doc.push(elements::Paragraph::new(
-        "Embedding images also works using the 'images' feature.",
-    ));
-    println!("Test image");
-
-
-    doc.push(elements::Paragraph::new("Here is an example table:"));
-
-    let mut table = elements::TableLayout::new(vec![1, 2]);
-    table.set_cell_decorator(elements::FrameCellDecorator::new(false, false, false));
-    table
-        .row()
-        .element(
-            elements::Paragraph::new("Header 1")
-                .styled(Effect::Bold)
-                .padded(1),
-        )
-        .element(elements::Paragraph::new("Value 2").padded(1))
-        .push()
-        .expect("Invalid table row");
-    table
-        .row()
-        .element(
-            elements::Paragraph::new("Header 2")
-                .styled(Effect::Bold)
-                .padded(1),
-        )
-        .element(
-            elements::Paragraph::new(
-                "A long paragraph to demonstrate how wrapping works in tables.  Nice, right?",
-            )
-                .padded(1),
-        )
-        .push()
-        .expect("Invalid table row");
-
-    let list_layout = elements::LinearLayout::vertical()
-        .element(elements::Paragraph::new(
-            "Of course, you can use all other elements inside a table.",
-        ))
-        .element(
-            elements::UnorderedList::new()
-                .element(elements::Paragraph::new("Even lists!"))
-                .element(
-                    elements::Paragraph::new("And frames!")
-                        .padded(genpdf::Margins::vh(0, 1))
-                        .framed(),
-                ),
-        );
-    table
-        .row()
-        .element(
-            elements::Paragraph::new("Header 3")
-                .styled(Effect::Bold)
-                .padded(1),
-        )
-        .element(list_layout.padded(1))
-        .push()
-        .expect("Invalid table row");
-    doc.push(table);
-    doc.push(elements::Break::new(1.5));
-
-    doc.push(elements::Paragraph::new(
-        "Now let’s print a long table to demonstrate how page wrapping works:",
-    ));
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
-     */
 }
+
+
 pub fn gen_bar_chart(data_list: &Vec<Analyzer>, side_headers:&Vec<&str>)-> &'static str {
     let mut percentages = Vec::new();
     for anl in data_list{
@@ -510,7 +226,7 @@ pub fn add_image_to_pdf(images_paths: Vec<&str>,doc: &mut Document){
 
 pub fn gen_table_faults(data: &Vec<Analyzer>, top_headers: &Vec<&str>, side_headers: &Vec<&str>)-> TableLayout {
     let mut column_weights = vec![6; top_headers.len()+1];
-    column_weights[0] = 10;
+    column_weights[0] = 8;
     let header_style = Style::new().with_font_size(7).bold();
     let mut table = TableLayout::new(column_weights);
     table.set_cell_decorator(FrameCellDecorator::new(true, true, false));
@@ -553,37 +269,9 @@ pub fn gen_table_faults(data: &Vec<Analyzer>, top_headers: &Vec<&str>, side_head
 
  }
 
-
-// Only import the images if the feature is enabled. This helps verify our handling of feature toggles.
-mod images {
-    use super::*;
-
-    pub fn one_(doc: &mut genpdf::Document) {
-
-
-        /*
-        doc.push(elements::Paragraph::new(
-            "and here is one that is centered, rotated, and scaled some.",
-        ));
-
-        doc.push(
-            elements::Image::from_path(IMAGE_PATH_JPG)
-                .expect("Unable to load image")
-                .with_alignment(Alignment::Center)
-                .with_scale(genpdf::Scale::new(0.5, 2))
-                .with_clockwise_rotation(45.0),
-        );
-        doc.push(elements::Paragraph::new(
-            "For a full example of image functionality, please see images.pdf.",
-        ));
-        doc.push(elements::Break::new(1.5));
-         */
-   }
-
-}
 fn setup_document()->Document{
     let title_style =  Style::new().bold().with_font_size(20);
-    let title_margins= Margins::trbl(0, 0,0,5);
+    let title_margins= Margins::trbl(0, 0,0,0);
     let red = Color::Rgb(255, 0, 0);
 
     let font_dir = FONT_DIRS
@@ -595,10 +283,8 @@ fn setup_document()->Document{
     let default_font =
         fonts::from_files(font_dir, DEFAULT_FONT_NAME, Some(fonts::Builtin::Times))
             .expect("Failed to load the default font family");
-    let monospace_font = fonts::from_files(font_dir, MONO_FONT_NAME, Some(fonts::Builtin::Times))
-        .expect("Failed to load the monospace font family");
 
-    let mut doc = genpdf::Document::new(default_font);
+    let mut doc = Document::new(default_font);
     doc.set_title("genpdf Demo Document");
     doc.set_minimal_conformance();
     doc.set_line_spacing(1.25);
@@ -610,7 +296,7 @@ fn setup_document()->Document{
         let mut layout = LinearLayout::vertical();
         if page > 1 {
             layout.push(
-                elements::Paragraph::new(format!("Page {}", page)).aligned(Alignment::Right),
+                Paragraph::new(format!("Page {}", page)).aligned(Alignment::Right),
             );
             layout.push(elements::Break::new(1));
         }
@@ -646,7 +332,7 @@ mod tests {
             n_partialord_fault: 90,
             n_partialeq_fault: 100,
             total_fault: 550,
-        }, vec![100.5, 23.9, 3.4 ], vec![322.4,323.9,111.4], 111.0, 1);
+        }, vec![100.5, 23.9, 3.4 ], vec![322.4,323.9,111.4], 111.0, 1, "sel_sort".to_string());
         let mut anl2 = anl.clone();
         anl2.n_esecuzione=1;
         anl2.faults.n_add_fault=1;
@@ -680,7 +366,7 @@ mod tests {
             n_partialord_fault: 90,
             n_partialeq_fault: 100,
             total_fault: 550,
-        }, vec![100.5, 23.9, 3.4 ], vec![322.4,323.9,111.4], 111.0, 1);
+        }, vec![100.5, 23.9, 3.4 ], vec![322.4,323.9,111.4], 111.0, 1, "sel_sort".to_string());
         let mut anl2 = anl.clone();
         anl2.n_esecuzione=1;
         anl2.faults.n_add_fault=1;

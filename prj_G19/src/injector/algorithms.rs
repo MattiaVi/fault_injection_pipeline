@@ -1,4 +1,3 @@
-use std::ops::Sub;
 use std::sync::mpsc::{Receiver, Sender};
 use crate::hardened::{Hardened, IncoherenceError};
 use crate::injector::{BubbleSortVariables, MatrixMultiplicationVariables, SelectionSortVariables};
