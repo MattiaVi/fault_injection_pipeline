@@ -150,12 +150,11 @@ pub fn bar_chart(data: Vec<f64>, x_axis_data: &Vec<&str>){
                 "top": 5,
                 "right": 10
             }},
-            "title_text": "DETECTED",
-            "title_font_color": "#345",
-            "title_align": "center",
             "sub_title_text": "Percentuale di fault detected rispetto al totale, confronto tra diverse esecuzioni",
-            "sub_title_align": "center",
+            "sub_title_align": "right",
             "sub_title_font_weight": "bold",
+            "legend_align": "center",
+            "legend_font_weight": "bold",
             "y_axis_configs": [
                 {{
                     "axis_font_weight": "bold"
@@ -163,15 +162,21 @@ pub fn bar_chart(data: Vec<f64>, x_axis_data: &Vec<&str>){
             ],
             "series_label_font_weight": "bold",
             "series_list": [
-                {{
+                {{  "name":"{}",
                     "label_show": true,
-                    "data": [{}, {}, {}]
+                    "data": [{}]
+                }},
+                {{  "name":"{}",
+                    "label_show": true,
+                    "data": [{}]
+                }},
+                {{  "name":"{}",
+                    "label_show": true,
+                    "data": [{}]
                 }}
             ],
             "x_axis_data": [
-                "{}",
-                "{}",
-                "{}"
+                "ALGORITHM"
             ],
             "x_axis_margin": {{
                 "left": 1,
@@ -180,9 +185,12 @@ pub fn bar_chart(data: Vec<f64>, x_axis_data: &Vec<&str>){
                 "bottom": 0
             }},
             "x_axis_font_weight": "bold"
-        }}"###, data[0], data[1], data[2], x_axis_data[0], x_axis_data[1], x_axis_data[2]);
+        }}"###, x_axis_data[0], data[0],  x_axis_data[1], data[1],  x_axis_data[2] ,data[2]);
 
-    let bar_chart = BarChart::from_json(&bar_chart_json).unwrap();
+    let mut bar_chart = BarChart::from_json(&bar_chart_json).unwrap();
+    bar_chart.y_axis_configs[0].axis_width = Some(100.0);
+    bar_chart.y_axis_configs[0].axis_max = Some(100.0);
+    bar_chart.y_axis_configs[0].axis_formatter = Some("{c} %".to_string());
     let res = bar_chart.svg().unwrap();
     let dest_path = "src/pdf_generator/images/";
     let file_name = "percentage_detected.png";
@@ -204,10 +212,10 @@ mod tests {
                 "top": 5,
                 "right": 10
             }},
-            "title_text": "DETECTED",
+            "title_text": "Bar Chart",
             "title_font_color": "#345",
             "title_align": "right",
-            "sub_title_text": "Percentuale di fault detected rispetto al totale, confronto tra diverse esecuzioni",
+            "sub_title_text": "demo",
             "sub_title_align": "right",
             "sub_title_font_weight": "bold",
             "legend_align": "left",
@@ -222,13 +230,30 @@ mod tests {
                 {{
                     "name": "Email",
                     "label_show": true,
-                    "data": [{}, {}, {}]
+                    "data": [120.0, 132.0, 101.0, 134.0, 90.0, 230.0, 210.0]
+                }},
+                {{
+                    "name": "Union Ads",
+                    "data": [220.0, 182.0, 191.0, 234.0, 290.0, 330.0, 310.0]
+                }},
+                {{
+                    "name": "Direct",
+                    "data": [320.0, 332.0, 301.0, 334.0, 390.0, 330.0, 320.0],
+                    "colors": [null, "#a90000"]
+                }},
+                {{
+                    "name": "Search Engine",
+                    "data": [{},{},{}, 934.0, 1290.0, 1330.0, 1320.0]
                 }}
             ],
             "x_axis_data": [
                 "{}",
                 "{}",
-                "{}"
+                "{}",
+                "Thu",
+                "Fri",
+                "Sat",
+                "Sun"
             ],
             "x_axis_margin": {{
                 "left": 1,

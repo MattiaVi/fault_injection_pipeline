@@ -161,7 +161,7 @@ pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: D
 
         if n_esecuzione == 2 {
            fs::remove_file(json_path).expect("Failed to delete the JSON file");
-           println!("File JSON eliminato: {}", json_path);
+
            if file_path.contains("_all"){
                pdf_generator::print_pdf_all(&file_path,data_list);
            }else{
