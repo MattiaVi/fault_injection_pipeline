@@ -8,6 +8,7 @@ use crate::hardened::{Hardened, IncoherenceError};
 use algorithms::{runner_selection_sort};
 use crate::fault_env::Data;
 use crate::injector::algorithms::{runner_bubble_sort, runner_matrix_multiplication};
+use crate::VERBOSE;
 
 #[allow(dead_code)]
 pub struct TestResult {
@@ -135,7 +136,9 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
     match result {
         Ok(Ok(())) => TestResult {result: Ok(()), fault_list_entry},
         Ok(Err(err)) => {
-            println!("Error found - {}", err);
+            if VERBOSE {
+                println!("Error found - {}", err);
+            }
             TestResult {result: Err(err), fault_list_entry}
         },
         Err(panic) => {
@@ -158,8 +161,9 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
 fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, tx_injector: Sender<&str>, rx_runner: Receiver<&str>) {
 
     let mut counter = 0usize;
-
-    println!("error to inject: {:?}", fault_list_entry);
+    if VERBOSE{
+        println!("error to inject: {:?}", fault_list_entry);
+    }
 
     // dato che fault_mask mi dice la posizione del bit da modificare, per ottenere la maschera devo calcolare 2^fault_mask
     let mask = 1 << (fault_list_entry.flipped_bit);
@@ -344,7 +348,9 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
 
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs
-        eprintln!("A panic occurred!");
+        if VERBOSE{
+           eprintln!("A panic occurred!");
+        }
     }));
 
 

@@ -41,7 +41,8 @@ pub fn fault_injection_env(fault_list: String,      // nome file fault-list
                            file_path: String,       // nome file report
                            data: Data<i32>,
                            timer:Instant,
-                           esecuzione:i8) {       // dati del problema
+                           esecuzione:i8)
+{       // dati del problema
 
     let (tx_chan_fm_inj, rx_chan_fm_inj) = channel();
     let (tx_chan_inj_anl, rx_chan_inj_anl) = channel();

@@ -165,7 +165,6 @@ pub fn gen_table_dim_time(data_list: &Vec<Analyzer> , top_headers: &Vec<&str>, s
         );
 
         for info in info_vec{
-            println!("{}",info.to_string());
             row = row.element(
                 Paragraph::default()
                     .styled_string(&info.to_string(), Style::new().with_font_size(7).italic())
@@ -255,7 +254,6 @@ pub fn gen_table_faults(data: &Vec<Analyzer>, top_headers: &Vec<&str>, side_head
             );
 
             for info in f.iter(){
-                println!("{}",info.1);
                 row = row.element(
                     Paragraph::default()
                         .styled_string(&info.1.to_string(), Style::new().with_font_size(7).italic())

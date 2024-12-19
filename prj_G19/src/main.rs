@@ -20,7 +20,7 @@ use regex::Regex;
 
 
 ///Ambiente di Fault Injection per applicazione ridondata
-
+pub static VERBOSE: bool = true;
 #[derive(Debug)]
 pub struct InputData {
     pub vector: Vec<i32>,
@@ -231,21 +231,7 @@ pub fn load_data_from_file(file_path: &str) -> Result<InputData, Error> {
         matrix2,
     })
 }
-
-
-
-
-
-
-
-
 fn main() {
-    /*
-    panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
-        // Print a simple message when a panic occurs
-        eprintln!("A panic occurred!");
-    }));
-    */
 
     //IMPLEMENTAZIONE MENU UTENTE---------------------------
 
@@ -373,8 +359,7 @@ fn main() {
                                 "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                                |vettore| run_for_count_selection_sort(vettore),
-                            );
+                                |vettore| run_for_count_selection_sort(vettore));
                         }
 
                         //single run bubble sort
@@ -390,7 +375,7 @@ fn main() {
                                 "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
-                                |vettore| run_for_count_bubble_sort(vettore),
+                                |vettore| run_for_count_bubble_sort(vettore)
                             );
                         }
 
@@ -407,7 +392,7 @@ fn main() {
                                 "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
-                                |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size),
+                                |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size)
                             );
                         }
 
@@ -435,7 +420,7 @@ fn main() {
                                     "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                                     "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                     "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                                    |vettore| run_for_count_selection_sort(vettore),
+                                    |vettore| run_for_count_selection_sort(vettore)
                                 );
                                 esecuzione += 1;
                             }
@@ -455,7 +440,7 @@ fn main() {
                                     "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                                     "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                                     "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
-                                    |vettore| run_for_count_bubble_sort(vettore),
+                                    |vettore| run_for_count_bubble_sort(vettore)
                                 );
                             esecuzione += 1;
                             }
@@ -475,7 +460,7 @@ fn main() {
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                                     "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
-                                    |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size),
+                                    |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size)
                                 );
                                 esecuzione += 1;
                             }
@@ -513,7 +498,7 @@ fn main() {
                 "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
-                |vettore| run_for_count_selection_sort(vettore),
+                |vettore| run_for_count_selection_sort(vettore)
             );
 
             esecuzione += 1;
@@ -530,7 +515,7 @@ fn main() {
                 "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_ris.json",
                 "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
-                |vettore| run_for_count_bubble_sort(vettore),
+                |vettore| run_for_count_bubble_sort(vettore)
             );
 
             esecuzione += 1;
@@ -547,7 +532,7 @@ fn main() {
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_ris.json",
                 "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json",
-                |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size),
+                |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size)
             );
         }
 
@@ -567,7 +552,7 @@ fn main() {
                       analysis_input_file: &str,
                       analysis_output_file: &str,
                       fault_list_file: &str,
-                      fault_list_run: impl FnOnce(Data<i32>) -> usize) {
+                      fault_list_run: impl FnOnce(Data<i32>) -> usize){
         // 1. Analisi statica del codice
 
         static_analysis::generate_analysis_file(
@@ -592,6 +577,7 @@ fn main() {
             file_path.to_string(),
             input_data.clone(),
             start,
-            esecuzione);
+            esecuzione
+        );
     }
 }
