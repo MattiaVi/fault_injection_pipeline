@@ -63,11 +63,11 @@ impl<'a> Iterator for FaultsIter<'a> {
 pub struct Analyzer{
     pub(crate) n_esecuzione: i8,
     pub(crate) faults: Faults,
-    time_experiment: f64,
-    time_alg_hardened: f64,
-    time_alg_not_hardened: f64,
-    byte_hardened: f64,
-    byte_not_hardened: f64,
+    pub(crate) time_experiment: f64,
+    pub(crate) time_alg_hardened: f64,
+    pub(crate) time_alg_not_hardened: f64,
+    pub(crate) byte_hardened: f64,
+    pub(crate) byte_not_hardened: f64,
 }
 
 impl Analyzer{
@@ -169,7 +169,7 @@ pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: D
            }
         }
     }else{
-        //pdf_generator::print_pdf(&file_path,analyzer);
+        pdf_generator::print_pdf(&file_path,analyzer);
     }
 
 }
@@ -208,18 +208,18 @@ fn get_data_for_time_table(target:&str, data:Data<i32>) -> Result<Vec<f64>,Strin
         "sel_sort" => {
             let start_sel_sort = Instant::now();
             selection_sort::selection_sort(data.into_Vector());
-            start_sel_sort.elapsed().as_nanos() as f64
+            (start_sel_sort.elapsed().as_nanos() as f64)/1000.0
         },
         "bubble_sort" => {
             let start_bb_sort = Instant::now();
             bubble_sort::bubble_sort(data.into_Vector());
-            start_bb_sort.elapsed().as_nanos() as f64
+            (start_bb_sort.elapsed().as_nanos() as f64)/1000.0
         },
         "matrix_multiplication" => {
             let start_mat_multiplication =  Instant::now();
             let matrices=  data.into_Matrices();
             matrix_multiplication::matrix_multiplication(matrices.0,matrices.1);
-            start_mat_multiplication.elapsed().as_nanos() as f64
+            (start_mat_multiplication.elapsed().as_nanos() as f64)/1000.0
         },
         _ => return Err("Indice non valido".to_string()),
     };
@@ -230,18 +230,18 @@ fn get_data_for_time_table(target:&str, data:Data<i32>) -> Result<Vec<f64>,Strin
         "sel_sort" => {
             let start_sel_sort = Instant::now();
             selection_sort_hardened::selection_sort(&mut Hardened::from_vec(data_hard.into_Vector())).unwrap();
-            start_sel_sort.elapsed().as_nanos() as f64
+            (start_sel_sort.elapsed().as_nanos() as f64)/1000.0
         },
         "bubble_sort" => {
             let start_bb_sort = Instant::now();
             bubble_sort_hardened::bubble_sort(&mut Hardened::from_vec(data_hard.into_Vector())).unwrap();
-            start_bb_sort.elapsed().as_nanos() as f64
+            (start_bb_sort.elapsed().as_nanos() as f64)/1000.0
         },
         "matrix_multiplication" => {
             let start_mat_multiplication =  Instant::now();
             let matrices=  data_hard.into_Matrices();
             matrix_multiplication_hardened::matrix_multiplication(&mut Hardened::from_mat(matrices.0),&mut Hardened::from_mat(matrices.1)).unwrap();
-            start_mat_multiplication.elapsed().as_nanos() as f64
+            (start_mat_multiplication.elapsed().as_nanos() as f64)/1000.0
         },
         _ => return Err("Indice non valido".to_string()),
     };

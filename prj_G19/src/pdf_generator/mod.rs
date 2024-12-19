@@ -51,11 +51,15 @@ pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
     let mut doc = setup_document();
     let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
     let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
-
-    let images_paths = gen_pie_chart(&data_list,);
+    let images_paths = gen_pie_chart(&data_list,&side_headers);
     add_image_to_pdf(images_paths,&mut doc);
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
+    let top_headers =  vec!["NOT HARDENED(Byte)", "HARDENED(Byte)", "HARD / NOT HARD","NOT HARDENED(uS)","HARDENED(uS)","HARD / NOT HARD"];
+    let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
+    let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
+    doc.push(elements::Break::new(1.5));
+    doc.push(dim_time_table);
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
 }
@@ -268,7 +272,7 @@ pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
             .string(" in one paragraph.")
             .styled(Style::new().with_font_size(16)),
     );
-    doc.push(elements::Break::new(1.5));
+
 
     doc.push(elements::Paragraph::new(
         "Embedding images also works using the 'images' feature.",
@@ -339,40 +343,49 @@ pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
         .expect("Failed to write output file");
 }
 
-pub fn gen_table_dim_time(data: Vec<f64> , top_headers: &Vec<&str>, side_headers: &Vec<&str>) -> TableLayout{
-
-    let mut data = data;  //Uso lo shadowing
-    data.push(f64::trunc((data[1]/data[0])*100.0)/100.0);
-
-    let mut table = TableLayout::new(vec![1,1,1,1]); // la lunghezza del vettore corrisponde
-                                                                              // al numero di colonne
-
+pub fn gen_table_dim_time(data_list: &Vec<Analyzer> , top_headers: &Vec<&str>, side_headers: &Vec<&str>)-> TableLayout{
+    let mut column_weights = vec![6; top_headers.len()+1];
+    column_weights[0] = 10;
+    let header_style = Style::new().with_font_size(7).bold();
+    let mut table = TableLayout::new(column_weights);
     table.set_cell_decorator(FrameCellDecorator::new(true, true, false));
+
     let mut row = table.row().element(
         Paragraph::new("")
     );
-    //Costruisco l'header della tabella
+
+    //Costruisco l'header
     for header in top_headers{
         row = row.element(
-                 Paragraph::default()
-                     .string(*header)
-                     .styled(Effect::Bold)
-                    .padded(1),
+            Paragraph::default()
+                .styled_string(*header, header_style)
+                .aligned(Alignment::Center)
+                .padded( Margins::trbl(0,4.5,0,0)),
         );
     }
 
     row.push().expect("Invalid table row");
-
-    for header in side_headers{
+    for i in 0..data_list.len(){
+        let anl = &data_list[i];
+        let info_vec = vec![  anl.byte_not_hardened,
+                                        anl.byte_hardened,
+                                        f64::trunc((anl.byte_hardened/anl.byte_not_hardened)*100.0)/100.0,
+                                        anl.time_alg_not_hardened,
+                                        anl.time_alg_hardened,
+                                        f64::trunc((anl.time_alg_hardened/anl.time_alg_not_hardened)*100.0)/100.0
+                                    ];
         let mut row = table.row().element(
-            Paragraph::new(*header)
-            .styled(Effect::Bold)
-            .padded(1),
-        );
-        for info in data.iter(){
-            row = row.element(
-                Paragraph::new(info.to_string())
+            Paragraph::new(side_headers[i])
+                .styled(header_style)
                 .padded(1),
+        );
+
+        for info in info_vec{
+            println!("{}",info.to_string());
+            row = row.element(
+                Paragraph::default()
+                    .styled_string(&info.to_string(), Style::new().with_font_size(7).italic())
+                    .aligned(Alignment::Center)
             );
         }
         row.push().expect("Invalid table row");
@@ -380,8 +393,7 @@ pub fn gen_table_dim_time(data: Vec<f64> , top_headers: &Vec<&str>, side_headers
     table
 }
 
-pub fn gen_pie_chart(data: &Vec<Analyzer>)->Vec<&'static str> {
-    let target = vec!["selection sort","bubble sort","matrix multiplication"];
+pub fn gen_pie_chart(data: &Vec<Analyzer>, target: &Vec<&str>)->Vec<&'static str> {
     for i in 0..data.len(){
         let anl = &data[i];
         let mut file_name = "pie_chart".to_string();
@@ -427,8 +439,8 @@ pub fn add_image_to_pdf(images_paths: Vec<&str>,doc: &mut Document){
 }
 
 pub fn gen_table_faults(data: &Vec<Analyzer>, top_headers: &Vec<&str>, side_headers: &Vec<&str>)-> TableLayout {
-    let mut column_weights = vec![12; top_headers.len()+1];
-    column_weights[0] = 20;
+    let mut column_weights = vec![6; top_headers.len()+1];
+    column_weights[0] = 10;
     let header_style = Style::new().with_font_size(7).bold();
     let mut table = TableLayout::new(column_weights);
     table.set_cell_decorator(FrameCellDecorator::new(true, true, false));
@@ -550,7 +562,7 @@ mod tests {
 
 
     #[test]
-    fn try_gen_table(){
+    fn try_gen_table_faults(){
         let file_path = "results/prova_table.pdf";
         let anl = Analyzer::new(Faults {
             n_silent_fault: 10,
@@ -575,6 +587,38 @@ mod tests {
         let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
         let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
         let table = gen_table_faults(&data,&top_headers,&side_headers);
+        let mut doc = setup_document();
+        doc.push(table);
+        doc.render_to_file(file_path)
+            .expect("Failed to write output file");
+
+    }
+    #[test]
+    fn try_gen_dim_time_table(){
+        let file_path = "results/prova_table.pdf";
+        let top_headers =  vec!["HARDENED(Byte)", "NOT HARDENED(Byte)", "HARD / NOT HARD","HARDENED(nS)","NOT HARDENED(nS)","HARD / NOT HARD"];
+        let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
+        let anl = Analyzer::new(Faults {
+            n_silent_fault: 10,
+            n_assign_fault: 20,
+            n_mul_fault: 30,
+            n_generic_fault: 40,
+            n_add_fault: 50,
+            n_indexmut_fault: 60,
+            n_index_fault: 70,
+            n_ord_fault: 80,
+            n_partialord_fault: 90,
+            n_partialeq_fault: 100,
+            total_fault: 550,
+        }, vec![100.5, 23.9, 3.4 ], vec![322.4,323.9,111.4], 111.0, 1);
+        let mut anl2 = anl.clone();
+        anl2.n_esecuzione=1;
+        anl2.faults.n_add_fault=1;
+        let mut anl3 = anl.clone();
+        anl3.n_esecuzione = 2;
+        anl3.faults.n_generic_fault=2;
+        let data = vec![anl,anl2,anl3];
+        let table = gen_table_dim_time(&data,&top_headers,&side_headers);
         let mut doc = setup_document();
         doc.push(table);
         doc.render_to_file(file_path)
