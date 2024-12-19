@@ -139,7 +139,7 @@ pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: D
                             faults.n_partialeq_fault;
 
     let bytes = get_data_for_dimension_table(&target).unwrap();
-    let times = get_data_for_time_table(&target, data).unwrap();
+    let times = get_data_for_time_table(&target, data.clone()).unwrap();
 
     let analyzer = Analyzer::new(faults,times,bytes,time_experiment, n_esecuzione,target);
     let json_path = "results/tmp.json";
@@ -171,7 +171,7 @@ pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: D
            }
         }
     }else{
-        pdf_generator::print_pdf(&file_path,analyzer);
+        pdf_generator::print_pdf_singolo(&file_path,analyzer,data);
     }
 
 }

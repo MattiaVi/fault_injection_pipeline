@@ -23,6 +23,8 @@ use genpdf::{elements, fonts};
 use genpdf::elements::{FrameCellDecorator, LinearLayout, Paragraph, TableLayout};
 use genpdf::style::{Color, Style};
 use crate::analyzer::{Analyzer};
+use crate::fault_env::Data;
+use crate::fault_list_manager::file_fault_list::{bubble_sort, matrix_multiplication, selection_sort};
 
 const FONT_DIRS: &[&str] = &[
     "src/pdf_generator/fonts/times_new_roman"
@@ -79,26 +81,53 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
 }
-pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
+pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer, data_input: Data<i32>) {
     let mut doc = setup_document();
+    let italic = Style::new().italic().with_font_size(10);
+    let bold_italic = Style::new().bold().italic().with_font_size(10);
+    let text_margins= Margins::trbl(0, 70,0,0);
+    
     let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
     let mut data_list:Vec<Analyzer> = Vec::new();
     let mut side_headers:Vec<&str> = Vec::new();
+    let mut p_input = Default::default();
+    let mut p_output = Default::default();
     match analyzer.n_esecuzione {
-        0=> side_headers.push("SELECTION SORT"),
-        1=> side_headers.push("BUBBLE SORT"),
-        2=> side_headers.push("MATRIX MULTIPLICATION"),
+        0=> {
+            let output =selection_sort::selection_sort(data_input.clone().into_vector());
+            side_headers.push("SELECTION SORT");
+            p_input = Paragraph::default().styled_string("Vettore di input: ", bold_italic)
+                .styled_string(format!("{:?}",data_input.into_vector()),italic).padded(text_margins);
+            p_output = Paragraph::default().styled_string("Vettore ordinato: ", bold_italic)
+                .styled_string(format!("{:?}",output),italic).padded(text_margins);
+        },
+        1=> {
+            let output = bubble_sort::bubble_sort(data_input.clone().into_vector());
+            side_headers.push("BUBBLE SORT");
+            p_input = Paragraph::default().styled_string("Vettore di input: ", bold_italic)
+                .styled_string(format!("{:?}",data_input.into_vector()),italic).padded(text_margins);
+            p_output = Paragraph::default().styled_string("Vettore ordinato: ", bold_italic)
+                .styled_string(format!("{:?}",output),italic).padded(text_margins);
+        },
+        2=> {
+            let (a,b) = data_input.clone().into_matrices();
+            let output = matrix_multiplication::matrix_multiplication(a,b);
+            side_headers.push("MATRIX MULTIPLICATION");
+            p_input = Paragraph::default().styled_string("Matrici di input: ", bold_italic)
+                .styled_string(format!("{:?}",data_input.into_matrices()),italic).padded(text_margins);
+            p_output = Paragraph::default().styled_string("Prodotto tra matrici: ", bold_italic)
+                .styled_string(format!("{:?}",output),italic).padded(text_margins);
+        },
         _ => {}
     }
     data_list.push(analyzer.clone());
-    let italic = Style::new().italic().with_font_size(10);
-    let bold_italic = Style::new().bold().italic().with_font_size(10);
-    let text_margins= Margins::trbl(0, 65,0,0);
 
     doc.push(elements::Break::new(0.3));
     doc.push(Paragraph::default().styled_string("Tipologia di esperimento: ",bold_italic).styled_string("SINGLE ANALYSIS ",italic).padded(text_margins));
     doc.push(Paragraph::default().styled_string("Algortimo scelto: ", bold_italic).styled_string(side_headers[0].to_string(),italic).padded(text_margins));
     doc.push(Paragraph::default().styled_string("Numero di faults: ",bold_italic).styled_string(analyzer.faults.total_fault.to_string(),italic).padded(text_margins));
+    doc.push(p_input);
+    doc.push(p_output);
     doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Report finale dell'esperimento condotto sulla Fault Injection Pipeline:",bold_italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
@@ -283,9 +312,8 @@ fn setup_document()->Document{
             .expect("Failed to load the default font family");
 
     let mut doc = Document::new(default_font);
-    doc.set_title("genpdf Demo Document");
     doc.set_minimal_conformance();
-    doc.set_line_spacing(1.25);
+    doc.set_line_spacing(1.0);
 
 
     let mut decorator = genpdf::SimplePageDecorator::new();
@@ -312,6 +340,7 @@ fn setup_document()->Document{
 }
 #[cfg(test)]
 mod tests {
+    use crate::analyzer::Faults;
     use super::*;
 
 
