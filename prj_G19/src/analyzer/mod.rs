@@ -68,10 +68,11 @@ pub struct Analyzer{
     pub(crate) time_alg_not_hardened: f64,
     pub(crate) byte_hardened: f64,
     pub(crate) byte_not_hardened: f64,
+    pub(crate) target_program: String,
 }
 
 impl Analyzer{
-    pub(crate) fn new(faults: Faults, times: Vec<f64>, bytes:Vec<f64>, time_exp:f64, n_esecuzione:i8) -> Self{
+    pub(crate) fn new(faults: Faults, times: Vec<f64>, bytes:Vec<f64>, time_exp:f64, n_esecuzione:i8, target: String) -> Self{
         Analyzer{
             n_esecuzione,
             faults,
@@ -80,6 +81,7 @@ impl Analyzer{
             time_alg_not_hardened: times[0],
             byte_hardened: bytes[1],
             byte_not_hardened: bytes[0],
+            target_program: target
         }
     }
 
@@ -139,7 +141,7 @@ pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: D
     let bytes = get_data_for_dimension_table(&target).unwrap();
     let times = get_data_for_time_table(&target, data).unwrap();
 
-    let analyzer = Analyzer::new(faults,times,bytes,time_experiment, n_esecuzione);
+    let analyzer = Analyzer::new(faults,times,bytes,time_experiment, n_esecuzione,target);
     let json_path = "results/tmp.json";
     // 1. Leggi il contenuto esistente del file (o array vuoto se è stato appena creato)
     let mut data_list: Vec<Analyzer> = match fs::read_to_string(json_path) {

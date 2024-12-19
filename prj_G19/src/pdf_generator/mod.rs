@@ -38,14 +38,6 @@ const FONT_DIRS: &[&str] = &[
 ];
 const DEFAULT_FONT_NAME: &'static str = "TimesNewRoman";
 const MONO_FONT_NAME: &'static str = "TimesNewRoman";
-
-const LOREM_IPSUM: &'static str =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut \
-    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco \
-    laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in \
-    voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat \
-    non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
-
 pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
     let text_margins = Margins::trbl(0, 65, 0, 5);
     let mut doc = setup_document();
@@ -75,13 +67,27 @@ pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
 pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     let text_margins = Margins::trbl(0, 65, 0, 5);
     let mut doc = setup_document();
+
+    let mut chart_headers:Vec<&str> = Vec::new();
+    match data_list[0].target_program.as_str() {
+        "sel_sort"=> for _ in 0..3 {chart_headers.push("SELECTION SORT")} ,
+        "bubble_sort"=> for _ in 0..3 {chart_headers.push("BUBBLE SORT")},
+        "matrix_multiplication"=> for _ in 0..3 {chart_headers.push("MATRIX MULTIPLICATION")},
+        _ => {}
+    }
+    let images_paths = gen_pie_chart(&data_list, &chart_headers);
+    add_image_to_pdf(images_paths,&mut doc);
+
     let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
     let side_headers = vec!["1000 FAULTS","2000 FAULTS","3000 FAULTS"];
-
-    let images_paths = gen_pie_chart(&data_list, &side_headers);
-    add_image_to_pdf(images_paths,&mut doc);
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
+
+    let top_headers =  vec!["NOT HARDENED(Byte)", "HARDENED(Byte)", "HARD / NOT HARD","NOT HARDENED(uS)","HARDENED(uS)","HARD / NOT HARD"];
+    let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
+    doc.push(elements::Break::new(1.5));
+    doc.push(dim_time_table);
+
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
 }
@@ -97,15 +103,28 @@ pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
         2=> side_headers.push("MATRIX MULTIPLICATION"),
         _ => {}
     }
-    data_list.push(analyzer);
+    data_list.push(analyzer.clone());
 
+    let important_style =  Style::new().bold();
+    let red = Color::Rgb(255, 0, 0);
+    let text_margins= Margins::trbl(0, 65,0,0);
+
+    doc.push(elements::Break::new(0.3));
+    doc.push(elements::Paragraph::new("Tipologia di esperimento: SINGLE ANALYSIS ").padded(text_margins).styled(important_style));
+    doc.push(elements::Paragraph::new(format!("Algortimo scelto: {}", side_headers[0])).padded(text_margins).styled(important_style));
+    doc.push(elements::Paragraph::new(format!("Numero di faults:  {}",analyzer.faults.total_fault)).padded(text_margins).styled(important_style));
+    doc.push(elements::Break::new(0.5));
+    doc.push(elements::Paragraph::new("Report finale dell'esperimento condotto sulla Fault Injection Pipeline:").padded(text_margins).styled(red));
+    doc.push(elements::Break::new(0.5));
     let images_paths = gen_pie_chart(&data_list, &side_headers);
     doc.push(elements::Image::from_path(images_paths[0]).expect("Unable to load image").with_alignment(Alignment::Center));
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
+    doc.push(elements::Break::new(0.1));
+    doc.push(elements::Paragraph::new(format!("Tempo esecuzione Fault Injection Pipeline: {} microsec", analyzer.time_experiment)).padded(text_margins));
+
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
-
 
     /*println!("{:?}",analyzer);
     let title_style:Style =  Style::new().bold().with_font_size(20);
