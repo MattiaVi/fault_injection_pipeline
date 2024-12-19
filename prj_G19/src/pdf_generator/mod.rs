@@ -56,13 +56,22 @@ pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
     let top_headers =  vec!["NOT HARDENED(Byte)", "HARDENED(Byte)", "HARD / NOT HARD","NOT HARDENED(uS)","HARDENED(uS)","HARD / NOT HARD"];
-    let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
+
     let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
     doc.push(elements::Break::new(1.5));
     doc.push(dim_time_table);
+
+    doc.push(elements::Break::new(1.5));
+    let path = gen_bar_chart(&data_list,&side_headers);
+    doc.push(elements::Image::from_path(path).expect("Unable to load image").with_alignment(Alignment::Center));
+
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
+
+
 }
+
+
 pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     let text_margins = Margins::trbl(0, 65, 0, 5);
     let mut doc = setup_document();
@@ -374,7 +383,15 @@ pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
         .expect("Failed to write output file");
      */
 }
+pub fn gen_bar_chart(data_list: &Vec<Analyzer>, side_headers:&Vec<&str>)-> &'static str {
+    let mut percentages = Vec::new();
+    for anl in data_list{
+        percentages.push(f64::trunc(((anl.faults.total_fault as f64 - anl.faults.n_silent_fault as f64)/anl.faults.total_fault as f64)*10000.0)/100.0);
 
+    }
+    chart_generator::bar_chart(percentages,side_headers);
+    "src/pdf_generator/images/percentage_detected.png"
+}
 pub fn gen_table_dim_time(data_list: &Vec<Analyzer> , top_headers: &Vec<&str>, side_headers: &Vec<&str>)-> TableLayout{
     let mut column_weights = vec![6; top_headers.len()+1];
     column_weights[0] = 10;
@@ -428,7 +445,6 @@ pub fn gen_table_dim_time(data_list: &Vec<Analyzer> , top_headers: &Vec<&str>, s
 }
 
 pub fn gen_pie_chart(data: &Vec<Analyzer>, target: &Vec <&str>)->Vec<&'static str> {
-
     for i in 0..data.len(){
         let anl = &data[i];
         let mut file_name = "pie_chart".to_string();
