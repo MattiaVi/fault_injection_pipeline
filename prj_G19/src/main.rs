@@ -249,11 +249,14 @@ pub fn load_data_from_file(file_path: &str) -> Result<InputData, Error> {
     })
 }
 
+
+
+
+
+
+
+
 fn main() {
-    //API KEY per prendere vettori per algoritmi di ordinamento
-
-    kaggle::Authentication::with_credentials("federicopretini", "5b7355de00b8dc63f52f18be16918e00");
-
     /*
     panic::set_hook(Box::new(|_panic_info| {        // SE NECESSARIO RIMUOVERE
         // Print a simple message when a panic occurs
@@ -264,9 +267,12 @@ fn main() {
     //IMPLEMENTAZIONE MENU UTENTE---------------------------
 
     // Descrizione iniziale
-    println!("Realizzazione di un ambiente di Fault Injection per applicazione ridondata");
+    println!();
+    println!("----------------------------------------------------------------------------");
+    println!(" Realizzazione di un ambiente di Fault Injection per applicazione ridondata ");
+    println!("----------------------------------------------------------------------------");
+    println!();
 
-    // Impostiamo un percorso di default per salvare il pdf generato
     let mut file_path: String = "results/".to_string();
     let input_path: String = "src/data/input.txt".to_string();
 
@@ -316,7 +322,6 @@ fn main() {
         _ => unreachable!(),
     };
 
-
     // Scelta tra singolo algoritmo o tutti
     let operation_modes = vec!["Esegui un singolo algoritmo", "Esegui un'analisi comparativa tra tutti gli algoritmi"];
     let mode_selection = Select::new()
@@ -330,7 +335,7 @@ fn main() {
 
         // Caso del singolo algoritmo
         0 => {
-            //scegli algoritmo--------------------------------------------------------------------------
+            // scelta algoritmo
             let options = vec![
                 "Selection Sort",
                 "Bubble Sort",
@@ -347,7 +352,7 @@ fn main() {
 
             //--------------------------------------------------------------------------
 
-            //scelta tra H/non H, variazione tra #fault list
+            // scelta tra H/non H, variazione tra #fault list
             let options = vec![
                 "Digita una cardinalità a piacere per la fault list entry",
                 "Tre esecuzioni con cardinalità della fault list entry che varia [1000, 2000, 3000]",
@@ -361,6 +366,7 @@ fn main() {
                 .unwrap();
 
             match single_algo_anlysis_selection {
+                //single run su fault entries desiderate
                 0 => {
                         let num_faults = Input::new()
                         .with_prompt("Inserisci il numero di fault entries desiderate")
@@ -371,10 +377,10 @@ fn main() {
                         file_path.push_str(".pdf");
 
                     match algo_selection {
+                        //single run selection sort
                         0 => {
-                            // Caso studio 1: Selection Sort
                             run_case_study(
-                                -1, //Nel caso singolo non esiste esecuzione
+                                0,
                                 num_faults,
                                 "sel_sort",
                                 &file_path,
@@ -385,13 +391,13 @@ fn main() {
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_ris.json",
                                 "src/fault_list_manager/file_fault_list/selection_sort/sel_sort_FL.json",
                                 |vettore| run_for_count_selection_sort(vettore),
-
                             );
                         }
+
+                        //single run bubble sort
                         1 => {
-                            // Caso studio 2: Bubble Sort
                             run_case_study(
-                                -1, //Nel caso singolo non esiste esecuzione
+                                1,
                                 num_faults,
                                 "bubble_sort",
                                 &file_path,
@@ -404,10 +410,11 @@ fn main() {
                                 |vettore| run_for_count_bubble_sort(vettore),
                             );
                         }
+
+                        //single run matrix multiplication
                         2 => {
-                            // Caso studio 3: Matrix Multiplication
                             run_case_study(
-                                -1,
+                                2,
                                 num_faults,
                                 "matrix_multiplication",
                                 &file_path,
@@ -420,12 +427,15 @@ fn main() {
                                 |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size),
                             );
                         }
+
                         _ => println!("Invalid selection."),
                     }
                 }
+
+                //tre run su 1000 2000 3000 fault entries
                 1 => {
                     file_path.push_str("_diffcard.pdf");
-                    let cardinalities: Vec<i32> = vec![10, 20, 30];
+                    let cardinalities: Vec<i32> = vec![1000, 2000, 3000];
                     match algo_selection {
                         0 => {
                             let mut esecuzione = 0;
@@ -490,10 +500,12 @@ fn main() {
                         _ => println!("Invalid selection."),
                     }
                 }
+
                 _ => println!("Invalid selection."),
             }
         }
 
+        //caso tutti gli algoritmi
         1 => {
             // Esegui tutti gli algoritmi
             let num_faults = Input::new()
@@ -555,11 +567,13 @@ fn main() {
                 |matrici| run_for_count_matrix_mul(matrici,input_data.matrix_size),
             );
         }
+
         _ => unreachable!(),
     }
     println!("Operazione completata. Report salvato in: {}", file_path);
 
 
+    // Avvia la pipeline
     fn run_case_study(esecuzione:i8,
                       num_faults: i32,
                       case_name: &str,

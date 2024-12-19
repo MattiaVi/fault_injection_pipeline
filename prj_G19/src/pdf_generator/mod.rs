@@ -64,10 +64,41 @@ pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
         .expect("Failed to write output file");
 }
 pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
-    println!("{:?}",data_list);
+    let text_margins = Margins::trbl(0, 65, 0, 5);
+    let mut doc = setup_document();
+    let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+    let side_headers = vec!["1000 FAULTS","2000 FAULTS","3000 FAULTS"];
+
+    let images_paths = gen_pie_chart(&data_list, &side_headers);
+    add_image_to_pdf(images_paths,&mut doc);
+    let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
+    doc.push(fault_table);
+    doc.render_to_file(file_path)
+        .expect("Failed to write output file");
 }
 pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
-    println!("{:?}",analyzer);
+    let text_margins = Margins::trbl(0, 65, 0, 5);
+    let mut doc = setup_document();
+    let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+    let mut data_list:Vec<Analyzer> = Vec::new();
+    let mut side_headers:Vec<&str> = Vec::new();
+    match analyzer.n_esecuzione {
+        0=> side_headers.push("SELECTION SORT"),
+        1=> side_headers.push("BUBBLE SORT"),
+        2=> side_headers.push("MATRIX MULTIPLICATION"),
+        _ => {}
+    }
+    data_list.push(analyzer);
+
+    let images_paths = gen_pie_chart(&data_list, &side_headers);
+    doc.push(elements::Image::from_path(images_paths[0]).expect("Unable to load image").with_alignment(Alignment::Center));
+    let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
+    doc.push(fault_table);
+    doc.render_to_file(file_path)
+        .expect("Failed to write output file");
+
+
+    /*println!("{:?}",analyzer);
     let title_style:Style =  Style::new().bold().with_font_size(20);
     let title_margins= Margins::trbl(0, 0,0,5);
     let text_style = Style::new().with_font_size(10);
@@ -272,7 +303,7 @@ pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
             .string(" in one paragraph.")
             .styled(Style::new().with_font_size(16)),
     );
-
+    doc.push(elements::Break::new(1.5));
 
     doc.push(elements::Paragraph::new(
         "Embedding images also works using the 'images' feature.",
@@ -341,6 +372,7 @@ pub fn print_pdf(file_path: &String, analyzer: Analyzer) {
     ));
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
+     */
 }
 
 pub fn gen_table_dim_time(data_list: &Vec<Analyzer> , top_headers: &Vec<&str>, side_headers: &Vec<&str>)-> TableLayout{
@@ -391,9 +423,12 @@ pub fn gen_table_dim_time(data_list: &Vec<Analyzer> , top_headers: &Vec<&str>, s
         row.push().expect("Invalid table row");
     }
     table
+
+
 }
 
-pub fn gen_pie_chart(data: &Vec<Analyzer>, target: &Vec<&str>)->Vec<&'static str> {
+pub fn gen_pie_chart(data: &Vec<Analyzer>, target: &Vec <&str>)->Vec<&'static str> {
+
     for i in 0..data.len(){
         let anl = &data[i];
         let mut file_name = "pie_chart".to_string();
@@ -402,11 +437,11 @@ pub fn gen_pie_chart(data: &Vec<Analyzer>, target: &Vec<&str>)->Vec<&'static str
         chart_generator::not_rose_pie_chart(&anl.faults, file_name.as_str(),target[i]);
     }
     let mut image_paths = Vec::new();
-    if data.len()>1{
+    if data.len()>1 {
         image_paths.push("src/pdf_generator/images/pie_chart0.png");
         image_paths.push("src/pdf_generator/images/pie_chart1.png");
         image_paths.push("src/pdf_generator/images/pie_chart2.png");
-    }else{
+    } else {
         image_paths.push("src/pdf_generator/images/pie_chart0.png");
     }
     image_paths
