@@ -246,8 +246,8 @@ fn main() {
     let input_path: String = "src/data/input.txt".to_string();
 
     let mut nome_file: String = Input::new()
-        .with_prompt("Inserisci il nome del file per il report senza estensione")
-        .default("demo".to_string())  // Imposta il percorso di default
+        .with_prompt("Inserisci il nome del file per il report SENZA ESTENSIONE")
+        .default("report".to_string())  // Imposta il percorso di default
         .interact_text()
         .unwrap();
 

@@ -71,7 +71,7 @@ pub fn not_rose_pie_chart(faults: &Faults, file_name: &str,target: &str) {
     let dest_path = "src/pdf_generator/images/";
     svg_to_png(&res, dest_path, file_name).expect("Impossibile convertire SVG in PNG");
 }
-pub fn bar_chart(data: Vec<f64>, x_axis_data: &Vec<&str>){
+pub fn bar_chart(data: Vec<f64>, x_axis_data: &Vec<&str>,x_axis_label: &str ){
     let bar_chart_json = format!(r###"{{
             "width": 630,
             "height": 410,
@@ -106,7 +106,7 @@ pub fn bar_chart(data: Vec<f64>, x_axis_data: &Vec<&str>){
                 }}
             ],
             "x_axis_data": [
-                "ALGORITHM"
+                "{}"
             ],
             "x_axis_margin": {{
                 "left": 1,
@@ -115,7 +115,7 @@ pub fn bar_chart(data: Vec<f64>, x_axis_data: &Vec<&str>){
                 "bottom": 0
             }},
             "x_axis_font_weight": "bold"
-        }}"###, x_axis_data[0], data[0],  x_axis_data[1], data[1],  x_axis_data[2] ,data[2]);
+        }}"###, x_axis_data[0], data[0],  x_axis_data[1], data[1],  x_axis_data[2] ,data[2], x_axis_label);
 
     let mut bar_chart = BarChart::from_json(&bar_chart_json).unwrap();
     bar_chart.y_axis_configs[0].axis_width = Some(100.0);
