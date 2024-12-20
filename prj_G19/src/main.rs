@@ -409,6 +409,7 @@ fn main() {
                             let mut esecuzione = 0;
                             // Caso studio 1: Selection Sort
                             for cardinality in cardinalities{
+                                println!("Esecuzione Selection Sort con cardinalità:{}000",esecuzione+1);
                                 run_case_study(
                                     esecuzione,
                                     cardinality,
@@ -429,6 +430,7 @@ fn main() {
                             // Caso studio 2: Bubble Sort
                             let mut esecuzione = 0;
                             for cardinality in cardinalities{
+                                println!("Esecuzione Bubble Sort con cardinalità:{}000",esecuzione+1);
                                 run_case_study(
                                     esecuzione,
                                     cardinality,
@@ -449,6 +451,7 @@ fn main() {
                             // Caso studio 3: Matrix Multiplication
                             let mut esecuzione = 0;
                             for cardinality in cardinalities {
+                                println!("Esecuzione Matrix Multiplication con cardinalità:{}000",esecuzione+1);
                                 run_case_study(
                                     esecuzione,
                                     cardinality,
@@ -486,7 +489,7 @@ fn main() {
 
             // Caso studio 1: Selection Sort
             let mut esecuzione = 0;
-            println!("Esecuzione: {}",esecuzione);
+            println!("Esecuzione Selection Sort");
             run_case_study(
                 esecuzione,
                 num_faults,
@@ -502,7 +505,7 @@ fn main() {
             );
 
             esecuzione += 1;
-            println!("Esecuzione: {}",esecuzione);
+            println!("Esecuzione Bubble Sort");
             // Caso studio 2: Bubble Sort
             run_case_study(
                 esecuzione,
@@ -519,7 +522,7 @@ fn main() {
             );
 
             esecuzione += 1;
-            println!("Esecuzione: {}",esecuzione);
+            println!("Esecuzione Matrix Multiplication");
             // Caso studio 3: Matrix Multiplication
             run_case_study(
                 esecuzione,
