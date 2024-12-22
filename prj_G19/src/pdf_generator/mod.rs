@@ -89,9 +89,9 @@ pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer, data_input: Dat
     let mut doc = setup_document();
     let italic = Style::new().italic().with_font_size(10);
     let bold_italic = Style::new().bold().italic().with_font_size(10);
+    let title_style = Style::new().bold().with_font_size(12).italic();
     let text_margins= Margins::trbl(0, 70,0,0);
-    
-    let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+
     let mut data_list:Vec<Analyzer> = Vec::new();
     let mut side_headers:Vec<&str> = Vec::new();
     let mut list_input = UnorderedList::with_bullet("");
@@ -121,7 +121,7 @@ pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer, data_input: Dat
             let (a,b) = data_input.clone().into_matrices();
             let output = matrix_multiplication::matrix_multiplication(a.clone(),b.clone());
             let matrix_len = data_input.into_matrices().0.len();
-            side_headers.push("MATRIX MUL");
+            side_headers.push("MATRIX MULTIPLICATION");
 
             for i in 0..matrix_len {
                 let mut p_input = Paragraph::default();
@@ -140,27 +140,40 @@ pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer, data_input: Dat
         _ => {}
     }
     data_list.push(analyzer.clone());
-
+    doc.push(elements::Break::new(0.5));
+    doc.push(Paragraph::default().styled_string("Configurazione sperimentale", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
     doc.push(elements::Break::new(0.3));
     doc.push(Paragraph::default().styled_string("Tipologia di esperimento: ",bold_italic).styled_string("SINGLE ANALYSIS ",italic).padded(text_margins));
+    doc.push(elements::Break::new(0.3));
     doc.push(Paragraph::default().styled_string("Algortimo scelto: ", bold_italic).styled_string(side_headers[0].to_string(),italic).padded(text_margins));
+    doc.push(elements::Break::new(0.3));
     doc.push(Paragraph::default().styled_string("Numero di faults: ",bold_italic).styled_string(analyzer.faults.total_fault.to_string(),italic).padded(text_margins));
+    doc.push(elements::Break::new(0.3));
     doc.push(list_input.padded(Margins::trbl(0, 0,0,-10)));
+    doc.push(elements::Break::new(0.5));
+    doc.push(Paragraph::default().styled_string("Output", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
     doc.push(list_output.padded(Margins::trbl(0, 0,0,-10)));
     doc.push(elements::Break::new(0.5));
-    doc.push(Paragraph::default().styled_string("Report finale dell'esperimento condotto sulla Fault Injection Pipeline:",bold_italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Tempi di esecuzione", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
+    doc.push(Paragraph::default().styled_string("Durata dell'esperimento di Fault Injection:",bold_italic).styled_string(analyzer.time_experiment.to_string(),italic).styled_string(" micro secondi",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
-    let images_paths = gen_pie_chart(&data_list, &side_headers);
-    doc.push(elements::Image::from_path(images_paths[0]).expect("Unable to load image").with_alignment(Alignment::Center));
-    let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
-    doc.push(fault_table);
+    doc.push(Paragraph::default().styled_string("Overhead", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
+    doc.push(Paragraph::default().styled_string("Tabella di riepilogo che evidenzia gli effetti dell'irrobustimento del codice in termini di tempi di dimensione e tempi di esecuzione",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
     let top_headers =  vec!["NOT HARD(B)", "HARD(B)", "HARD/NOT HARD","NOT HARD (us)","HARD (us)","HARD/NOT HARD"];
     let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
     doc.push(dim_time_table);
-    doc.push(elements::Break::new(0.1));
-    doc.push(Paragraph::default().styled_string("Tempo esecuzione Fault Injection Pipeline:",bold_italic).styled_string(analyzer.time_experiment.to_string(),italic).styled_string(" micro secondi",italic).padded(text_margins));
-    doc.push(elements::Break::new(0.1));
+    doc.push(elements::Break::new(0.5));
+    doc.push(Paragraph::default().styled_string("Risultati",title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
+    doc.push(Paragraph::default().styled_string("Il grafico a torta riportato illustra la suddivisione dei fault rilevati e non rilevati, specificando inoltre per i fault riconosciuti la loro distribuzione tra le diverse tipologie di errore che vengono riconosciuti.",italic).padded(text_margins));
+    doc.push(elements::Break::new(0.5));
+    let images_paths = gen_pie_chart(&data_list, &side_headers);
+    doc.push(elements::Image::from_path(images_paths[0]).expect("Unable to load image").with_alignment(Alignment::Center));
+    let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+    let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
+    doc.push(fault_table);
+
+    doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Percentuale di detected:",bold_italic).styled_string(format!("{}",f64::trunc(((data_list[0].faults.total_fault as f64 - data_list[0].faults.n_silent_fault as f64)/data_list[0].faults.total_fault as f64)*10000.0)/100.0),italic).styled_string(" %",italic).padded(text_margins));
 
     doc.render_to_file(file_path)
@@ -178,8 +191,8 @@ pub fn gen_bar_chart(data_list: &Vec<Analyzer>, side_headers:&Vec<&str>, x_axis_
     "src/pdf_generator/images/percentage_detected.png"
 }
 pub fn gen_table_dim_time(data_list: &Vec<Analyzer> , top_headers: &Vec<&str>, side_headers: &Vec<&str>)-> TableLayout{
-    let mut column_weights = vec![6; top_headers.len()+1];
-    column_weights[0] = 8;
+    let mut column_weights = vec![12; top_headers.len()+1];
+    column_weights[0] = 17;
     let header_style = Style::new().with_font_size(7).bold();
     let mut table = TableLayout::new(column_weights);
     table.set_cell_decorator(FrameCellDecorator::new(false, true, false));
@@ -194,7 +207,7 @@ pub fn gen_table_dim_time(data_list: &Vec<Analyzer> , top_headers: &Vec<&str>, s
             Paragraph::default()
                 .styled_string(*header, header_style)
                 .aligned(Alignment::Center)
-                .padded( Margins::trbl(0,4.5,0.5,0)),
+                .padded( Margins::trbl(0,4.5,2,0)),
         );
     }
 
@@ -210,14 +223,14 @@ pub fn gen_table_dim_time(data_list: &Vec<Analyzer> , top_headers: &Vec<&str>, s
                                     ];
         let mut row = table.row().element(
             Paragraph::new(side_headers[i])
-                .styled(header_style).padded(Margins::trbl(4,4.5,0,0)),
+                .styled(header_style).padded(Margins::trbl(4,4.5,2,0)),
         );
 
         for info in info_vec{
             row = row.element(
                 Paragraph::default()
                     .styled_string(&info.to_string(), Style::new().with_font_size(7).italic())
-                    .aligned(Alignment::Center).padded(2),
+                    .aligned(Alignment::Center).padded(Margins::trbl(3,2,0,2)),
             );
         }
         row.push().expect("Invalid table row");
@@ -273,8 +286,8 @@ pub fn add_image_to_pdf(images_paths: Vec<&str>,doc: &mut Document){
 }
 
 pub fn gen_table_faults(data: &Vec<Analyzer>, top_headers: &Vec<&str>, side_headers: &Vec<&str>)-> TableLayout {
-    let mut column_weights = vec![6; top_headers.len()+1];
-    column_weights[0] = 8;
+    let mut column_weights = vec![11; top_headers.len()+1];
+    column_weights[0] = 18;
     let header_style = Style::new().with_font_size(7).bold();
     let mut table = TableLayout::new(column_weights);
     table.set_cell_decorator(FrameCellDecorator::new(false, true, false));
@@ -288,7 +301,7 @@ pub fn gen_table_faults(data: &Vec<Analyzer>, top_headers: &Vec<&str>, side_head
             Paragraph::default()
                 .styled_string(*header, header_style)
                 .aligned(Alignment::Center)
-                .padded( Margins::trbl(0,4.5,0.5,0)),
+                .padded( Margins::trbl(0,4.5,2,0)),
         );
     }
     row.push().expect("Invalid table row");
@@ -298,14 +311,14 @@ pub fn gen_table_faults(data: &Vec<Analyzer>, top_headers: &Vec<&str>, side_head
         let f = &anl.faults;
         let mut row = table.row().element(
                     Paragraph::new(side_headers[i])
-                    .styled(header_style).padded(Margins::trbl(4,4.5,0,0)),
+                    .styled(header_style).padded(Margins::trbl(4,4.5,2,0)),
                     );
 
             for info in f.iter(){
                 row = row.element(
                     Paragraph::default()
                         .styled_string(&info.1.to_string(), Style::new().with_font_size(7).italic())
-                        .aligned(Alignment::Center).padded(2),
+                        .aligned(Alignment::Center).padded(Margins::trbl(3,2,0,2)),
                 );
             }
             row.push().expect("Invalid table row");
@@ -317,7 +330,7 @@ pub fn gen_table_faults(data: &Vec<Analyzer>, top_headers: &Vec<&str>, side_head
 
 fn setup_document()->Document{
     let title_style =  Style::new().bold().with_font_size(20);
-    let title_margins= Margins::trbl(0, 0,0,0);
+    let title_margins= Margins::trbl(0, 10,0,0);
     let red = Color::Rgb(255, 0, 0);
 
     let font_dir = FONT_DIRS
@@ -349,10 +362,8 @@ fn setup_document()->Document{
     });
     doc.set_page_decorator(decorator);
     doc.push(
-       Paragraph::new("Risultati Analizzatore")
-            .padded(title_margins)
-            .styled(title_style)
-            .styled(red),
+       Paragraph::default().styled_string("Report",title_style).aligned(Alignment::Center)
+                        .padded(title_margins).styled(red),
     );
     doc
 
@@ -387,7 +398,7 @@ mod tests {
         anl3.faults.n_generic_fault=2;
         let data = vec![anl,anl2,anl3];
         let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
-        let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MUL"];
+        let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
         let table = gen_table_faults(&data,&top_headers,&side_headers);
         let mut doc = setup_document();
         doc.push(table);
@@ -399,7 +410,7 @@ mod tests {
     fn try_gen_dim_time_table(){
         let file_path = "results/prova_table.pdf";
         let top_headers =  vec!["HARD(B)", "NOT HARD(B)", "HARD / NOT HARD","HARD(uS)","NOT HARD(uS)","HARD / NOT HARD"];
-        let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MUL"];
+        let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
         let anl = Analyzer::new(Faults {
             n_silent_fault: 10,
             n_assign_fault: 20,
