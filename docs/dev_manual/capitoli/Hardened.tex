@@ -1,7 +1,7 @@
 \section{Software fault-tolerance} \label{sec:hardened}
 In generale le tecniche di software fault-tolerance, tendono a sfruttare modifiche di alto livello al codice sorgente in modo da poter rilevare comportamenti irregolari (faults) che riguardano \textbf{sia il codice che i dati}. Qui invece \textit{poniamo l’attenzione esclusivamente su fault che riguardano i dati},  senza peraltro preoccuparci del fatto che questi si trovino in memoria centrale, memoria cache, registri o bus. Al codice target infatti vengono applicate semplici trasformazioni di alto livello che sono completamente indipendenti dal processore che esegue il programma. 
 \subsection{Tre regole per la trasformazione del codice}
-Le regole di trasformazione del codice citate sono quelle  proposte in \cite{802887}. Riportiamo qui quelle mirate al rilevamento di \textbf{errori sui dati}:
+Le regole di trasformazione del codice citate sono quelle proposte in \cite{802887}. Riportiamo qui quelle mirate al rilevamento di \textbf{errori sui dati}:
 \begin{enumerate}
     \itemsep-0.2em
     \item \textbf{Regola \#1}: Ogni variabile \texttt{x} deve essere duplicata: siano \texttt{cp1} e \texttt{cp2} i nomi delle due copie;
@@ -212,5 +212,5 @@ pub enum IncoherenceError{
 }
 \end{lstlisting}
 Questo costituisce il tipo \texttt{E} integrato nella variante \texttt{Err(E)} di \texttt{Result}. Con quest'ultimo dettaglio si ha il quadro completo delle trasformazioni del codice atte ad introdurre ridondanza nei dati con le operazioni associate e la gestione degli errori. \\
-Nella prossima sezione si introducono i casi di studio, questi costituiscono l'applicazione di tutti i concetti che abbiamo visto finora sull'irrobustimento del codice. Inoltre, come presentiamo, non ci sono differenze sostanziali di sintassi tra la versione che utilizza i tipi \texttt{Hardened} e quella che utilizza i tipi standard, in quanto la ridondanza dei dati e le operazioni che questa porta con sè sono tutte \textbf{integrate} nell'implementazione del tipo argomento di discussione del presente paragrafo.
+Nella prossima sezione si introducono i casi di studio, questi costituiscono l'applicazione di tutti i concetti che abbiamo visto finora sull'irrobustimento del codice.
 

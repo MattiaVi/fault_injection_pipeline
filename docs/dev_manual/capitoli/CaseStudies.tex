@@ -1,7 +1,185 @@
 \section{Casi di studio}\label{sec:CaseStudies}
-
+I tre casi di studio presi in considerazione sono: 
+\begin{itemize}
+    \item Selection Sort
+    \item Bubble Sort
+    \item Moltiplicazioni tra matrici
+\end{itemize}
+Per ciascuno di essi vengono implementate due versioni:
+\begin{itemize}
+    \item La versione Non Hardened, implementazione standard del caso studio.
+    \item La versione Hardened, basata sul tipo Hardeded e sulle tre regole di trasformazione del codice precedentemente enunciate.
+\end{itemize}
+Essendo la ridondanza dei dati e le operazioni associate integrate nell'implementazione del tipo Hardened, per tutti i casi studio le due versioni non differiscono nella strategia algoritmica, ma solamente in piccole varaiazioni sintattiche.
+\\ La logica di ordinamento e di calcolo infatti rimane sempre la stessa. \\ \\
+Di seguito vengono riportati i codici dei casi studio.
 \subsection{Selection Sort}
+L'algoritmo di ordinamento selection sort ordina un vettore trovando il minimo in ogni iterazione e scambiandolo con l'elemento corrente.
+\\ \\Versione Non Hardened:
+\begin{lstlisting}[language=rust, style=boxed] 
+    pub fn selection_sort(mut vet:Vec<i32>)->Vec<i32>{
+
+    let n:usize = vet.len();
+    let mut j=0;
+    let mut min=0;
+
+    let mut i=0;
+    while i< n -1{
+        min=i;
+        j=i+1;
+
+        while j< n {
+            if vet[j] < vet[min]{ min=j; }
+            j = j+1;
+        }
+        vet.swap(min,i);
+        i=i+1;
+    }
+    vet
+}
+\end{lstlisting}
+Versione Hardened:
+\begin{lstlisting}[language=rust, style=boxed] 
+pub fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
+
+    let n:Hardened<usize> = vet.len().into();
+    let mut j= Hardened::from(0);
+    let mut min = Hardened::from(0);
+
+    let mut i= Hardened::from(0);
+    while i<(n -1)?{
+        min.assign(i)?;                 
+        j.assign((i+1)?)?;        
+      
+        while j< n {
+            if vet[j]<vet[min]  {   min.assign(j)?; }
+            j.assign((j+1)?)?;
+        }
+        vet.swap(i.inner()?, min.inner()?);
+        i.assign((i+1)?)?;
+    }
+    Ok(())
+}
+\end{lstlisting}
 
 \subsection{Bubble Sort}
+L'algoritmo di ordinamento bubble sort è un algortimo che confronta e scambia elementi adiacenti finché i dati non risultano ordinati. La variabile swapped ottimizza il processo in quanto se non vengono effettuati scambi in un ciclo, significa che il vettore è già ordinato.\\
+\\Versione Non Hardened:
+\begin{lstlisting}[language=rust, style=boxed] 
+    pub fn bubble_sort(mut vet: Vec<i32>) -> Vec<i32> {
+        let n:usize = vet.len();
+        let mut i = 0;
+    
+        while i < n {
+            let mut swapped = false;
+            let mut j = 0;
+    
+            while j < n - i - 1 {
+                if vet[j] > vet[j + 1] {
+                    vet.swap(j, j + 1);
+                    swapped = true;
+                }
+                j += 1;
+            }
+            if !swapped {
+                break;
+            }
+            i += 1;
+        }
+        vet
+    }    
+\end{lstlisting}
+Versione Hardened:
+\begin{lstlisting}[language=rust, style=boxed] 
+pub fn bubble_sort(vet: &mut Vec<Hardened<i32>>) -> Result<(), IncoherenceError> {
+
+    let n = Hardened::from(vet.len());
+    let mut i = Hardened::from(0);
+
+    while i < n {
+        let mut swapped = Hardened::from(false);
+        let mut j = Hardened::from(0);
+
+        while j < ((n - i)? - 1)? {
+            if vet[j].inner()? > vet[(j + 1)?].inner()? {
+                vet.swap(j.inner()?, (j + 1)?.inner()?);
+                swapped = Hardened::from(true);
+            }
+            j.assign((j + 1)?)?;
+        }
+        if !swapped.inner()? {
+            break;
+        }
+        i.assign((i + 1)?)?;
+    }
+    Ok(())
+}
+\end{lstlisting}
+
+
 
 \subsection{Moltiplicazioni tra matrici}
+L'algoritmo moltiplica due matrici quadrate, calcolando ogni elemento come il prodotto scalare delle righe di una matrice e delle colonne dell'altra.
+\\ \\Versione Non Hardened:
+\begin{lstlisting}[language=rust, style=boxed] 
+    pub fn matrix_multiplication(a: Vec<Vec<i32>>, b: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+        let size:usize = a.len();
+        let mut result: Vec<Vec<i32>> = Vec::new();
+    
+        let mut i = 0;
+        let mut j = 0;
+        let mut k = 0;
+    
+        while i < size {
+            let mut row: Vec<i32> = Vec::new();
+            j = 0;
+    
+            while j < size {
+                let mut acc = 0;
+                k = 0;
+    
+                while k < size {
+                    acc += a[i][k] * b[k][j];
+                    k += 1;
+                }
+                row.push(acc); 
+                j += 1;
+            }
+            result.push(row);
+            i += 1;
+        }
+        result
+    }    
+\end{lstlisting}
+Versione Hardened:
+\begin{lstlisting}[language=rust, style=boxed] 
+    pub fn matrix_multiplication(a: &Vec<Vec<Hardened<i32>>>, b: &Vec<Vec<Hardened<i32>>>) -> Result<Vec<Vec<Hardened<i32>>>, IncoherenceError> {
+    
+        let size = Hardened::from(a.len());
+        let mut result: Vec<Vec<Hardened<i32>>> = Hardened::from_mat(Vec::new());
+    
+        let mut i = Hardened::from(0);
+        let mut j = Hardened::from(0);
+        let mut k = Hardened::from(0);
+    
+        while i < size {
+            let mut row: Vec<Hardened<i32>> = Vec::new();
+            j.assign(Hardened::from(0))?;
+    
+            while j < size {
+                let mut acc = Hardened::from(0);
+                k.assign(Hardened::from(0))?;
+    
+                while k < size {
+                    acc.assign((acc + Hardened::from(a[i.inner()?][k.inner()?].inner()?   *   b[k.inner()?][j.inner()?].inner()?) )? )?;
+                    k.assign((k + 1)?)?;
+                }
+                row.push(acc); 
+                j.assign((j + 1)?)?;
+            }
+            result.push(row); 
+            i.assign((i + 1)?)?;
+        }
+        Ok(result)
+    }
+\end{lstlisting}
