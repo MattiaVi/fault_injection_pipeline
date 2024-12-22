@@ -42,7 +42,7 @@
 
 \section*{Introduzione}
 Questo manuale fornisce istruzioni rapide per utilizzare il programma scritto in Rust. \\
-Un menu interattivo consente di personalizzare l'esecuzione della pipeline di fault injection, scegliendo i dati di input, l'algoritmo di esecuzione e il tipo di report generato.
+Un menù interattivo consente di personalizzare l'esecuzione della pipeline di fault injection, scegliendo i dati di input, l'algoritmo di esecuzione e il tipo di report generato.
 
 \section*{Requisiti}
 \begin{itemize}
@@ -57,10 +57,10 @@ Un menu interattivo consente di personalizzare l'esecuzione della pipeline di fa
 \end{enumerate}
 
 \section*{Guida al Menù}
-\subsection{Come navigare nel menu}
-Dopo l'avvio, il programma presenterà un menu interattivo.\\
+\subsection{Come navigare nel menù}
+Dopo l'avvio, il programma presenterà un menù interattivo.\\
 La \textbf{scelta corrente} è evidenziata dall'indicatore visivo \texttt{>}.\\
-Per navigare tra le opzioni del menu, utilizza i tasti freccia \textbf{Su} e \textbf{Giù}.\\
+Per navigare tra le opzioni del menù, utilizza i tasti freccia \textbf{Su} e \textbf{Giù}.\\
 Premere il tasto \textbf{Invio} per confermere la selezione. \\ 
 Una selezione predefinita è racchiusa tra parentesi quadre \textbf{[default option]}, per cofermarla premere \textbf{Invio}.
 
@@ -82,12 +82,12 @@ Inserisci il nome del file per il report SENZA ESTENSIONE [report]:
 \end{tcolorbox}
 
 \paragraph{Passo 2: Scegli la sorgente dei dati.}\leavevmode\\
-La sorgente dei permette di specificare il vettore sui cui verrano applicati gli algoritmi di ordinamento e le due matrici che verrano moltiplicate tra loro.
+La sorgente dei dati permette di specificare il vettore sui cui verrano applicati gli algoritmi di ordinamento e le matrici che verrano moltiplicate tra loro.
 \begin{itemize}
     \item \textbf{Data file} \\Il data file è un file di input personalizzabile con precaricati un vettore randomico, la matrice di Wilson e la sua inversa. Il file è disponibile al percorso src/data/input.txt.
     \item \textbf{Dataset} \\ Il dataset è una cartella sorgente composta da due file. \\Il primo file contiene vettori casuali a dimensioni variabili.\\ 
     Il secondo file contiene 64 matrici di rotazione 3x3. \\
-    Se viene eseguita un'analisi con algortimo matrix multiplication (prossimo passo), una di queste matrici verrà presa randomicamente e scalata con una matrice di scalamneto uniforme randomica.
+    Se viene eseguita un'analisi con algortimo matrix multiplication (vedi il prossimo passo), una di queste matrici verrà estratta randomicamente e scalata con una matrice di scalamneto uniforme anch'essa randomica.
 \end{itemize}
 Esempio passo 2:
 \begin{tcolorbox}[colback=black, coltext=white, sharp corners, boxrule=0.5mm, width=\textwidth]
@@ -111,12 +111,12 @@ Esempio passo 3:
 \end{tcolorbox}
 
 
-\paragraph{Passo 4: Configura l'algoritmo (se  scelto \textit{Singolo algoritmo}).}\leavevmode\\
+\paragraph{Passo 4: Configura l'algoritmo (SOLO SE HAI SCELTO \textit{Singolo algoritmo}).}\leavevmode\\
 Se è stata selezionata l'opzione \textit{Singolo algoritmo}, sarà necessario scegliere un algoritmo tra:
 \begin{itemize}
     \item \textbf{Selection Sort}: algortimo di ordinamento per un vettore.
     \item \textbf{Bubble Sort}: algortimo di ordinamento per un vettore.
-    \item \textbf{Matrix multiplucation}: moltiplicazione tra matrici quadrate.  
+    \item \textbf{Matrix multiplication}: moltiplicazione tra matrici quadrate.  
 \end{itemize}
 Esempio passo 4:
 \begin{tcolorbox}[colback=black, coltext=white, sharp corners, boxrule=0.5mm, width=\textwidth]
@@ -127,41 +127,53 @@ Esempio passo 4:
 \end{tcolorbox}
 
 
-\paragraph{Passo 5: Configura la modalità .}\leavevmode\\ \leavevmode\\
-Se \textbf{Singolo:}\\
-Dopo aver scelto l'algoritmo, si accede alla configurazione della modalità. Sono disponibili le seguenti opzioni:
+\paragraph{Passo 5: Configura la modalità}\leavevmode\\
+A seconda della scelta effettuata precedentemente, ci sono due modalità di configurazione disponibili:
+
+\subparagraph{1) Modalità "Singolo algoritmo"}\leavevmode\\
+\hangindent=1.5em \hangafter=1  
+Dopo aver selezionato un algoritmo specifico, è possibile configurare la modalità scegliendo tra le seguenti opzioni:
 \begin{itemize}
-    \item \textbf{Cardinalità a piacere della fault entry}\\Esegue l'analisi per l'algoritmo precedentemente selezionato una sola volta con le entry selezionate da tastiera.\\ L'opzione [2000] rappresenta la cardinalità di default.
-    \item \textbf{Cardinalità 1000, 2000, 3000}\\Esegue l'analisi per l'algoritmo precedentemente selezionato tre volte per le cardinalità della fault list 1000, 2000 e 3000.
+    \item \textbf{Cardinalità a piacere della fault entry:}\\
+    L'analisi viene eseguita una sola volta con le entry della fault list selezionate manualmente. L'opzione predefinita è \textbf{[2000]}.
+    \item \textbf{Cardinalità 1000, 2000, 3000:}\\
+    L'analisi viene eseguita tre volte per le cardinalità della fault list pari a \textbf{1000}, \textbf{2000}, e \textbf{3000}.
 \end{itemize}
-Esempio passo 5.1:
+
+Esempio passo 5.1: 
 \begin{tcolorbox}[colback=black, coltext=white, sharp corners, boxrule=0.5mm, width=\textwidth]
-    Scegli una modalità di single analysis: \\
-    \texttt{>} Digita una cardinalità a piacere per la fault list entry\\
-    \hspace{2.5em}Tre esecuzioni con cardinalità della fault list entry che varia 11000, 2000, 3000] \\
-\end{tcolorbox}
-Se \textbf{Tutti:}\\
-Nel caso in cui sia stata selezionata l'opzione \textit{Tutti gli algoritmi}, la modalià è predefinita ma si può modificare:
-\begin{itemize}
-\item \textbf{Cardinalità a piacere della fault entry}\\Esegue tutti gli algoritmi sequenzialmente con le entry selezionate da tastiera.\\ L'opzione [2000] rappresenta la cardinalità di default.
-\end{itemize}
-Esempio passo 5.2:
-\begin{tcolorbox}[colback=black, coltext=white, sharp corners, boxrule=0.5mm, width=\textwidth]
-    Inserisci il numero di fault entries desiderate [2000]: 
+Scegli una modalità di single analysis: \\
+\texttt{>} Digita una cardinalità a piacere per la fault list entry \\
+\hspace{2.5em}Tre esecuzioni con cardinalità della fault list entry che varia [1000, 2000, 3000]
 \end{tcolorbox}
 
+\subparagraph{2) Modalità "Tutti gli algoritmi"}\leavevmode\\
+\hangindent=1.5em \hangafter=1  
+Se è stata selezionata l'opzione \textbf{Tutti gli algoritmi}, la modalità di analisi è predefinita. Tuttavia, è possibile modificare la cardinalità della fault list:
+\begin{itemize}
+    \item \textbf{Cardinalità a piacere della fault list entry:}\\
+    L'analisi viene eseguita sequenzialmente su tutti gli algoritmi, con le entry della fault list selezionate manualmente. L'opzione predefinita è \textbf{[2000]}.
+\end{itemize}
+
+Esempio passo 5.2:
+\begin{tcolorbox}[colback=black, coltext=white, sharp corners, boxrule=0.5mm, width=\textwidth]
+Inserisci il numero di fault entries desiderate [2000]:
+\end{tcolorbox}
+
+
+
 \paragraph{Passo 6: Avvio dell'analisi.}\leavevmode\\
-Confermando l'ultima scelta la pipeline di fault injection verrà eseguita con i parametri selezionati.\\
-Una volta completata l'analisi, viene mostrato il messaggio \textit{"operazione completata"} e verrà salvato il report nella cartella results. \\
+Confermando l'ultima scelta la pipeline di fault injection inizierà la sua esecuzione con i parametri selezionati.\\
+Una volta completata l'analisi, verrà mostrato il messaggio \textit{"operazione completata"} e verrà salvato il report nella cartella results. \\
 In base alla configurazione scelta, il report sarà di diverso tipo:
 \begin{itemize}
     \item Se è stata selezionata l'opzione \textit{Singolo algoritmo} e \textit{Cardinalità a piacere della fault entry}, verrà generato un report con nome \texttt{[nomefile].pdf}.
-    \item Se è stata selezionata l'opzione \textit{Singolo algoritmo} e \textit{Cardinalità 1000, 2000, 3000}, verrà generato un report comparativo con nome \texttt{[nomefile]\_diffcard.pdf}.
-    \item Se è stata selezionata l'opzione \textit{Tutti gli algoritmi}, verrà generato un report comparativo con nome \texttt{[nomefile]\_all.pdf}.
+    \item Se è stata selezionata l'opzione \textit{Singolo algoritmo} e \textit{Cardinalità 1000, 2000, 3000}, verrà generato un report di tipo comparativo con nome \texttt{[nomefile]\_diffcard.pdf}.
+    \item Se è stata selezionata l'opzione \textit{Tutti gli algoritmi}, verrà generato un report di tipo comparativo con nome \texttt{[nomefile]\_all.pdf}.
 \end{itemize}
 
-\subsection{Diagramma della struttura del menu}
-Di seguito viene riportato un diagramma esplicativo della struttura del menu.\\ \\ \\
+\subsection{Diagramma della struttura del menù}
+Di seguito viene riportato un diagramma esplicativo della struttura del menù.\\ \\ \\
 \begin{tikzpicture}[node distance=0.3cm]
 % Nodi principali
 \node (fileinput) [block] {Nome file report};
@@ -209,16 +221,16 @@ Di seguito viene riportato un diagramma esplicativo della struttura del menu.\\ 
 \draw [arrow] (algorithm2) -- node[midway, right] {matrix} ([xshift=-3mm, yshift=0mm]modalita2.north east);
 \draw [arrow] (numfault2) -- (run2) node[midway, right] {};
 
-\draw [arrow] (modalita1) -- (run5) node[midway, left,align=center] {};
+\draw [arrow] (modalita1) -- (run5) node[midway, left,align=center] {Numero fault};
 \draw [arrow] (modalita1) -- (run3) node[midway, right, align=center] {1000,2000,3000};
-\draw [arrow] (modalita2) -- (run6) node[midway, left,align=center] {};
+\draw [arrow] (modalita2) -- (run6) node[midway, left,align=center] {Numero fault};
 \draw [arrow] (modalita2) -- (run4) node[midway, right, align=center] {1000,2000,3000};
 
 
 \end{tikzpicture}
 
 \subsection{Esempio di utilizzo}
-Di seguito viene riportato un esempio completo di esecuzione con sorgente da data file per tutti gli algortimi con 2000 fault entries.\\
+Di seguito viene riportato un esempio completo di esecuzione con sorgente da data file per tutti gli algortimi con 2000 fault entries.\\\\
 \textbf{Scelte del menù:}\\
 \begin{tcolorbox}[colback=black, coltext=white, sharp corners, boxrule=0.5mm, width=\textwidth]
 ---------------------------------------------------------------------------------------------------\\
