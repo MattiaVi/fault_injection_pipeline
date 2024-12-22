@@ -63,6 +63,8 @@ impl<'a> Iterator for FaultsIter<'a> {
 pub struct Analyzer{
     pub(crate) n_esecuzione: i8,
     pub(crate) faults: Faults,
+    pub(crate) input: Data<i32>,
+    pub(crate) output: Data<i32>,
     pub(crate) time_experiment: f64,
     pub(crate) time_alg_hardened: f64,
     pub(crate) time_alg_not_hardened: f64,
@@ -72,15 +74,26 @@ pub struct Analyzer{
 }
 
 impl Analyzer{
-    pub(crate) fn new(faults: Faults, times: Vec<f64>, bytes:Vec<f64>, time_exp:f64, n_esecuzione:i8, target: String) -> Self{
+    pub(crate) fn new(faults: Faults, time_exp:f64, n_esecuzione:i8, target: String) -> Self{
+        let input:Data<i32> = match target.as_str() {
+            "matrix_multiplication" => Data::Matrices(Vec::new(),Vec::new()),
+            _ => Data::Vector(Vec::new())
+        };
+        let output:Data<i32> = match target.as_str() {
+            "matrix_multiplication" => Data::Matrices(Vec::new(),Vec::new()),
+            _ => Data::Vector(Vec::new())
+        };
+
         Analyzer{
             n_esecuzione,
             faults,
             time_experiment: time_exp,
-            time_alg_hardened: times[1],
-            time_alg_not_hardened: times[0],
-            byte_hardened: bytes[1],
-            byte_not_hardened: bytes[0],
+            input,
+            output,
+            time_alg_hardened: 0.0,
+            time_alg_not_hardened: 0.0,
+            byte_hardened: 0.0,
+            byte_not_hardened: 0.0,
             target_program: target
         }
     }
@@ -105,7 +118,7 @@ impl Faults{
     }
 }
 
-pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: Data<i32>,
+pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: Data<i32>,
                 target:String, n_esecuzione:i8, time_experiment:f64) {
     let mut vec_result = Vec::new();
     let mut faults = Faults::new();
@@ -138,10 +151,10 @@ pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: D
                             faults.n_index_fault + faults.n_ord_fault + faults.n_partialord_fault +
                             faults.n_partialeq_fault;
 
-    let bytes = get_data_for_dimension_table(&target).unwrap();
-    let times = get_data_for_time_table(&target, data.clone()).unwrap();
-
-    let analyzer = Analyzer::new(faults,times,bytes,time_experiment, n_esecuzione,target);
+    let mut analyzer = Analyzer::new(faults,time_experiment, n_esecuzione,target);
+    analyzer.input = data;
+    get_data_for_dimension_table(&mut analyzer).unwrap();
+    get_data_for_time_table(&mut analyzer).unwrap();
     let json_path = "results/tmp.json";
     // 1. Leggi il contenuto esistente del file (o array vuoto se è stato appena creato)
     let mut data_list: Vec<Analyzer> = match fs::read_to_string(json_path) {
@@ -171,13 +184,12 @@ pub fn analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, data: D
            }
         }
     }else{
-        pdf_generator::print_pdf_singolo(&file_path,analyzer,data);
+        pdf_generator::print_pdf_singolo(&file_path,analyzer);
     }
 
 }
-fn get_data_for_dimension_table(target:&str) -> Result<Vec<f64>,String>{
-    let mut dimensions:Vec<f64> = Vec::new();
-    let file_path_nothardened = match target {
+fn get_data_for_dimension_table(analyzer: &mut Analyzer) -> Result<(),String>{
+    let file_path_nothardened = match analyzer.target_program.as_str() {
         "sel_sort" => "src/fault_list_manager/file_fault_list/selection_sort/mod.rs",
         "bubble_sort" => "src/fault_list_manager/file_fault_list/bubble_sort/mod.rs",
         "matrix_multiplication" => "src/fault_list_manager/file_fault_list/matrix_multiplication/mod.rs",
@@ -185,7 +197,7 @@ fn get_data_for_dimension_table(target:&str) -> Result<Vec<f64>,String>{
     };
     let metadata_not_hard = fs::metadata(file_path_nothardened);
 
-    let file_path_hardened = match target {
+    let file_path_hardened = match analyzer.target_program.as_str() {
         "sel_sort" => "src/hardened/selection_sort_hardened/mod.rs",
         "bubble_sort" => "src/hardened/bubble_sort_hardened/mod.rs",
         "matrix_multiplication" => "src/hardened/matrix_multiplication_hardened/mod.rs",
@@ -193,42 +205,37 @@ fn get_data_for_dimension_table(target:&str) -> Result<Vec<f64>,String>{
     };
     let metadata_hard = fs::metadata(file_path_hardened);
     if metadata_not_hard.is_ok() && metadata_hard.is_ok() {
-        let dim_not_hard = metadata_not_hard.unwrap().len() as f64;
-        dimensions.push(dim_not_hard);
-        let dim_hard = metadata_hard.unwrap().len() as f64;
-        dimensions.push(dim_hard);
+        analyzer.byte_not_hardened = metadata_not_hard.unwrap().len() as f64;
+        analyzer.byte_hardened = metadata_hard.unwrap().len() as f64;
     }else{
         return Err(format!("il path del file: {} non è valido",file_path_nothardened));
     }
-    Ok(dimensions)
+    Ok(())
 }
 
-fn get_data_for_time_table(target:&str, data:Data<i32>) -> Result<Vec<f64>,String>{
-    let mut times:Vec<f64> = Vec::new();
-    let data_hard= data.clone();
-    let elapsed_time_not_hard= match target {
+fn get_data_for_time_table(analyzer: &mut Analyzer) -> Result<(),String>{
+    let data = analyzer.input.clone();
+    let data_hard = analyzer.input.clone();
+    analyzer.time_alg_not_hardened = match analyzer.target_program.as_str() {
         "sel_sort" => {
             let start_sel_sort = Instant::now();
-            selection_sort::selection_sort(data.into_vector());
+            analyzer.output = selection_sort::selection_sort(data.into_vector()).into();
             (start_sel_sort.elapsed().as_nanos() as f64)/1000.0
         },
         "bubble_sort" => {
             let start_bb_sort = Instant::now();
-            bubble_sort::bubble_sort(data.into_vector());
+            analyzer.output = bubble_sort::bubble_sort(data.into_vector()).into();
             (start_bb_sort.elapsed().as_nanos() as f64)/1000.0
         },
         "matrix_multiplication" => {
             let start_mat_multiplication =  Instant::now();
             let matrices=  data.into_matrices();
-            matrix_multiplication::matrix_multiplication(matrices.0,matrices.1);
+            analyzer.output = matrix_multiplication::matrix_multiplication(matrices.0,matrices.1).into();
             (start_mat_multiplication.elapsed().as_nanos() as f64)/1000.0
         },
         _ => return Err("Indice non valido".to_string()),
     };
-    times.push(elapsed_time_not_hard);
-
-
-    let elapsed_time_hard= match target {
+    analyzer.time_alg_hardened= match analyzer.target_program.as_str() {
         "sel_sort" => {
             let start_sel_sort = Instant::now();
             selection_sort_hardened::selection_sort(&mut Hardened::from_vec(data_hard.into_vector())).unwrap();
@@ -247,20 +254,32 @@ fn get_data_for_time_table(target:&str, data:Data<i32>) -> Result<Vec<f64>,Strin
         },
         _ => return Err("Indice non valido".to_string()),
     };
-    times.push(elapsed_time_hard);
-    Ok(times)
+    Ok(())
 }
 #[cfg(test)]
 mod tests{
     use rand::Rng;
-    use crate::analyzer::{get_data_for_dimension_table, get_data_for_time_table, Faults};
-    use crate::fault_env::Data;
+    use crate::analyzer::{get_data_for_dimension_table, get_data_for_time_table, Analyzer, Faults};
     #[test]
     fn try_get_execution_times(){
+        let faults = Faults {
+            n_silent_fault: 1,
+            n_assign_fault: 2,
+            n_mul_fault: 3,
+            n_generic_fault: 4,
+            n_add_fault: 5,
+            n_indexmut_fault: 6,
+            n_index_fault: 7,
+            n_ord_fault: 8,
+            n_partialord_fault: 9,
+            n_partialeq_fault: 10,
+            total_fault: 55,
+        };
+        let mut analyzer = Analyzer::new(faults,389.0,1,"sel_sort".to_string());
         let mut rng = rand::thread_rng();
         let vec: Vec<i32> = (0..3000).map(|_| rng.gen_range(0..20)).collect();
         println!("{:?}", vec);
-        let tim = get_data_for_time_table(&"sel_sort".to_string(),Data::Vector(vec));
+        let tim = get_data_for_time_table(&mut analyzer);
         if tim.is_ok(){
             let times = tim.unwrap();
             println!("{:?}",times);
@@ -271,7 +290,21 @@ mod tests{
     }
     #[test]
     fn try_get_files_dimensions(){
-        let dim = get_data_for_dimension_table(&"sel_sort".to_string());
+        let faults = Faults {
+            n_silent_fault: 1,
+            n_assign_fault: 2,
+            n_mul_fault: 3,
+            n_generic_fault: 4,
+            n_add_fault: 5,
+            n_indexmut_fault: 6,
+            n_index_fault: 7,
+            n_ord_fault: 8,
+            n_partialord_fault: 9,
+            n_partialeq_fault: 10,
+            total_fault: 55,
+        };
+        let mut analyzer = Analyzer::new(faults,389.0,1,"sel_sort".to_string());
+        let dim = get_data_for_dimension_table(&mut analyzer);
         if dim.is_ok(){
             let dimensions = dim.unwrap();
             println!("{:?}",dimensions);

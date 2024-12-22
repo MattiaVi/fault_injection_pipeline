@@ -1,16 +1,37 @@
 use std::sync::mpsc::channel;
 use std::time::Instant;
-use crate::analyzer::analyzer;
+use serde::{Deserialize, Serialize};
+use crate::analyzer::run_analyzer;
 use crate::fault_list_manager::fault_manager;
 use crate::injector::injector_manager;
 
 //Al fine di generalizzare passo dei dati anziché un vec specifico
-#[derive(Clone)]
+#[derive(Serialize,Deserialize,Debug,Clone)]
 pub enum Data<T>{
     Vector(Vec<T>),
     Matrices(Vec<Vec<T>>, Vec<Vec<T>>)
 }
 
+//Converte da Vec<T> a Data<T>
+impl<T> From<Vec<T>> for Data<T> {
+    fn from(vec: Vec<T>) -> Self {
+        Data::Vector(vec)
+    }
+}
+
+//Converte da (Vec<Vec<T>>,Vec<Vec<T>>) a Data<T>
+impl<T> From<(Vec<Vec<T>>, Vec<Vec<T>>)> for Data<T> {
+    fn from(matrices: (Vec<Vec<T>>, Vec<Vec<T>>)) -> Self {
+        Data::Matrices(matrices.0, matrices.1)
+    }
+}
+
+//Converte da Vec<Vec<T>> a Data<T>
+impl<T> From<Vec<Vec<T>>> for Data<T> {
+    fn from(matrix: Vec<Vec<T>>) -> Self {
+        Data::Matrices(matrix, Vec::new())
+    }
+}
 impl<T> Data<T>{
     pub fn into_vector(self) ->Vec<T>{
         match self{
@@ -49,7 +70,7 @@ pub fn fault_injection_env(fault_list: String,      // nome file fault-list
     fault_manager(tx_chan_fm_inj,fault_list);
     injector_manager(rx_chan_fm_inj, tx_chan_inj_anl, target.clone(), data.clone());
     let execution_time = timer.elapsed().as_millis()as f64;
-    analyzer(rx_chan_inj_anl,file_path,data,target,esecuzione,execution_time);
+    run_analyzer(rx_chan_inj_anl,file_path,data,target,esecuzione,execution_time);
 }
 
 /*

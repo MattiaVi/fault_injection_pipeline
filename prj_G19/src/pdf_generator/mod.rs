@@ -22,8 +22,7 @@ use genpdf::Element as _;
 use genpdf::{elements, fonts};
 use genpdf::elements::{FrameCellDecorator, LinearLayout, Paragraph, TableLayout, UnorderedList};
 use genpdf::style::{Color, Style};
-use crate::analyzer::{Analyzer};
-use crate::fault_env::Data;
+use crate::analyzer::Analyzer;
 use crate::fault_list_manager::file_fault_list::{bubble_sort, matrix_multiplication, selection_sort};
 
 const FONT_DIRS: &[&str] = &[
@@ -33,7 +32,7 @@ const DEFAULT_FONT_NAME: &'static str = "TimesNewRoman";
 pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
     let mut doc = setup_document();
     let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
-    let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MUL"];
+    let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
     let images_paths = gen_pie_chart(&data_list,&side_headers);
     add_image_to_pdf(images_paths,&mut doc);
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
@@ -62,7 +61,7 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     match data_list[0].target_program.as_str() {
         "sel_sort"=> for _ in 0..3 {chart_headers.push("SELECTION SORT")} ,
         "bubble_sort"=> for _ in 0..3 {chart_headers.push("BUBBLE SORT")},
-        "matrix_multiplication"=> for _ in 0..3 {chart_headers.push("MATRIX MUL")},
+        "matrix_multiplication"=> for _ in 0..3 {chart_headers.push("MATRIX MULTIPLICATION")},
         _ => {}
     }
     let images_paths = gen_pie_chart(&data_list, &chart_headers);
@@ -85,7 +84,7 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
 }
-pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer, data_input: Data<i32>) {
+pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer) {
     let mut doc = setup_document();
     let italic = Style::new().italic().with_font_size(10);
     let bold_italic = Style::new().bold().italic().with_font_size(10);
@@ -96,6 +95,7 @@ pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer, data_input: Dat
     let mut side_headers:Vec<&str> = Vec::new();
     let mut list_input = UnorderedList::with_bullet("");
     let mut list_output = UnorderedList::with_bullet("");
+    let data_input = analyzer.input.clone();
     match analyzer.n_esecuzione {
         0=> {
             let output =selection_sort::selection_sort(data_input.clone().into_vector());
@@ -230,7 +230,7 @@ pub fn gen_table_dim_time(data_list: &Vec<Analyzer> , top_headers: &Vec<&str>, s
             row = row.element(
                 Paragraph::default()
                     .styled_string(&info.to_string(), Style::new().with_font_size(7).italic())
-                    .aligned(Alignment::Center).padded(Margins::trbl(3,2,0,2)),
+                    .aligned(Alignment::Center).padded(Margins::trbl(2,2,0,2)),
             );
         }
         row.push().expect("Invalid table row");
@@ -318,7 +318,7 @@ pub fn gen_table_faults(data: &Vec<Analyzer>, top_headers: &Vec<&str>, side_head
                 row = row.element(
                     Paragraph::default()
                         .styled_string(&info.1.to_string(), Style::new().with_font_size(7).italic())
-                        .aligned(Alignment::Center).padded(Margins::trbl(3,2,0,2)),
+                        .aligned(Alignment::Center).padded(Margins::trbl(2,2,0,2)),
                 );
             }
             row.push().expect("Invalid table row");
@@ -389,7 +389,7 @@ mod tests {
             n_partialord_fault: 90,
             n_partialeq_fault: 100,
             total_fault: 550,
-        }, vec![100.5, 23.9, 3.4 ], vec![322.4,323.9,111.4], 111.0, 1, "sel_sort".to_string());
+        }, 324.98, 1,  "sel_sort".to_string());
         let mut anl2 = anl.clone();
         anl2.n_esecuzione=1;
         anl2.faults.n_add_fault=1;
@@ -423,7 +423,7 @@ mod tests {
             n_partialord_fault: 90,
             n_partialeq_fault: 100,
             total_fault: 550,
-        }, vec![100.5, 23.9, 3.4 ], vec![322.4,323.9,111.4], 111.0, 1, "sel_sort".to_string());
+        }, 324.98, 1,  "sel_sort".to_string());
         let mut anl2 = anl.clone();
         anl2.n_esecuzione=1;
         anl2.faults.n_add_fault=1;
