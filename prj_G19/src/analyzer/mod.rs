@@ -122,7 +122,6 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
                 target:String, n_esecuzione:i8, time_experiment:f64) {
     let mut vec_result = Vec::new();
     let mut faults = Faults::new();
-
     while let Ok(test_result) = rx_chan_inj_anl.recv() {
         vec_result.push(test_result);
     }

@@ -257,7 +257,7 @@ fn main() {
         println!("Nome file invalido, per favore ritenta");
         nome_file = Input::new()
             .with_prompt("Inserisci il nome del file per il report SENZA ESTENSIONE")
-            .default("demo".to_string())  // Imposta il percorso di default
+            .default("report".to_string())  // Imposta il percorso di default
             .interact_text()
             .unwrap();
     }

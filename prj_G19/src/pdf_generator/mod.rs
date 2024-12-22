@@ -20,10 +20,9 @@ mod chart_generator;
 use genpdf::{Alignment, Margins,Document};
 use genpdf::Element as _;
 use genpdf::{elements, fonts};
-use genpdf::elements::{FrameCellDecorator, LinearLayout, Paragraph, TableLayout, UnorderedList};
+use genpdf::elements::{FrameCellDecorator, LinearLayout, PageBreak, Paragraph, TableLayout, UnorderedList};
 use genpdf::style::{Color, Style};
 use crate::analyzer::Analyzer;
-use crate::fault_list_manager::file_fault_list::{bubble_sort, matrix_multiplication, selection_sort};
 
 const FONT_DIRS: &[&str] = &[
     "src/pdf_generator/fonts/times_new_roman"
@@ -31,32 +30,61 @@ const FONT_DIRS: &[&str] = &[
 const DEFAULT_FONT_NAME: &'static str = "TimesNewRoman";
 pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
     let mut doc = setup_document();
-    let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
-    let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
-    let images_paths = gen_pie_chart(&data_list,&side_headers);
+    let italic = Style::new().italic().with_font_size(10);
+    let bold_italic = Style::new().bold().italic().with_font_size(10);
+    let title_style = Style::new().bold().with_font_size(12).italic();
+    let text_margins= Margins::trbl(0, 70,0,0);
+    let mut side_headers: Vec<&str> = Vec::new();
+    doc.push(elements::Break::new(0.5));
+    for i in 0..data_list.len(){
+        let mut list_input_output = get_list_input_output(&data_list[i], &mut side_headers);
+        doc.push(Paragraph::default().styled_string(format!("Configurazione sperimentale {}",i+1), title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
+        doc.push(elements::Break::new(0.3));
+        doc.push(Paragraph::default().styled_string("Tipologia di esperimento: ",bold_italic).styled_string("MULTIPLE ANALYSIS ",italic).padded(text_margins));
+        doc.push(elements::Break::new(0.3));
+        doc.push(Paragraph::default().styled_string("Algoritmi eseguiti: ", bold_italic).styled_string(side_headers[i].to_string(),italic).padded(text_margins));
+        doc.push(elements::Break::new(0.3));
+        doc.push(Paragraph::default().styled_string("Numero di faults: ",bold_italic).styled_string(data_list[i].faults.total_fault.to_string(),italic).padded(text_margins));
+        doc.push(elements::Break::new(0.3));
+        doc.push(list_input_output.pop().unwrap().padded(Margins::trbl(0, 0,0,-10)));
+        doc.push(elements::Break::new(0.5));
+        doc.push(Paragraph::default().styled_string("Output", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
+        doc.push(list_input_output.pop().unwrap().padded(Margins::trbl(0, 0,0,-10)));
+        doc.push(elements::Break::new(0.5));
+        doc.push(Paragraph::default().styled_string("Tempi di esecuzione", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
+        doc.push(Paragraph::default().styled_string("Durata dell'esperimento di Fault Injection:",bold_italic).styled_string(data_list[i].time_experiment.to_string(),italic).styled_string(" micro secondi",italic).padded(text_margins));
+        doc.push(elements::Break::new(2));
+    }
+    doc.push(PageBreak::new());
+    doc.push(Paragraph::default().styled_string("Overhead", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
+    doc.push(Paragraph::default().styled_string("Tabella di riepilogo che evidenzia gli effetti dell'irrobustimento del codice in termini di tempi di dimensione e tempi di esecuzione per ciascun algoritmo",italic).padded(text_margins));
+    doc.push(elements::Break::new(0.5));
+    let top_headers =  vec!["NOT HARD(B)", "HARD(B)", "HARD/NOT HARD","NOT HARD (us)","HARD (us)","HARD/NOT HARD"];
+    let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
+    doc.push(dim_time_table);
+    doc.push(elements::Break::new(0.5));
+
+    doc.push(Paragraph::default().styled_string("Risultati",title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
+    doc.push(Paragraph::default().styled_string("Il grafico a torta riportato illustra la suddivisione dei fault rilevati e non rilevati, specificando inoltre per i fault riconosciuti la loro distribuzione tra le diverse tipologie di errore che vengono riconosciuti.",italic).padded(text_margins));
+    doc.push(elements::Break::new(0.5));
+    let images_paths = gen_pie_chart(&data_list, &side_headers);
     add_image_to_pdf(images_paths,&mut doc);
+    let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
-    let top_headers =  vec!["NOT HARD(B)", "HARD(B)", "HARD / NOT HARD","NOT HARD(uS)","HARD(uS)","HARD / NOT HARD"];
+    doc.push(elements::Break::new(0.5));
 
-    let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
-    doc.push(elements::Break::new(1.5));
-    doc.push(dim_time_table);
-
-    doc.push(elements::Break::new(1.5));
-    let path = gen_bar_chart(&data_list,&side_headers,"ALGORITMI");
+    doc.push(PageBreak::new());
+    let path = gen_bar_chart(&data_list,&side_headers,"ALGORITMO");
     doc.push(elements::Image::from_path(path).expect("Unable to load image").with_alignment(Alignment::Center));
 
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
-
-
 }
 
 
 pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     let mut doc = setup_document();
-
     let mut chart_headers:Vec<&str> = Vec::new();
     match data_list[0].target_program.as_str() {
         "sel_sort"=> for _ in 0..3 {chart_headers.push("SELECTION SORT")} ,
@@ -64,8 +92,6 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
         "matrix_multiplication"=> for _ in 0..3 {chart_headers.push("MATRIX MULTIPLICATION")},
         _ => {}
     }
-    let images_paths = gen_pie_chart(&data_list, &chart_headers);
-    add_image_to_pdf(images_paths,&mut doc);
 
     let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
     let side_headers = vec!["1000 FAULTS","2000 FAULTS","3000 FAULTS"];
@@ -86,73 +112,28 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
 }
 pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer) {
     let mut doc = setup_document();
-    let italic = Style::new().italic().with_font_size(10);
-    let bold_italic = Style::new().bold().italic().with_font_size(10);
-    let title_style = Style::new().bold().with_font_size(12).italic();
-    let text_margins= Margins::trbl(0, 70,0,0);
-
     let mut data_list:Vec<Analyzer> = Vec::new();
     let mut side_headers:Vec<&str> = Vec::new();
-    let mut list_input = UnorderedList::with_bullet("");
-    let mut list_output = UnorderedList::with_bullet("");
-    let data_input = analyzer.input.clone();
-    match analyzer.n_esecuzione {
-        0=> {
-            let output =selection_sort::selection_sort(data_input.clone().into_vector());
-            side_headers.push("SELECTION SORT");
-            let p_input = Paragraph::default().styled_string("Vettore di input: ", bold_italic)
-                .styled_string(format!("{:?}",data_input.into_vector()),italic).padded(text_margins);
-            let p_output = Paragraph::default().styled_string("Vettore ordinato: ", bold_italic)
-                .styled_string(format!("{:?}",output),italic).padded(text_margins);
-            list_input.push(p_input);
-            list_output.push(p_output);
-        },
-        1=> {
-            let output = bubble_sort::bubble_sort(data_input.clone().into_vector());
-            side_headers.push("BUBBLE SORT");
-            let p_input = Paragraph::default().styled_string("Vettore di input: ", bold_italic)
-                .styled_string(format!("{:?}",data_input.into_vector()),italic).padded(text_margins);
-           let  p_output = Paragraph::default().styled_string("Vettore ordinato: ", bold_italic)
-                .styled_string(format!("{:?}",output),italic).padded(text_margins);
-            list_input.push(p_input);
-            list_output.push(p_output);
-        },
-        2=> {
-            let (a,b) = data_input.clone().into_matrices();
-            let output = matrix_multiplication::matrix_multiplication(a.clone(),b.clone());
-            let matrix_len = data_input.into_matrices().0.len();
-            side_headers.push("MATRIX MULTIPLICATION");
+    let mut list_input_output = get_list_input_output(&analyzer, &mut side_headers);
+    let title_style = Style::new().bold().with_font_size(12).italic();
+    let italic = Style::new().italic().with_font_size(10);
+    let bold_italic = Style::new().bold().italic().with_font_size(10);
+    let text_margins= Margins::trbl(0, 70,0,0);
 
-            for i in 0..matrix_len {
-                let mut p_input = Paragraph::default();
-                let mut p_output = Paragraph::default();
-                if i==0{
-                    list_input.push(Paragraph::new("Matrici di input: ").styled(bold_italic).padded(text_margins));
-                    list_output.push(Paragraph::new("Prodotto tra matrici: ").styled(bold_italic).padded(text_margins));
-                }
-                p_input = p_input.styled_string(format!(" {} ",a[i].iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")),italic).styled_string(format!("    {} ",b[i].iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")),italic);
-                p_output = p_output.styled_string(format!(" {} ",output[i].iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")),italic);
-                list_input.push(p_input.padded(text_margins));
-                list_output.push(p_output.padded(text_margins));
-
-            }
-        },
-        _ => {}
-    }
     data_list.push(analyzer.clone());
     doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Configurazione sperimentale", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
     doc.push(elements::Break::new(0.3));
     doc.push(Paragraph::default().styled_string("Tipologia di esperimento: ",bold_italic).styled_string("SINGLE ANALYSIS ",italic).padded(text_margins));
     doc.push(elements::Break::new(0.3));
-    doc.push(Paragraph::default().styled_string("Algortimo scelto: ", bold_italic).styled_string(side_headers[0].to_string(),italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Algoritmo scelto: ", bold_italic).styled_string(side_headers[0].to_string(),italic).padded(text_margins));
     doc.push(elements::Break::new(0.3));
     doc.push(Paragraph::default().styled_string("Numero di faults: ",bold_italic).styled_string(analyzer.faults.total_fault.to_string(),italic).padded(text_margins));
     doc.push(elements::Break::new(0.3));
-    doc.push(list_input.padded(Margins::trbl(0, 0,0,-10)));
+    doc.push(list_input_output.pop().unwrap().padded(Margins::trbl(0, 0,0,-10)));
     doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Output", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
-    doc.push(list_output.padded(Margins::trbl(0, 0,0,-10)));
+    doc.push(list_input_output.pop().unwrap().padded(Margins::trbl(0, 0,0,-10)));
     doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Tempi di esecuzione", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
     doc.push(Paragraph::default().styled_string("Durata dell'esperimento di Fault Injection:",bold_italic).styled_string(analyzer.time_experiment.to_string(),italic).styled_string(" micro secondi",italic).padded(text_margins));
@@ -327,6 +308,58 @@ pub fn gen_table_faults(data: &Vec<Analyzer>, top_headers: &Vec<&str>, side_head
     table
 
  }
+
+fn get_list_input_output(analyzer: &Analyzer, side_headers: &mut Vec<&str>) -> Vec<UnorderedList> {
+    let data_input = analyzer.input.clone();
+    let data_output = analyzer.output.clone();
+    let mut list_input = UnorderedList::with_bullet("");
+    let mut list_output = UnorderedList::with_bullet("");
+    let italic = Style::new().italic().with_font_size(10);
+    let bold_italic = Style::new().bold().italic().with_font_size(10);
+    let text_margins= Margins::trbl(0, 70,0,0);
+    match analyzer.n_esecuzione {
+        0=> {
+            side_headers.push("SELECTION SORT");
+            let p_input = Paragraph::default().styled_string("Vettore di input: ", bold_italic)
+                .styled_string(format!("{:?}",data_input.into_vector()),italic).padded(text_margins);
+            let p_output = Paragraph::default().styled_string("Vettore ordinato: ", bold_italic)
+                .styled_string(format!("{:?}",data_output.into_vector()),italic).padded(text_margins);
+            list_input.push(p_input);
+            list_output.push(p_output);
+        },
+        1=> {
+            side_headers.push("BUBBLE SORT");
+            let p_input = Paragraph::default().styled_string("Vettore di input: ", bold_italic)
+                .styled_string(format!("{:?}",data_input.into_vector()),italic).padded(text_margins);
+            let  p_output = Paragraph::default().styled_string("Vettore ordinato: ", bold_italic)
+                .styled_string(format!("{:?}",data_output.into_vector()),italic).padded(text_margins);
+            list_input.push(p_input);
+            list_output.push(p_output);
+        },
+        2=> {
+            let (a,b) = data_input.clone().into_matrices();
+            let (output,_) = data_output.clone().into_matrices();
+            let matrix_len = data_input.into_matrices().0.len();
+            side_headers.push("MATRIX MULTIPLICATION");
+
+            for i in 0..matrix_len {
+                let mut p_input = Paragraph::default();
+                let mut p_output = Paragraph::default();
+                if i==0{
+                    list_input.push(Paragraph::new("Matrici di input: ").styled(bold_italic).padded(text_margins));
+                    list_output.push(Paragraph::new("Prodotto tra matrici: ").styled(bold_italic).padded(text_margins));
+                }
+                p_input = p_input.styled_string(format!(" {} ",a[i].iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")),italic).styled_string(format!("    {} ",b[i].iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")),italic);
+                p_output = p_output.styled_string(format!(" {} ",output[i].iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")),italic);
+                list_input.push(p_input.padded(text_margins));
+                list_output.push(p_output.padded(text_margins));
+
+            }
+        },
+        _ => {}
+    }
+    vec![list_output,list_input]
+}
 
 fn setup_document()->Document{
     let title_style =  Style::new().bold().with_font_size(20);
