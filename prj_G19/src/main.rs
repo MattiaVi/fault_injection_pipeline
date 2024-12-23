@@ -409,7 +409,7 @@ fn main() {
                             let mut esecuzione = 0;
                             // Caso studio 1: Selection Sort
                             for cardinality in cardinalities{
-                                println!("Esecuzione Selection Sort con cardinalità:{}000",esecuzione+1);
+                                println!("Esecuzione Selection Sort con cardinalità:{}",cardinality);
                                 run_case_study(
                                     esecuzione,
                                     cardinality,
@@ -430,7 +430,7 @@ fn main() {
                             // Caso studio 2: Bubble Sort
                             let mut esecuzione = 0;
                             for cardinality in cardinalities{
-                                println!("Esecuzione Bubble Sort con cardinalità:{}000",esecuzione+1);
+                                println!("Esecuzione Bubble Sort con cardinalità:{}",cardinality);
                                 run_case_study(
                                     esecuzione,
                                     cardinality,
@@ -444,14 +444,14 @@ fn main() {
                                     "src/fault_list_manager/file_fault_list/bubble_sort/bubble_sort_FL.json",
                                     |vettore| run_for_count_bubble_sort(vettore)
                                 );
-                            esecuzione += 1;
+                                esecuzione += 1;
                             }
                         }
                         2 => {
                             // Caso studio 3: Matrix Multiplication
                             let mut esecuzione = 0;
                             for cardinality in cardinalities {
-                                println!("Esecuzione Matrix Multiplication con cardinalità:{}000",esecuzione+1);
+                                println!("Esecuzione Matrix Multiplication con cardinalità:{}",cardinality);
                                 run_case_study(
                                     esecuzione,
                                     cardinality,
