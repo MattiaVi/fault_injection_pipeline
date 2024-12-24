@@ -57,7 +57,7 @@ pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
     }
     doc.push(PageBreak::new());
     doc.push(Paragraph::default().styled_string("Overhead", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
-    doc.push(Paragraph::default().styled_string("Tabella di riepilogo che evidenzia gli effetti dell'irrobustimento del codice in termini di tempi di dimensione e tempi di esecuzione per ciascun algoritmo",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Tabella di riepilogo che evidenzia gli effetti dell'irrobustimento del codice in termini di dimensione e tempi di esecuzione per ciascun algoritmo.",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
     let top_headers =  vec!["NOT HARD(B)", "HARD(B)", "HARD/NOT HARD","NOT HARD (us)","HARD (us)","HARD/NOT HARD"];
     let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
@@ -65,7 +65,7 @@ pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
     doc.push(elements::Break::new(0.5));
 
     doc.push(Paragraph::default().styled_string("Risultati",title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
-    doc.push(Paragraph::default().styled_string("Il grafico a torta riportato illustra la suddivisione dei fault rilevati e non rilevati, specificando inoltre per i fault riconosciuti la loro distribuzione tra le diverse tipologie di errore che vengono riconosciuti.",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Di seguito vengono riportatati i faults non rilevati e rilevati, specificando per quest'ultimi le diverse tipologie riconosciute.",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
     let images_paths = gen_pie_chart(&data_list, &side_headers);
     add_image_to_pdf(images_paths,&mut doc);
@@ -121,7 +121,7 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     }
     doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Overhead", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
-    doc.push(Paragraph::default().styled_string("Tabella di riepilogo che evidenzia gli effetti dell'irrobustimento del codice in termini di tempi di dimensione e tempi di esecuzione per ciascun algoritmo",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Tabella di riepilogo che evidenzia gli effetti dell'irrobustimento del codice in termini di dimensione e tempi di esecuzione per ciascuna cardinalità della fault list.",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
     let top_headers =  vec!["NOT HARD(B)", "HARD(B)", "HARD/NOT HARD","NOT HARD (us)","HARD (us)","HARD/NOT HARD"];
     //let side_headers = vec![format!("{} FAULTS",data_list[0].faults.total_fault),format!("{} FAULTS",data_list[1].faults.total_fault),format!("{} FAULTS",data_list[2].faults.total_fault)];
@@ -130,7 +130,7 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     doc.push(dim_time_table);
     doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Risultati",title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
-    doc.push(Paragraph::default().styled_string("Il grafico a torta riportato illustra la suddivisione dei fault rilevati e non rilevati, specificando inoltre per i fault riconosciuti la loro distribuzione tra le diverse tipologie di errore che vengono riconosciuti.",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Di seguito vengono riportatati i faults non rilevati e rilevati, specificando per quest'ultimi le diverse tipologie riconosciute.",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
     doc.push(PageBreak::new());
 
@@ -174,14 +174,14 @@ pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer) {
     doc.push(Paragraph::default().styled_string("Durata dell'esperimento di Fault Injection:",bold_italic).styled_string(analyzer.time_experiment.to_string(),italic).styled_string(" micro secondi",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Overhead", title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
-    doc.push(Paragraph::default().styled_string("Tabella di riepilogo che evidenzia gli effetti dell'irrobustimento del codice in termini di tempi di dimensione e tempi di esecuzione",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Tabella di riepilogo che evidenzia gli effetti dell'irrobustimento del codice in termini di dimensione e tempi di esecuzione.",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
     let top_headers =  vec!["NOT HARD(B)", "HARD(B)", "HARD/NOT HARD","NOT HARD (us)","HARD (us)","HARD/NOT HARD"];
     let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
     doc.push(dim_time_table);
     doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Risultati",title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
-    doc.push(Paragraph::default().styled_string("Il grafico a torta riportato illustra la suddivisione dei fault rilevati e non rilevati, specificando inoltre per i fault riconosciuti la loro distribuzione tra le diverse tipologie di errore che vengono riconosciuti.",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Di seguito viene illustrata la suddivisione dei faults non rilevati e rilevati, specificando per quest'ultimi le diverse tipologie riconosciute.",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
     let images_paths = gen_pie_chart(&data_list, &side_headers);
     doc.push(elements::Image::from_path(images_paths[0]).expect("Unable to load image").with_alignment(Alignment::Center));
