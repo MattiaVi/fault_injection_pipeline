@@ -456,6 +456,7 @@ mod tests {
             n_ord_fault: 80,
             n_partialord_fault: 90,
             n_partialeq_fault: 100,
+            n_fatal_fault: 22,
             total_fault: 550,
         }, 324.98, 1,  "sel_sort".to_string());
         let mut anl2 = anl.clone();
@@ -490,6 +491,7 @@ mod tests {
             n_ord_fault: 80,
             n_partialord_fault: 90,
             n_partialeq_fault: 100,
+            n_fatal_fault: 22,
             total_fault: 550,
         }, 324.98, 1,  "sel_sort".to_string());
         let mut anl2 = anl.clone();

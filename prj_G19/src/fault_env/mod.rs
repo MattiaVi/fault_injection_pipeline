@@ -1,8 +1,11 @@
 use std::sync::mpsc::channel;
-use std::time::Instant;
+use std::sync::Mutex;
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 use crate::analyzer::run_analyzer;
 use crate::fault_list_manager::fault_manager;
+use crate::hardened::{Hardened, IntoNestedVec};
 use crate::injector::injector_manager;
 
 //Al fine di generalizzare passo dei dati anziché un vec specifico
@@ -71,6 +74,19 @@ pub fn fault_injection_env(fault_list: String,      // nome file fault-list
     injector_manager(rx_chan_fm_inj, tx_chan_inj_anl, target.clone(), data.clone());
     let execution_time = timer.elapsed().as_millis()as f64;
     run_analyzer(rx_chan_inj_anl,file_path,data,target,esecuzione,execution_time);
+/*
+    sleep(Duration::from_secs(10));
+    let target = vec![-32, -9, 1, 3, 10, 15, 16, 19, 20, 27];
+
+
+    let data = guard.lock().unwrap().clone().into_nested_vec();
+    println!("{:?}",guard.lock().unwrap());
+    println!("{:?}",guard.lock().unwrap().len());
+    println!("{}",count);
+
+ */
+
+
 }
 
 /*

@@ -1,6 +1,6 @@
 mod algorithms;
 
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::{panic, thread, vec};
 use crate::fault_list_manager::FaultListEntry;
@@ -11,12 +11,13 @@ use crate::injector::algorithms::{runner_bubble_sort, runner_matrix_multiplicati
 use crate::VERBOSE;
 
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct TestResult {
     fault_list_entry: FaultListEntry,
-    result: Result<(), IncoherenceError>
+    result: Result<Vec<Hardened<i32>>, IncoherenceError>
 }
 impl TestResult {
-    pub fn get_result(&self) -> Result<(), IncoherenceError> {
+    pub fn get_result(&self) -> Result<Vec<Hardened<i32>>, IncoherenceError> {
         self.result.clone()
     }
 }
@@ -134,7 +135,7 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
 
 
     match result {
-        Ok(Ok(())) => TestResult {result: Ok(()), fault_list_entry},
+        Ok(Ok(v)) => TestResult {result: Ok(v), fault_list_entry},
         Ok(Err(err)) => {
             if VERBOSE {
                 println!("Error found - {}", err);

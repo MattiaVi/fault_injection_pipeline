@@ -72,6 +72,17 @@ impl<T> From<T> for Hardened<T> where T:Copy{
     }
 }
 
+pub trait IntoNestedVec {
+    fn into_nested_vec(self) -> Vec<i32>;
+}
+impl IntoNestedVec for Vec<Hardened<i32>> {
+    fn into_nested_vec(self) -> Vec<i32> {
+        self.into_iter()
+            .map(|hardened| hardened.cp1) // Estrai solo il campo cp1
+            .collect()
+    }
+}
+
 //---------------------OPERAZIONI ARITMETICHE-------------------------
 //Tutte queste operazioni in caso di fallimento ritornano un Errore
 //di tipo IncoherenceError, implementato usando il crate thiserror.

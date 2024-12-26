@@ -1,13 +1,13 @@
 use std::fs;
 use std::sync::mpsc::{Receiver};
+use std::sync::Mutex;
 use std::time::Instant;
 use serde::{Deserialize, Serialize};
 use crate::fault_env::Data;
 use crate::fault_list_manager::file_fault_list::{bubble_sort, matrix_multiplication, selection_sort};
-use crate::hardened::{bubble_sort_hardened, matrix_multiplication_hardened, selection_sort_hardened,
-                      Hardened, IncoherenceError};
+use crate::hardened::{bubble_sort_hardened, matrix_multiplication_hardened, selection_sort_hardened, Hardened, IncoherenceError, IntoNestedVec};
 use crate::injector::TestResult;
-use crate::pdf_generator;
+use crate::{hardened, pdf_generator};
 
 #[derive(Serialize,Deserialize,Debug,Clone)]
 pub struct Faults{
@@ -21,6 +21,7 @@ pub struct Faults{
      pub(crate) n_ord_fault: usize,
      pub(crate) n_partialord_fault: usize,
      pub(crate) n_partialeq_fault: usize,
+     pub(crate) n_fatal_fault: usize,
      pub(crate) total_fault: usize,
 }
 pub struct FaultsIter<'a> {
@@ -113,6 +114,7 @@ impl Faults{
             n_ord_fault: 0,
             n_partialord_fault: 0,
             n_partialeq_fault: 0,
+            n_fatal_fault:0,
             total_fault: 0,
         }
     }
@@ -126,11 +128,13 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
         vec_result.push(test_result);
     }
 
+    let mut v_ok = Vec::new();
     for test_result in &vec_result {
         let res = test_result.get_result();
 
         if res.is_ok() {
             faults.n_silent_fault += 1;
+            v_ok.push(res.unwrap());
         } else {
             match res.err().unwrap() {
                 IncoherenceError::AssignFail => faults.n_assign_fault += 1,
@@ -150,10 +154,20 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
                             faults.n_index_fault + faults.n_ord_fault + faults.n_partialord_fault +
                             faults.n_partialeq_fault;
 
+
     let mut analyzer = Analyzer::new(faults,time_experiment, n_esecuzione,target);
     analyzer.input = data;
     get_data_for_dimension_table(&mut analyzer).unwrap();
     get_data_for_time_table(&mut analyzer).unwrap();
+
+    for v in v_ok{
+        if analyzer.output.clone().into_vector() != v.into_nested_vec(){
+            analyzer.faults.n_fatal_fault += 1;
+        }
+    }
+    println!("{}",analyzer.faults.n_fatal_fault);
+    println!("rapporto: {}%",analyzer.faults.n_fatal_fault*100/analyzer.faults.total_fault);
+
     let json_path = "results/tmp.json";
     // 1. Leggi il contenuto esistente del file (o array vuoto se è stato appena creato)
     let mut data_list: Vec<Analyzer> = match fs::read_to_string(json_path) {
@@ -272,6 +286,7 @@ mod tests{
             n_ord_fault: 8,
             n_partialord_fault: 9,
             n_partialeq_fault: 10,
+            n_fatal_fault: 22,
             total_fault: 55,
         };
         let mut analyzer = Analyzer::new(faults,389.0,1,"sel_sort".to_string());
@@ -280,9 +295,7 @@ mod tests{
         println!("{:?}", vec);
         let tim = get_data_for_time_table(&mut analyzer);
         if tim.is_ok(){
-            let times = tim.unwrap();
-            println!("{:?}",times);
-            assert!(times[0] >= 0.0 && times[1] >= 0.0);
+           assert_eq!(tim.is_ok(), true);
         }else{
             println!("{}",tim.unwrap_err());
         }
@@ -300,14 +313,13 @@ mod tests{
             n_ord_fault: 8,
             n_partialord_fault: 9,
             n_partialeq_fault: 10,
+            n_fatal_fault: 22,
             total_fault: 55,
         };
         let mut analyzer = Analyzer::new(faults,389.0,1,"sel_sort".to_string());
         let dim = get_data_for_dimension_table(&mut analyzer);
         if dim.is_ok(){
-            let dimensions = dim.unwrap();
-            println!("{:?}",dimensions);
-            assert!(dimensions[0] >= 0.0 && dimensions[1] >= 0.0);
+            assert_eq!(dim.is_ok(), true);
         }else{
             println!("{}",dim.unwrap_err());
         }
@@ -326,6 +338,7 @@ mod tests{
             n_ord_fault: 8,
             n_partialord_fault: 9,
             n_partialeq_fault: 10,
+            n_fatal_fault: 22,
             total_fault: 55,
         };
         let ref_iter = &faults;

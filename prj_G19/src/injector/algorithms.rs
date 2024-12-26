@@ -1,8 +1,14 @@
+use std::num::NonZero;
 use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{Mutex, RwLock, RwLockReadGuard};
+use std::thread;
+use std::thread::ThreadId;
+use std::time::Duration;
+use crate::fault_list_manager::static_analysis::Variable;
 use crate::hardened::{Hardened, IncoherenceError};
 use crate::injector::{BubbleSortVariables, MatrixMultiplicationVariables, SelectionSortVariables};
 
-pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<(), IncoherenceError> {
+pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<Vec<Hardened<i32>>, IncoherenceError> {
 
     *variables.n.write().unwrap() = variables.vec.read().unwrap().len().into();
     tx_runner.send("i1").unwrap();
@@ -84,12 +90,11 @@ pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Send
      */
     //------------------------------------------------------
 
-    Ok(())
+    Ok((*variables.vec.read().unwrap()).clone())
 }
 
 
-pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<(), IncoherenceError> {
-
+pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<Vec<Hardened<i32>>, IncoherenceError> {
     *variables.n.write().unwrap() = Hardened::from(variables.vet.read().unwrap().len());
     tx_runner.send("i1").unwrap();
     rx_runner.recv().unwrap();
@@ -146,7 +151,7 @@ pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&st
         rx_runner.recv().unwrap();
     }
 
-    Ok(())
+    Ok((*variables.vet.read().unwrap()).clone())
 
     /*
     let n = Hardened::from(vet.len());
@@ -172,13 +177,14 @@ pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&st
     */
 }
 
-pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<(), IncoherenceError> {
+pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<Vec<Hardened<i32>>, IncoherenceError> {
 
     *variables.size.write().unwrap() = Hardened::from(variables.a.read().unwrap().len());
     tx_runner.send("i1").unwrap();
     rx_runner.recv().unwrap();
 
     *variables.result.write().unwrap() = Hardened::from_mat(vec![vec![0; variables.size.read().unwrap().inner().unwrap()]; variables.size.read().unwrap().inner().unwrap()]);
+
     tx_runner.send("i2").unwrap();
     rx_runner.recv().unwrap();
 
@@ -256,7 +262,7 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
         rx_runner.recv().unwrap();
     }
 
-    Ok(())
+    Ok(variables.result.read().unwrap().clone().into_iter().clone().flatten().collect::<Vec<Hardened<i32>>>())
 
 
     /*

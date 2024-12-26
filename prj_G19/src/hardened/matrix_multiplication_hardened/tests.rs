@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::hardened::{Hardened, IncoherenceError};
+    use crate::hardened::Hardened;
     use crate::hardened::matrix_multiplication_hardened::matrix_multiplication;
     #[test]
     fn test_matrix_multiplication_hardened_simple_5x5() {
