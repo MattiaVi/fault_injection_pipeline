@@ -18,7 +18,8 @@ pub fn matrix_multiplication(a: &Vec<Vec<Hardened<i32>>>, b: &Vec<Vec<Hardened<i
             k.assign(Hardened::from(0))?;
 
             while k < size {
-                acc.assign((acc + Hardened::from(a[i.inner()?][k.inner()?].inner()?   *   b[k.inner()?][j.inner()?].inner()?) )? )?;
+                acc.assign((acc + (a[i.inner()?][k.inner()?]   *   b[k.inner()?][j.inner()?])? )? )?;
+                //acc.assign((acc + Hardened::from(a[i.inner()?][k.inner()?].inner()?   *   b[k.inner()?][j.inner()?].inner()?) )? )?;
                 k.assign((k + 1)?)?;
             }
             row.push(acc); // Aggiunge il valore calcolato alla riga

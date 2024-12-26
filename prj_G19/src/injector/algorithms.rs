@@ -183,8 +183,7 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
     tx_runner.send("i1").unwrap();
     rx_runner.recv().unwrap();
 
-    *variables.result.write().unwrap() = Hardened::from_mat(vec![vec![0; variables.size.read().unwrap().inner().unwrap()]; variables.size.read().unwrap().inner().unwrap()]);
-
+    *variables.result.write().unwrap() = Hardened::from_mat(Vec::new());
     tx_runner.send("i2").unwrap();
     rx_runner.recv().unwrap();
 
@@ -204,7 +203,7 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
         tx_runner.send("i6").unwrap();
         rx_runner.recv().unwrap();
 
-        *variables.row.write().unwrap() = Hardened::from_vec(vec![0; variables.size.read().unwrap().inner().unwrap()]);
+        *variables.row.write().unwrap() = Hardened::from_vec(Vec::new());
         tx_runner.send("i7").unwrap();
         rx_runner.recv().unwrap();
 
@@ -228,10 +227,10 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
                 tx_runner.send("i12").unwrap();
                 rx_runner.recv().unwrap();
 
-                let tmp = (*variables.acc.read().unwrap() + Hardened::from(
-                    variables.a.read().unwrap()[variables.i.read().unwrap().inner()?][variables.k.read().unwrap().inner()?].inner()? *
-                        variables.b.read().unwrap()[variables.k.read().unwrap().inner()?][variables.j.read().unwrap().inner()?].inner()?
-                ))?;
+                let tmp = (*variables.acc.read().unwrap() + (
+                    variables.a.read().unwrap()[variables.i.read().unwrap().inner()?][variables.k.read().unwrap().inner()?] *
+                        variables.b.read().unwrap()[variables.k.read().unwrap().inner()?][variables.j.read().unwrap().inner()?]
+                )?)?;
                 variables.acc.write().unwrap().assign(tmp)?;
                 tx_runner.send("i13").unwrap();
                 rx_runner.recv().unwrap();
@@ -282,7 +281,7 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
             k.assign(Hardened::from(0))?;
 
             while k < size {
-                acc.assign((acc + Hardened::from(a[i.inner()?][k.inner()?].inner()?   *   b[k.inner()?][j.inner()?].inner()?) )? )?;
+                acc.assign((acc + (a[i.inner()?][k.inner()?]   *   b[k.inner()?][j.inner()?])? )? )?;
                 k.assign((k + 1)?)?;
             }
             row.push(acc); // Aggiunge il valore calcolato alla riga
@@ -295,3 +294,4 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
     */
 
 }
+

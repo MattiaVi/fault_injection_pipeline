@@ -150,6 +150,7 @@ where T: Mul<Output = T> + PartialEq + Eq + Debug + Copy + Clone {
         if self.incoherent() || rhs.incoherent() {
             return Err(IncoherenceError::MulFail);
         }
+
         Ok(Self {
             cp1: self.cp1 * rhs.cp1,
             cp2: self.cp2 * rhs.cp2,

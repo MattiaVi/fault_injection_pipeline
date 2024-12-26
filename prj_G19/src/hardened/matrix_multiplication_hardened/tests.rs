@@ -71,4 +71,43 @@ mod tests {
         // Confronta il risultato con quello atteso
         assert_eq!(result.unwrap(), expected);
     }
+
+    #[test]
+    fn test_matrix_multiplication_hardened_simple_5x5_mul_fail() {
+        // Matrice Hardened A (5x5)
+        let a = Hardened::from_mat(vec![
+            vec![1, 0, 0, 0, 0],
+            vec![0, 1, 0, 0, 0],
+            vec![0, 0, 1, 0, 0],
+            vec![0, 0, 0, 1, 0],
+            vec![0, 0, 0, 0, 1],
+        ]);
+
+        // Matrice Hardened B (5x5)
+        let mut b = Hardened::from_mat(vec![
+            vec![1, 2, 3, 4, 5],
+            vec![6, 7, 8, 9, 10],
+            vec![11, 12, 13, 14, 15],
+            vec![16, 17, 18, 19, 20],
+            vec![21, 22, 23, 24, 25],
+        ]);
+
+        // Matrice Hardened attesa per il risultato
+        // Risultato di moltiplicare una matrice identità per B dovrebbe essere B stessa
+        let expected_output = Hardened::from_mat(vec![
+            vec![1, 2, 3, 4, 5],
+            vec![6, 7, 8, 9, 10],
+            vec![11, 12, 13, 14, 15],
+            vec![16, 17, 18, 19, 20],
+            vec![21, 22, 23, 24, 25],
+        ]);
+
+        b[0][0]["cp2"] = 2;
+
+        // Esecuzione della moltiplicazione e verifica del risultato
+        match matrix_multiplication(&a, &b) {
+            Ok(result) => assert_eq!(result, expected_output),
+            Err(e) => panic!("Errore di incoerenza: {:?}", e),
+        }
+    }
 }

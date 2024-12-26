@@ -245,6 +245,7 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
                     };
                 }
                 AlgorithmVariables::MatrixMultiplication(var) => {
+
                     match fault_list_entry.var.as_str() {
                         "i" => {
                             let val = var.i.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
@@ -330,6 +331,7 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
                             }
                         }
                     }
+
                 }
             }
         }
@@ -377,7 +379,6 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
         handles_runner.push(thread::spawn(move || runner(runner_variables, fault_list_entry_runner, tx_1, rx_2)));     // lancio il thread che esegue l'algoritmo
         handles_injector.push(thread::spawn(move || injector(injector_variables, fault_list_entry, tx_2, rx_1)));      // lancio il thread iniettore
     }
-
 
 
     for handle in handles_runner {
