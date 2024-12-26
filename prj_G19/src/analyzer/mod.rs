@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, thread};
 use std::sync::mpsc::{Receiver};
 use std::sync::Mutex;
 use std::time::Instant;
@@ -128,11 +128,14 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
         vec_result.push(test_result);
     }
 
+
     let mut v_ok = Vec::new();
     for test_result in &vec_result {
+
         let res = test_result.get_result();
 
         if res.is_ok() {
+            println!("{:?}",res.clone().unwrap());
             faults.n_silent_fault += 1;
             v_ok.push(res.unwrap());
         } else {
@@ -160,11 +163,21 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
     get_data_for_dimension_table(&mut analyzer).unwrap();
     get_data_for_time_table(&mut analyzer).unwrap();
 
+    let correct_ouput = match analyzer.target_program.as_str() {
+        "matrix_multiplication" => {
+            println!("sono dentro");
+            analyzer.output.clone().into_matrices().0.into_iter().flatten().collect::<Vec<i32>>()}
+        _ => {analyzer.output.clone().into_vector()}
+    };
+    println!("correct output {:?}", correct_ouput);
+
     for v in v_ok{
-        if analyzer.output.clone().into_vector() != v.into_nested_vec(){
+        println!("v {:?}", v.clone().into_nested_vec());
+        if correct_ouput != v.into_nested_vec(){
             analyzer.faults.n_fatal_fault += 1;
         }
     }
+
     println!("{}",analyzer.faults.n_fatal_fault);
     println!("rapporto: {}%",analyzer.faults.n_fatal_fault*100/analyzer.faults.total_fault);
 

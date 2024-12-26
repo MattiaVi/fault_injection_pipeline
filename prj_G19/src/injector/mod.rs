@@ -173,7 +173,9 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
 
     while let Ok(_) = rx_runner.recv() {
         counter += 1;
-
+        println!("-------------------------");
+        println!("counter: {}", counter);
+        println!("-------------------------");
         if counter == fault_list_entry.time {
             match &*variables {
                 AlgorithmVariables::SelectionSort(var) => {
@@ -245,7 +247,6 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
                     };
                 }
                 AlgorithmVariables::MatrixMultiplication(var) => {
-
                     match fault_list_entry.var.as_str() {
                         "i" => {
                             let val = var.i.read().unwrap().inner().unwrap().clone();     // leggo il valore della variabile
@@ -280,7 +281,7 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
                                     .split(|c| c == '[' || c == ']')
                                     .collect::<Vec<_>>()[1]
                                     .parse::<usize>().unwrap(); // ottengo l'indice dell'elemento nel vttore in cui iniettare l'errore
-
+                                println!("{:?}",var.row.read());
                                 let val = var.row.read().unwrap()[index].inner().unwrap().clone();
                                 //println!("continuo");
                                 let new_val = val ^ (mask as i32);

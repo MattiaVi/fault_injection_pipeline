@@ -4,6 +4,7 @@ use std::sync::{Mutex, RwLock, RwLockReadGuard};
 use std::thread;
 use std::thread::ThreadId;
 use std::time::Duration;
+use rand::thread_rng;
 use crate::fault_list_manager::static_analysis::Variable;
 use crate::hardened::{Hardened, IncoherenceError};
 use crate::injector::{BubbleSortVariables, MatrixMultiplicationVariables, SelectionSortVariables};
@@ -90,7 +91,7 @@ pub fn runner_selection_sort(variables: &SelectionSortVariables, tx_runner: Send
      */
     //------------------------------------------------------
 
-    Ok((*variables.vec.read().unwrap()).clone())
+    Ok(variables.vec.read().unwrap().clone())
 }
 
 
@@ -151,7 +152,7 @@ pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&st
         rx_runner.recv().unwrap();
     }
 
-    Ok((*variables.vet.read().unwrap()).clone())
+    Ok(variables.vet.read().unwrap().clone())
 
     /*
     let n = Hardened::from(vet.len());
@@ -177,8 +178,9 @@ pub fn runner_bubble_sort(variables: &BubbleSortVariables, tx_runner: Sender<&st
     */
 }
 
-pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<Vec<Hardened<i32>>, IncoherenceError> {
 
+
+pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, tx_runner: Sender<&str>, rx_runner: Receiver<&str>) -> Result<Vec<Hardened<i32>>, IncoherenceError> {
     *variables.size.write().unwrap() = Hardened::from(variables.a.read().unwrap().len());
     tx_runner.send("i1").unwrap();
     rx_runner.recv().unwrap();
@@ -262,7 +264,74 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
     }
 
     Ok(variables.result.read().unwrap().clone().into_iter().clone().flatten().collect::<Vec<Hardened<i32>>>())
+}
 
+#[cfg(test)]
+    mod tests{
+    use std::{result, thread};
+    use std::sync::Arc;
+    use std::sync::mpsc::channel;
+    use crate::fault_env::Data::Matrices;
+    use crate::fault_list_manager::fault_manager;
+    use crate::injector::algorithms::runner_matrix_multiplication;
+    use crate::injector::{injector, injector_manager, runner, AlgorithmVariables, MatrixMultiplicationVariables};
+
+    #[test]
+        fn test_run_matrix_multiplication(){
+            let fault_list = "src/fault_list_manager/file_fault_list/matrix_multiplication/matrix_mul_FL.json".to_string();
+            let target = "matrix_multiplication".to_string();
+            let data = Matrices(vec![vec![5, 7, 6, 5], vec![7, 10, 8, 7], vec![6, 8, 10, 9], vec![5, 7, 9, 10]], vec![vec![68, -41, -17, 10], vec![-41, 25, 10, -6], vec![-17, 10, 5, -3], vec![10, -6, -3, 2]]);
+            let (tx_chan_fm_inj, rx_chan_fm_inj) = channel();
+            let (tx_chan_inj_anl, rx_chan_inj_anl) = channel();
+            fault_manager(tx_chan_fm_inj,fault_list);
+
+
+
+        //INJECTOR MANAGER
+        let mut handles_runner = vec![];
+        let mut handles_injector = vec![];
+
+        while let Ok(fault_list_entry) = rx_chan_fm_inj.recv(){
+
+            let var = AlgorithmVariables::from_target(target.as_str(), data.clone());
+
+            // thread
+            let (tx_1, rx_1) = channel();
+            let (tx_2, rx_2) = channel();
+
+            let shared_variables = var;
+
+            let runner_variables = Arc::clone(&shared_variables);
+            let injector_variables = Arc::clone(&shared_variables);
+
+            let fault_list_entry_runner = fault_list_entry.clone();
+
+
+            handles_runner.push(thread::spawn(move || runner(runner_variables, fault_list_entry_runner, tx_1, rx_2)));     // lancio il thread che esegue l'algoritmo
+            handles_injector.push(thread::spawn(move || injector(injector_variables, fault_list_entry, tx_2, rx_1)));
+            break;
+        }
+
+
+        for handle in handles_runner {
+            let result = handle.join().unwrap();
+
+            tx_chan_inj_anl.send(result).unwrap();
+        }
+
+
+        for handle in handles_injector {
+            handle.join().unwrap();
+        }
+
+
+        drop(tx_chan_inj_anl);
+
+
+
+
+        }
+    }
 
     /*
     let size = Hardened::from(a.len());
@@ -292,6 +361,4 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
     }
     Ok(result)
     */
-
-}
 
