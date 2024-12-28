@@ -63,20 +63,22 @@ pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
     let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
     doc.push(dim_time_table);
     doc.push(elements::Break::new(0.5));
-
     doc.push(Paragraph::default().styled_string("Risultati",title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
     doc.push(Paragraph::default().styled_string("Di seguito vengono riportatati i faults non rilevati e rilevati, specificando per quest'ultimi le diverse tipologie riconosciute.",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
     let images_paths = gen_pie_chart(&data_list, &side_headers);
     add_image_to_pdf(images_paths,&mut doc);
-    let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+    let top_headers =  vec!["SILENT","ASSIGN","INNER","SUB","MUL","ADD","INDEX","PAR_ORD"];
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
     doc.push(elements::Break::new(0.5));
-
     doc.push(PageBreak::new());
     let path = gen_bar_chart(&data_list,&side_headers,"ALGORITMO");
     doc.push(elements::Image::from_path(path).expect("Unable to load image").with_alignment(Alignment::Center));
+    doc.push(elements::Break::new(0.5));
+    doc.push(Paragraph::default().styled_string("Fault fatatali (selection sort) : ",bold_italic).styled_string(format!("{} %",f64::trunc((data_list[0].faults.n_fatal_fault as f64/data_list[0].faults.total_fault as f64)*10000.0)/100.0),italic).styled_string(" (percentuale di fault iniettati che hanno provocato un output errato)",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Fault fatatali (bubble sort) : ",bold_italic).styled_string(format!("{} %",f64::trunc((data_list[1].faults.n_fatal_fault as f64/data_list[1].faults.total_fault as f64)*10000.0)/100.0),italic).styled_string(" (percentuale di fault iniettati che hanno provocato un output errato)",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Fault fatatali (matrix multiplication) : ",bold_italic).styled_string(format!("{} %",f64::trunc((data_list[2].faults.n_fatal_fault as f64/data_list[2].faults.total_fault as f64)*10000.0)/100.0),italic).styled_string(" (percentuale di fault iniettati che hanno provocato un output errato)",italic).padded(text_margins));
 
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
@@ -129,19 +131,23 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
     doc.push(dim_time_table);
     doc.push(elements::Break::new(0.5));
+    doc.push(PageBreak::new());
     doc.push(Paragraph::default().styled_string("Risultati",title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
     doc.push(Paragraph::default().styled_string("Di seguito vengono riportatati i faults non rilevati e rilevati, specificando per quest'ultimi le diverse tipologie riconosciute.",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
-    doc.push(PageBreak::new());
-
     let images_paths = gen_pie_chart(&data_list, &chart_headers);
     add_image_to_pdf(images_paths,&mut doc);
-    let top_headers =  vec!["SILENT","ASSIGN","INNER","SUB","MUL","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+    let top_headers =  vec!["SILENT","ASSIGN","INNER","SUB","MUL","ADD","INDEX","PAR_ORD"];
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
     doc.push(elements::Break::new(0.5));
     let path = gen_bar_chart(&data_list,&side_headers,"CARDINALITA'");
     doc.push(elements::Image::from_path(path).expect("Unable to load image").with_alignment(Alignment::Center));
+    doc.push(elements::Break::new(0.5));
+    doc.push(Paragraph::default().styled_string("Fault fatatali su 1000 iniezioni: ",bold_italic).styled_string(format!("{} %",f64::trunc((data_list[0].faults.n_fatal_fault as f64/data_list[0].faults.total_fault as f64)*10000.0)/100.0),italic).styled_string(" (percentuale di fault iniettati che hanno provocato un output errato)",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Fault fatatali su 2000 iniezioni: ",bold_italic).styled_string(format!("{} %",f64::trunc((data_list[1].faults.n_fatal_fault as f64/data_list[1].faults.total_fault as f64)*10000.0)/100.0),italic).styled_string(" (percentuale di fault iniettati che hanno provocato un output errato)",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Fault fatatali su 3000 iniezioni: ",bold_italic).styled_string(format!("{} %",f64::trunc((data_list[2].faults.n_fatal_fault as f64/data_list[2].faults.total_fault as f64)*10000.0)/100.0),italic).styled_string(" (percentuale di fault iniettati che hanno provocato un output errato)",italic).padded(text_margins));
+
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
 }
@@ -185,12 +191,15 @@ pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer) {
     doc.push(elements::Break::new(0.5));
     let images_paths = gen_pie_chart(&data_list, &side_headers);
     doc.push(elements::Image::from_path(images_paths[0]).expect("Unable to load image").with_alignment(Alignment::Center));
-    let top_headers =  vec!["SILENT","ASSIGN","INNER","SUB","MUL","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+    let top_headers =  vec!["SILENT","ASSIGN","INNER","SUB","MUL","ADD","INDEX","PAR_ORD"];
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
+    doc.push(elements::Break::new(0.5));
     doc.push(fault_table);
 
     doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Percentuale di detected:",bold_italic).styled_string(format!("{}",f64::trunc(((data_list[0].faults.total_fault as f64 - data_list[0].faults.n_silent_fault as f64)/data_list[0].faults.total_fault as f64)*10000.0)/100.0),italic).styled_string(" %",italic).padded(text_margins));
+    doc.push(elements::Break::new(0.5));
+    doc.push(Paragraph::default().styled_string("Fault fatatali: ",bold_italic).styled_string(format!("{} %",f64::trunc((data_list[0].faults.n_fatal_fault as f64/data_list[0].faults.total_fault as f64)*10000.0)/100.0),bold_italic).styled_string(" (percentuale di fault iniettati che hanno provocato un output errato)",italic).padded(text_margins));
 
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
@@ -467,7 +476,7 @@ mod tests {
         anl3.n_esecuzione = 2;
         anl3.faults.n_assign_fault=2;
         let data = vec![anl,anl2,anl3];
-        let top_headers =  vec!["SILENT","ASSIGN","INNER","SUB","MUL","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+        let top_headers =  vec!["SILENT","ASSIGN","INNER","SUB","MUL","ADD","INDEX","PAR_ORD"];
         let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
         let table = gen_table_faults(&data,&top_headers,&side_headers);
         let mut doc = setup_document();

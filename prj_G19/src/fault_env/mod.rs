@@ -1,11 +1,8 @@
 use std::sync::mpsc::channel;
-use std::sync::Mutex;
-use std::thread::sleep;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 use serde::{Deserialize, Serialize};
 use crate::analyzer::run_analyzer;
 use crate::fault_list_manager::fault_manager;
-use crate::hardened::{Hardened, IntoNestedVec};
 use crate::injector::injector_manager;
 
 //Al fine di generalizzare passo dei dati anziché un vec specifico

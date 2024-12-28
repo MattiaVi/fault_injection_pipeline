@@ -1,11 +1,4 @@
-use std::num::NonZero;
 use std::sync::mpsc::{Receiver, Sender};
-use std::sync::{Mutex, RwLock, RwLockReadGuard};
-use std::thread;
-use std::thread::ThreadId;
-use std::time::Duration;
-use rand::thread_rng;
-use crate::fault_list_manager::static_analysis::Variable;
 use crate::hardened::{Hardened, IncoherenceError};
 use crate::injector::{BubbleSortVariables, MatrixMultiplicationVariables, SelectionSortVariables};
 

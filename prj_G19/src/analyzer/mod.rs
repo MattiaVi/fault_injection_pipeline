@@ -1,13 +1,12 @@
-use std::{fs, thread};
+use std::fs;
 use std::sync::mpsc::{Receiver};
-use std::sync::Mutex;
 use std::time::Instant;
 use serde::{Deserialize, Serialize};
 use crate::fault_env::Data;
 use crate::fault_list_manager::file_fault_list::{bubble_sort, matrix_multiplication, selection_sort};
 use crate::hardened::{bubble_sort_hardened, matrix_multiplication_hardened, selection_sort_hardened, Hardened, IncoherenceError, IntoNestedVec};
 use crate::injector::TestResult;
-use crate::{hardened, pdf_generator};
+use crate::pdf_generator;
 
 #[derive(Serialize,Deserialize,Debug,Clone)]
 pub struct Faults{
@@ -51,11 +50,8 @@ impl<'a> Iterator for FaultsIter<'a> {
             3 => Some(("n_sub_fail",self.faults.n_sub_fault)),
             4 => Some(("n_mul_fault", self.faults.n_mul_fault)),
             5 => Some(("n_add_fault", self.faults.n_add_fault)),
-            6 => Some(("n_indexmut_fault", self.faults.n_indexmut_fault)),
-            7 => Some(("n_index_fault", self.faults.n_index_fault)),
-            8 => Some(("n_ord_fault", self.faults.n_ord_fault)),
-            9 => Some(("n_partialord_fault", self.faults.n_partialord_fault)),
-            10 => Some(("n_partialeq_fault", self.faults.n_partialeq_fault)),
+            6 => Some(("n_index_fault", self.faults.n_index_fault)),
+            7 => Some(("n_partialord_fault", self.faults.n_partialord_fault)),
             _ => None,
         };
         self.index += 1;
@@ -170,16 +166,12 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
         "matrix_multiplication" => {analyzer.output.clone().into_matrices().0.into_iter().flatten().collect::<Vec<i32>>()}
         _ => {analyzer.output.clone().into_vector()}
     };
-    println!("correct output {:?}", correct_ouput);
 
     for v in v_ok{
         if correct_ouput != v.into_nested_vec(){
             analyzer.faults.n_fatal_fault += 1;
         }
     }
-
-    println!("{}",analyzer.faults.n_fatal_fault);
-    println!("rapporto: {}%",analyzer.faults.n_fatal_fault*100/analyzer.faults.total_fault);
 
     let json_path = "results/tmp.json";
     // 1. Leggi il contenuto esistente del file (o array vuoto se è stato appena creato)
