@@ -58,7 +58,7 @@ where T: Debug+PartialEq+Eq+Copy+Clone{
     /// di tipo T incapsulato al suo interno.
     pub fn inner(&self)->Result<T, IncoherenceError>{
         if self.incoherent(){
-            return Err(IncoherenceError::Generic)
+            return Err(IncoherenceError::InnerFail)
         }
         Ok(self.cp1)
     }
@@ -119,7 +119,7 @@ where T:Sub<Output=T>+PartialEq+Eq+Debug+Copy+Clone{
     type Output=Result<Hardened<T>,IncoherenceError>;
     fn sub(self, rhs: Self) -> Self::Output {
         if self.incoherent() || rhs.incoherent(){
-            return Err(IncoherenceError::Generic)
+            return Err(IncoherenceError::SubFail)
         }
         Ok(Self{
             cp1: self.cp1 - rhs.cp1,
@@ -132,7 +132,7 @@ impl Sub<usize> for Hardened<usize>{
     type Output = Result<Hardened<usize>, IncoherenceError>;
     fn sub(self, rhs: usize) -> Self::Output {
         if self.incoherent(){
-            return Err(IncoherenceError::Generic)
+            return Err(IncoherenceError::SubFail)
         }
         return Ok(Self{
             cp1: self.cp1 - rhs,
@@ -221,7 +221,7 @@ impl<T> Index<&str> for Hardened<T>{
         match index{
             "cp1" => {  &self.cp1 },
             "cp2" => {   &self.cp2 },
-            _ => panic!()
+            _ => panic!("Index")
         }
     }
 }
@@ -231,7 +231,7 @@ impl<T> IndexMut<&str> for Hardened<T>{
         match index{
             "cp1" => {  &mut self.cp1 },
             "cp2" => {   &mut self.cp2 },
-            _ => panic!()
+            _ => panic!("IndexMut")
         }
     }
 }
@@ -259,6 +259,8 @@ pub enum IncoherenceError{
     AssignFail,
     #[error("IncoherenceError::AddFail: due to incoherence add failed")]
     AddFail,
+    #[error("IncoherenceError::SubFail: due to incoherence add failed")]
+    SubFail,
     #[error("IncoherenceError::MulFail: due to incoherence mul failed")]
     MulFail,
     #[error("IncoherenceError::IndexMutFail: ")]
@@ -271,8 +273,8 @@ pub enum IncoherenceError{
     PartialOrdFail,
     #[error("IncoherenceError::PartialEqFail: ")]
     PartialEqFail,
-    #[error("IncoherenceError::Generic: generic incoherence error")]
-    Generic
+    #[error("IncoherenceError::InnerFail")]
+    InnerFail,
 }
 
 //Funzioni per il conteggio 'passivo' delle istruzioni eseguite
