@@ -1,7 +1,6 @@
 mod tests;
 use crate::hardened::*;
 pub fn matrix_multiplication(a: &Vec<Vec<Hardened<i32>>>, b: &Vec<Vec<Hardened<i32>>>) -> Result<Vec<Vec<Hardened<i32>>>, IncoherenceError> {
-
     let size = Hardened::from(a.len());
     let mut result = vec![vec![Hardened::from(0); size.inner()?]; size.inner()?];
 

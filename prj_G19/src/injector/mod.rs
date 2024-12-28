@@ -1,6 +1,6 @@
 mod algorithms;
 
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::{panic, thread, vec};
 use crate::fault_list_manager::FaultListEntry;
@@ -48,7 +48,6 @@ struct MatrixMultiplicationVariables {
     i: RwLock<Hardened<usize>>,
     j: RwLock<Hardened<usize>>,
     k: RwLock<Hardened<usize>>,
-    row: RwLock<Vec<Hardened<i32>>>,
     acc: RwLock<Hardened<i32>>,
     a: RwLock<Vec<Vec<Hardened<i32>>>>,
     b: RwLock<Vec<Vec<Hardened<i32>>>>,
@@ -95,7 +94,6 @@ impl VariableSet for MatrixMultiplicationVariables {
             i: RwLock::new(Hardened::from(0)),
             j: RwLock::new(Hardened::from(0)),
             k: RwLock::new(Hardened::from(0)),
-            row: RwLock::new(Hardened::from_vec(Vec::new())),
             acc: RwLock::new(Hardened::from(0)),
             a: RwLock::new(Hardened::from_mat(a)),
             b: RwLock::new(Hardened::from_mat(b)),
@@ -138,7 +136,7 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
         Ok(Ok(v)) => TestResult {result: Ok(v), fault_list_entry},
         Ok(Err(err)) => {
             if VERBOSE {
-                println!("Error found - {}", err);
+                println!("Error found - {:?}", err);
             }
             TestResult {result: Err(err), fault_list_entry}
         },
@@ -150,8 +148,7 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
                 m if m.contains("Index") => TestResult { result: Err(IncoherenceError::IndexFail), fault_list_entry },
                 m if m.contains("PartialOrd") => TestResult { result: Err(IncoherenceError::PartialOrdFail), fault_list_entry },
                 m if m.contains("Ord") => TestResult { result: Err(IncoherenceError::OrdFail), fault_list_entry },
-                m if m.contains("PartialEq") => TestResult { result: Err(IncoherenceError::PartialEqFail), fault_list_entry },
-                _ => TestResult { result: Err(IncoherenceError::Generic), fault_list_entry }
+                _ => TestResult { result: Err(IncoherenceError::PartialEqFail), fault_list_entry },
             }
         }
     }
@@ -173,9 +170,6 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
 
     while let Ok(_) = rx_runner.recv() {
         counter += 1;
-        println!("-------------------------");
-        println!("counter: {}", counter);
-        println!("-------------------------");
         if counter == fault_list_entry.time {
             match &*variables {
                 AlgorithmVariables::SelectionSort(var) => {
@@ -274,6 +268,45 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
                             var.acc.write().unwrap()["cp1"] = new_val;                            // inietto l'errore
                         },
                         _ => {
+                            let parts: Vec<&str> = fault_list_entry.var.split(|c| c == '[').collect();
+                            // Extract the matrix name
+                            let matrix_name = parts[0];
+
+                            // Extract indices
+                            let indices = fault_list_entry.var
+                                .split(|c| c == '[' || c == ']')
+                                .filter(|&s| !s.is_empty() && s.chars().all(|c| c.is_digit(10))) // Filter to get only numeric parts
+                                .map(|s| s.parse::<usize>().unwrap())
+                                .collect::<Vec<_>>();
+
+                            if indices.len() == 2 {
+                                let row = indices[0];
+                                let col = indices[1];
+
+                                match matrix_name {
+                                    "a" => {
+                                        let val = var.a.read().unwrap()[row][col].inner().unwrap().clone();
+                                        let new_val = val ^ (mask as i32);
+                                        var.a.write().unwrap()[row][col]["cp1"] = new_val;
+                                    }
+                                    "b" => {
+                                        let val = var.b.read().unwrap()[row][col].inner().unwrap().clone();
+                                        let new_val = val ^ (mask as i32);
+                                        var.b.write().unwrap()[row][col]["cp1"] = new_val;
+                                    }
+                                    "result" => {
+                                        let val = var.result.read().unwrap()[row][col].inner().unwrap().clone();
+                                        let new_val = val ^ (mask as i32);
+                                        var.result.write().unwrap()[row][col]["cp1"] = new_val;
+                                    }
+                                    _ => {
+                                        println!("non e' una matrice che conosco")
+                                    }
+                                }
+                            } else {
+                                println!("numero di indici diverso da 2");
+                            }
+                            /*
                             let str = fault_list_entry.var.as_str();
                             if str.starts_with("row") {
                                 //println!("processo {:?}", str);
@@ -330,15 +363,13 @@ fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry
                                     println!("numero di indici diverso da 2");
                                 }
                             }
+                        */
                         }
                     }
 
                 }
             }
         }
-
-
-
         tx_injector.send("ricevuto").unwrap();
     }
 }
@@ -384,7 +415,6 @@ pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
 
     for handle in handles_runner {
         let result = handle.join().unwrap();
-
         tx_chan_inj_anl.send(result).unwrap();
     }
 

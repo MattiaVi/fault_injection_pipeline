@@ -11,7 +11,6 @@ use itertools::Itertools;
 
 //Analizza la funzione
 pub fn analyze_function(func: &ItemFn, file_path_dest: String) {
-    //TODO: Rimuovere lo expect  per gestire l'errore
     let mut fp= OpenOptions::new()
         .write(true)
         .truncate(true)
@@ -49,16 +48,6 @@ pub fn analyze_function(func: &ItemFn, file_path_dest: String) {
     if ris_json.is_ok(){
         fp.write_all(ris_json.ok().unwrap().as_bytes()).unwrap()
     }
-
-    //todo: rimuovi expect()
-    /*
-    fp.write_all(format!("{}\n", instruction_count).as_bytes()).expect("errore");
-    //println!("Variables:");
-    for var in variables {
-        //println!("Name: {}, Type: {}, Size: {}", var.name, var.ty, var.size);
-        fp.write_all( format!("{} {} {}\n", var.name, var.ty, var.size).as_bytes()).expect("errore");
-    }
-     */
 }
 
 fn count_statements(block: &Block, variable_types: &mut HashMap<String, (String, usize)>,

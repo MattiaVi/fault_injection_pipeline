@@ -185,7 +185,7 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
     tx_runner.send("i1").unwrap();
     rx_runner.recv().unwrap();
 
-    *variables.result.write().unwrap() = Hardened::from_mat(Vec::new());
+    *variables.result.write().unwrap() =  vec![vec![Hardened::from(0); variables.size.read().unwrap().inner()?]; variables.size.read().unwrap().inner()?];
     tx_runner.send("i2").unwrap();
     rx_runner.recv().unwrap();
 
@@ -204,29 +204,30 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
     while *variables.i.read().unwrap() < *variables.size.read().unwrap() {
         tx_runner.send("i6").unwrap();
         rx_runner.recv().unwrap();
-
+        /*
         *variables.row.write().unwrap() = Hardened::from_vec(Vec::new());
         tx_runner.send("i7").unwrap();
         rx_runner.recv().unwrap();
+         */
 
         variables.j.write().unwrap().assign(Hardened::from(0))?;
-        tx_runner.send("i8").unwrap();
+        tx_runner.send("i7").unwrap();
         rx_runner.recv().unwrap();
 
         while *variables.j.read().unwrap() < *variables.size.read().unwrap() {
-            tx_runner.send("i9").unwrap();
+            tx_runner.send("i8").unwrap();
             rx_runner.recv().unwrap();
 
             *variables.acc.write().unwrap() = Hardened::from(0);
-            tx_runner.send("i10").unwrap();
+            tx_runner.send("i9").unwrap();
             rx_runner.recv().unwrap();
 
             variables.k.write().unwrap().assign(Hardened::from(0))?;
-            tx_runner.send("i11").unwrap();
+            tx_runner.send("i10").unwrap();
             rx_runner.recv().unwrap();
 
             while *variables.k.read().unwrap() < *variables.size.read().unwrap() {
-                tx_runner.send("i12").unwrap();
+                tx_runner.send("i11").unwrap();
                 rx_runner.recv().unwrap();
 
                 let tmp = (*variables.acc.read().unwrap() + (
@@ -234,32 +235,34 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
                         variables.b.read().unwrap()[variables.k.read().unwrap().inner()?][variables.j.read().unwrap().inner()?]
                 )?)?;
                 variables.acc.write().unwrap().assign(tmp)?;
-                tx_runner.send("i13").unwrap();
+                tx_runner.send("i12").unwrap();
                 rx_runner.recv().unwrap();
 
                 let tmp = (*variables.k.read().unwrap() + 1)?;
                 variables.k.write().unwrap().assign(tmp)?;
-                tx_runner.send("i14").unwrap();
+                tx_runner.send("i13").unwrap();
                 rx_runner.recv().unwrap();
             }
-
+            /*
             variables.row.write().unwrap().push(*variables.acc.read().unwrap());
-            tx_runner.send("i15").unwrap();
+            tx_runner.send("i14").unwrap();
+            rx_runner.recv().unwrap();
+
+             */
+
+            variables.result.write().unwrap()[variables.i.read().unwrap().inner()?][variables.j.read().unwrap().inner()?].assign(variables.acc.read().unwrap().clone())?;
+            tx_runner.send("i14").unwrap();
             rx_runner.recv().unwrap();
 
             let tmp = (*variables.j.read().unwrap() + 1)?;
             variables.j.write().unwrap().assign(tmp)?;
-            tx_runner.send("i16").unwrap();
+            tx_runner.send("i15").unwrap();
             rx_runner.recv().unwrap();
         }
 
-        variables.result.write().unwrap().push(variables.row.read().unwrap().clone());
-        tx_runner.send("i17").unwrap();
-        rx_runner.recv().unwrap();
-
         let tmp = (*variables.i.read().unwrap() + 1)?;
         variables.i.write().unwrap().assign(tmp)?;
-        tx_runner.send("i18").unwrap();
+        tx_runner.send("i16").unwrap();
         rx_runner.recv().unwrap();
     }
 
@@ -268,13 +271,12 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
 
 #[cfg(test)]
     mod tests{
-    use std::{result, thread};
+    use std::thread;
     use std::sync::Arc;
     use std::sync::mpsc::channel;
     use crate::fault_env::Data::Matrices;
     use crate::fault_list_manager::fault_manager;
-    use crate::injector::algorithms::runner_matrix_multiplication;
-    use crate::injector::{injector, injector_manager, runner, AlgorithmVariables, MatrixMultiplicationVariables};
+    use crate::injector::{injector, runner, AlgorithmVariables};
 
     #[test]
         fn test_run_matrix_multiplication(){
@@ -315,7 +317,6 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
 
         for handle in handles_runner {
             let result = handle.join().unwrap();
-
             tx_chan_inj_anl.send(result).unwrap();
         }
 
@@ -333,16 +334,15 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
         }
     }
 
-    /*
-    let size = Hardened::from(a.len());
-    let mut result: Vec<Vec<Hardened<i32>>> = Vec::new();
+/*
+let size = Hardened::from(a.len());
+    let mut result = vec![vec![Hardened::from(0); size.inner()?]; size.inner()?];
 
     let mut i = Hardened::from(0);
     let mut j = Hardened::from(0);
     let mut k = Hardened::from(0);
 
     while i < size {
-        let mut row: Vec<Hardened<i32>> = Vec::new();
         j.assign(Hardened::from(0))?;
 
         while j < size {
@@ -350,15 +350,16 @@ pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, t
             k.assign(Hardened::from(0))?;
 
             while k < size {
-                acc.assign((acc + (a[i.inner()?][k.inner()?]   *   b[k.inner()?][j.inner()?])? )? )?;
+                acc.assign((acc + (a[i.inner()?][k.inner()?]*b[k.inner()?][j.inner()?])? )? )?;
                 k.assign((k + 1)?)?;
             }
-            row.push(acc); // Aggiunge il valore calcolato alla riga
+            result[i.inner()?][j.inner()?].assign(acc)?;
             j.assign((j + 1)?)?;
         }
-        result.push(row); // Aggiunge la riga alla matrice risultante
         i.assign((i + 1)?)?;
     }
     Ok(result)
-    */
+ */
+
+
 

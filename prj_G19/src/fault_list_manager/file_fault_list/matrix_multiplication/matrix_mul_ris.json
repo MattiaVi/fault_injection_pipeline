@@ -1,5 +1,5 @@
 {
-  "num_inst": 19,
+  "num_inst": 17,
   "vars": [
     {
       "name": "a",
@@ -44,16 +44,10 @@
       "start": 5
     },
     {
-      "name": "row",
-      "ty": "Vec < i32 >",
-      "size": "4*len",
-      "start": 7
-    },
-    {
       "name": "acc",
       "ty": "i32",
       "size": "4",
-      "start": 10
+      "start": 9
     }
   ]
 }

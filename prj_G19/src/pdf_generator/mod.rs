@@ -136,7 +136,7 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
 
     let images_paths = gen_pie_chart(&data_list, &chart_headers);
     add_image_to_pdf(images_paths,&mut doc);
-    let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+    let top_headers =  vec!["SILENT","ASSIGN","INNER","SUB","MUL","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
     doc.push(elements::Break::new(0.5));
@@ -185,7 +185,7 @@ pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer) {
     doc.push(elements::Break::new(0.5));
     let images_paths = gen_pie_chart(&data_list, &side_headers);
     doc.push(elements::Image::from_path(images_paths[0]).expect("Unable to load image").with_alignment(Alignment::Center));
-    let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+    let top_headers =  vec!["SILENT","ASSIGN","INNER","SUB","MUL","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
     let fault_table = gen_table_faults(&data_list,&top_headers,&side_headers);
     doc.push(fault_table);
 
@@ -448,8 +448,9 @@ mod tests {
         let anl = Analyzer::new(Faults {
             n_silent_fault: 10,
             n_assign_fault: 20,
+            n_inner_fault: 60,
+            n_sub_fault: 35,
             n_mul_fault: 30,
-            n_generic_fault: 40,
             n_add_fault: 50,
             n_indexmut_fault: 60,
             n_index_fault: 70,
@@ -464,9 +465,9 @@ mod tests {
         anl2.faults.n_add_fault=1;
         let mut anl3 = anl.clone();
         anl3.n_esecuzione = 2;
-        anl3.faults.n_generic_fault=2;
+        anl3.faults.n_assign_fault=2;
         let data = vec![anl,anl2,anl3];
-        let top_headers =  vec!["SILENT","ASSIGN","MUL","GENERIC","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
+        let top_headers =  vec!["SILENT","ASSIGN","INNER","SUB","MUL","ADD","IND_MUT","INDEX","ORD","PAR_ORD","PAR_EQ"];
         let side_headers = vec!["SELECTION SORT","BUBBLE SORT","MATRIX MULTIPLICATION"];
         let table = gen_table_faults(&data,&top_headers,&side_headers);
         let mut doc = setup_document();
@@ -483,8 +484,9 @@ mod tests {
         let anl = Analyzer::new(Faults {
             n_silent_fault: 10,
             n_assign_fault: 20,
+            n_inner_fault: 35,
+            n_sub_fault: 30,
             n_mul_fault: 30,
-            n_generic_fault: 40,
             n_add_fault: 50,
             n_indexmut_fault: 60,
             n_index_fault: 70,
@@ -499,7 +501,7 @@ mod tests {
         anl2.faults.n_add_fault=1;
         let mut anl3 = anl.clone();
         anl3.n_esecuzione = 2;
-        anl3.faults.n_generic_fault=2;
+        anl3.faults.n_assign_fault=2;
         let data = vec![anl,anl2,anl3];
         let table = gen_table_dim_time(&data,&top_headers,&side_headers);
         let mut doc = setup_document();

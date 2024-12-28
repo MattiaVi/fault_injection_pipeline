@@ -11,18 +11,19 @@ use crate::{hardened, pdf_generator};
 
 #[derive(Serialize,Deserialize,Debug,Clone)]
 pub struct Faults{
-     pub(crate) n_silent_fault: usize,
-     pub(crate) n_assign_fault: usize,
-     pub(crate) n_mul_fault: usize,
-     pub(crate) n_generic_fault: usize,
-     pub(crate) n_add_fault: usize,
-     pub(crate) n_indexmut_fault: usize,
-     pub(crate) n_index_fault: usize,
-     pub(crate) n_ord_fault: usize,
-     pub(crate) n_partialord_fault: usize,
-     pub(crate) n_partialeq_fault: usize,
-     pub(crate) n_fatal_fault: usize,
-     pub(crate) total_fault: usize,
+    pub(crate) n_silent_fault: usize,
+    pub(crate) n_assign_fault: usize,
+    pub(crate) n_inner_fault: usize,
+    pub(crate) n_sub_fault: usize,
+    pub(crate) n_mul_fault: usize,
+    pub(crate) n_add_fault: usize,
+    pub(crate) n_indexmut_fault: usize,
+    pub(crate) n_index_fault: usize,
+    pub(crate) n_ord_fault: usize,
+    pub(crate) n_partialord_fault: usize,
+    pub(crate) n_partialeq_fault: usize,
+    pub(crate) n_fatal_fault: usize,
+    pub(crate) total_fault: usize,
 }
 pub struct FaultsIter<'a> {
     faults: &'a Faults,
@@ -46,14 +47,15 @@ impl<'a> Iterator for FaultsIter<'a> {
         let result = match self.index {
             0 => Some(("n_silent_fault", self.faults.n_silent_fault)),
             1 => Some(("n_assign_fault", self.faults.n_assign_fault)),
-            2 => Some(("n_mul_fault", self.faults.n_mul_fault)),
-            3 => Some(("n_generic_fault", self.faults.n_generic_fault)),
-            4 => Some(("n_add_fault", self.faults.n_add_fault)),
-            5 => Some(("n_indexmut_fault", self.faults.n_indexmut_fault)),
-            6 => Some(("n_index_fault", self.faults.n_index_fault)),
-            7 => Some(("n_ord_fault", self.faults.n_ord_fault)),
-            8 => Some(("n_partialord_fault", self.faults.n_partialord_fault)),
-            9 => Some(("n_partialeq_fault", self.faults.n_partialeq_fault)),
+            2 => Some(("n_inner_fault", self.faults.n_inner_fault)),
+            3 => Some(("n_sub_fail",self.faults.n_sub_fault)),
+            4 => Some(("n_mul_fault", self.faults.n_mul_fault)),
+            5 => Some(("n_add_fault", self.faults.n_add_fault)),
+            6 => Some(("n_indexmut_fault", self.faults.n_indexmut_fault)),
+            7 => Some(("n_index_fault", self.faults.n_index_fault)),
+            8 => Some(("n_ord_fault", self.faults.n_ord_fault)),
+            9 => Some(("n_partialord_fault", self.faults.n_partialord_fault)),
+            10 => Some(("n_partialeq_fault", self.faults.n_partialeq_fault)),
             _ => None,
         };
         self.index += 1;
@@ -106,8 +108,9 @@ impl Faults{
         Faults {
             n_silent_fault: 0,
             n_assign_fault: 0,
+            n_inner_fault: 0,
+            n_sub_fault:0,
             n_mul_fault: 0,
-            n_generic_fault: 0,
             n_add_fault: 0,
             n_indexmut_fault: 0,
             n_index_fault: 0,
@@ -135,7 +138,6 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
         let res = test_result.get_result();
 
         if res.is_ok() {
-            println!("{:?}",res.clone().unwrap());
             faults.n_silent_fault += 1;
             v_ok.push(res.unwrap());
         } else {
@@ -143,7 +145,8 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
                 IncoherenceError::AssignFail => faults.n_assign_fault += 1,
                 IncoherenceError::AddFail => faults.n_add_fault += 1,
                 IncoherenceError::MulFail => faults.n_mul_fault += 1,
-                IncoherenceError::Generic => faults.n_generic_fault += 1,
+                IncoherenceError::InnerFail => faults.n_inner_fault += 1,
+                IncoherenceError::SubFail => faults.n_sub_fault += 1,
                 IncoherenceError::IndexMutFail => faults.n_indexmut_fault += 1,
                 IncoherenceError::IndexFail => faults.n_index_fault += 1,
                 IncoherenceError::OrdFail => faults.n_ord_fault += 1,
@@ -153,9 +156,9 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
         }
     }
     faults.total_fault =  faults.n_silent_fault + faults.n_assign_fault + faults.n_add_fault +
-                            faults.n_mul_fault + faults.n_generic_fault + faults.n_indexmut_fault +
-                            faults.n_index_fault + faults.n_ord_fault + faults.n_partialord_fault +
-                            faults.n_partialeq_fault;
+                            faults.n_mul_fault + faults.n_inner_fault + faults.n_sub_fault +
+                            faults.n_indexmut_fault + faults.n_index_fault + faults.n_ord_fault +
+                            faults.n_partialord_fault + faults.n_partialeq_fault;
 
 
     let mut analyzer = Analyzer::new(faults,time_experiment, n_esecuzione,target);
@@ -164,15 +167,12 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
     get_data_for_time_table(&mut analyzer).unwrap();
 
     let correct_ouput = match analyzer.target_program.as_str() {
-        "matrix_multiplication" => {
-            println!("sono dentro");
-            analyzer.output.clone().into_matrices().0.into_iter().flatten().collect::<Vec<i32>>()}
+        "matrix_multiplication" => {analyzer.output.clone().into_matrices().0.into_iter().flatten().collect::<Vec<i32>>()}
         _ => {analyzer.output.clone().into_vector()}
     };
     println!("correct output {:?}", correct_ouput);
 
     for v in v_ok{
-        println!("v {:?}", v.clone().into_nested_vec());
         if correct_ouput != v.into_nested_vec(){
             analyzer.faults.n_fatal_fault += 1;
         }
@@ -292,7 +292,8 @@ mod tests{
             n_silent_fault: 1,
             n_assign_fault: 2,
             n_mul_fault: 3,
-            n_generic_fault: 4,
+            n_inner_fault: 3,
+            n_sub_fault: 8,
             n_add_fault: 5,
             n_indexmut_fault: 6,
             n_index_fault: 7,
@@ -319,7 +320,8 @@ mod tests{
             n_silent_fault: 1,
             n_assign_fault: 2,
             n_mul_fault: 3,
-            n_generic_fault: 4,
+            n_inner_fault: 3,
+            n_sub_fault: 8,
             n_add_fault: 5,
             n_indexmut_fault: 6,
             n_index_fault: 7,
@@ -344,7 +346,8 @@ mod tests{
             n_silent_fault: 1,
             n_assign_fault: 2,
             n_mul_fault: 3,
-            n_generic_fault: 4,
+            n_inner_fault: 3,
+            n_sub_fault: 8,
             n_add_fault: 5,
             n_indexmut_fault: 6,
             n_index_fault: 7,

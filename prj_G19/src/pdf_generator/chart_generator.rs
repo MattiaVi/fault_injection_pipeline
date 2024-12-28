@@ -20,11 +20,28 @@ pub fn not_rose_pie_chart(faults: &Faults, file_name: &str,target: &str) {
                     "data": [{}]
                 }},
                 {{
+                    "name": "Inner",
+                    "data": [{}]
+                }},
+                {{
+                    "name": "Subtraction",
+                    "data": [{}]
+                }},
+                {{
                     "name": "Multiplication",
                     "data": [{}]
                 }},
                 {{
                     "name": "Addition",
+                    "data": [{}]
+                }}
+                ,
+                {{
+                    "name": "IndexMut",
+                    "data": [{}]
+                }},
+                {{
+                    "name": "Index",
                     "data": [{}]
                 }},
                 {{
@@ -38,18 +55,6 @@ pub fn not_rose_pie_chart(faults: &Faults, file_name: &str,target: &str) {
                 {{
                     "name": "PartialEq",
                     "data": [{}]
-                }},
-                {{
-                    "name": "Generic",
-                    "data": [{}]
-                }},
-                {{
-                    "name": "Index",
-                    "data": [{}]
-                }},
-                {{
-                    "name": "IndexMut",
-                    "data": [{}]
                 }}
             ]
         }}"###,
@@ -57,14 +62,15 @@ pub fn not_rose_pie_chart(faults: &Faults, file_name: &str,target: &str) {
         target,
         faults.n_silent_fault,
         faults.n_assign_fault,
+        faults.n_inner_fault,
+        faults.n_sub_fault,
         faults.n_mul_fault,
         faults.n_add_fault,
+        faults.n_indexmut_fault,
+        faults.n_index_fault,
         faults.n_ord_fault,
         faults.n_partialord_fault,
         faults.n_partialeq_fault,
-        faults.n_generic_fault,
-        faults.n_index_fault,
-        faults.n_indexmut_fault,
     );
     let pie_chart = PieChart::from_json(&pie_chart_json).unwrap();
     let res = pie_chart.svg().unwrap();
