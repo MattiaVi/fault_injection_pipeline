@@ -25,7 +25,7 @@ use genpdf::style::{Color, Style};
 use crate::analyzer::Analyzer;
 
 const FONT_DIRS: &[&str] = &[
-    "src/pdf_generator/fonts/times_new_roman"
+    "src/pdf_generator/fonts/my_fonts"
 ];
 const DEFAULT_FONT_NAME: &'static str = "TimesNewRoman";
 pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
@@ -131,6 +131,7 @@ pub fn print_pdf_diffcard(file_path: &String, data_list: Vec<Analyzer>){
     let dim_time_table = gen_table_dim_time(&data_list,&top_headers,&side_headers);
     doc.push(dim_time_table);
     doc.push(elements::Break::new(0.5));
+
     doc.push(PageBreak::new());
     doc.push(Paragraph::default().styled_string("Risultati",title_style).padded(text_margins).styled(Color::Rgb(255, 0, 0)));
     doc.push(Paragraph::default().styled_string("Di seguito vengono riportatati i faults non rilevati e rilevati, specificando per quest'ultimi le diverse tipologie riconosciute.",italic).padded(text_margins));
@@ -199,7 +200,7 @@ pub fn print_pdf_singolo(file_path: &String, analyzer: Analyzer) {
     doc.push(elements::Break::new(0.5));
     doc.push(Paragraph::default().styled_string("Percentuale di detected:",bold_italic).styled_string(format!("{}",f64::trunc(((data_list[0].faults.total_fault as f64 - data_list[0].faults.n_silent_fault as f64)/data_list[0].faults.total_fault as f64)*10000.0)/100.0),italic).styled_string(" %",italic).padded(text_margins));
     doc.push(elements::Break::new(0.5));
-    doc.push(Paragraph::default().styled_string("Fault fatatali: ",bold_italic).styled_string(format!("{} %",f64::trunc((data_list[0].faults.n_fatal_fault as f64/data_list[0].faults.total_fault as f64)*10000.0)/100.0),bold_italic).styled_string(" (percentuale di fault iniettati che hanno provocato un output errato)",italic).padded(text_margins));
+    doc.push(Paragraph::default().styled_string("Fault fatatali: ",bold_italic).styled_string(format!("{} %",f64::trunc((data_list[0].faults.n_fatal_fault as f64/data_list[0].faults.total_fault as f64)*10000.0)/100.0),italic).styled_string(" (percentuale di fault iniettati che hanno provocato un output errato)",italic).padded(text_margins));
 
     doc.render_to_file(file_path)
         .expect("Failed to write output file");
@@ -422,7 +423,7 @@ fn setup_document()->Document{
 
     let mut doc = Document::new(default_font);
     doc.set_minimal_conformance();
-    doc.set_line_spacing(1.0);
+    doc.set_line_spacing(0.85);
 
 
     let mut decorator = genpdf::SimplePageDecorator::new();
@@ -442,7 +443,7 @@ fn setup_document()->Document{
        Paragraph::default().styled_string("Report",title_style).aligned(Alignment::Center)
                         .padded(title_margins).styled(red),
     );
-    doc
+     doc
 
 }
 #[cfg(test)]
