@@ -1,3 +1,81 @@
 \section{Analizzatore}\label{sec:analizer}
-\subsection{Aspetti Generali}
-A valle dell'esperimento di fault injection viene lanciato l'analizzatore il quale si preoccupa di andare a raccogliere i dati
+L'analizzatore si colloca come elemento conclusivo della pipeline di \textit{fault injection}. La sua funzione principale è raccogliere e organizzare i risultati generati durante l'iniezione di fault negli algoritmi sottoposti a test al fine di fornire poi una visione dettagliata del comportamento degli algoritmi irrobustiti e non, in presenza di fault.\\
+Tali dettagli sono riassunti in un report in formato pdf generato dinamicamente in base ai risultati ottenuti. 
+
+\subsection{Struct Analyzer e Faults}
+Per memorizzare e gestire i dati rilevanti, è stata progettata una struttura dati denominata \textbf{Analyzer} che viene presentata di seguito:
+\begin{lstlisting}[language=rust, style=boxed]
+    #[derive(Serialize,Deserialize,Debug,Clone)]
+    pub struct Analyzer{
+        pub(crate) n_esecuzione: i8,
+        pub(crate) faults: Faults,
+        pub(crate) input: Data<i32>,
+        pub(crate) output: Data<i32>,
+        pub(crate) time_experiment: f64,
+        pub(crate) time_alg_hardened: f64,
+        pub(crate) time_alg_not_hardened: f64,
+        pub(crate) byte_hardened: f64,
+        pub(crate) byte_not_hardened: f64,
+        pub(crate) target_program: String,
+    }
+\end{lstlisting}
+
+Al suo interno, il campo \textit{faults} è di tipo \textbf{Faults}, una struttura che include una serie di contatori dedicati. Questi contatori vengono incrementati ogni volta che un fault specifico viene rilevato sul canale di comunicazione tra l'iniettore e l'analizzatore. Di seguito sono riportati i contatori presenti nella struttura \textbf{Faults}:
+\begin{lstlisting}[language=rust, style=boxed]
+    #[derive(Serialize,Deserialize,Debug,Clone)]
+    pub struct Faults{
+        pub(crate) n_silent_fault: usize,
+        pub(crate) n_assign_fault: usize,
+        pub(crate) n_inner_fault: usize,
+        pub(crate) n_sub_fault: usize,
+        pub(crate) n_mul_fault: usize,
+        pub(crate) n_add_fault: usize,
+        pub(crate) n_indexmut_fault: usize,
+        pub(crate) n_index_fault: usize,
+        pub(crate) n_ord_fault: usize,
+        pub(crate) n_partialord_fault: usize,
+        pub(crate) n_partialeq_fault: usize,
+        pub(crate) n_fatal_fault: usize,
+        pub(crate) total_fault: usize,
+    }
+\end{lstlisting}
+
+Un'attenzione particolare è dedicata ai fault silent i quali rappresentano errori iniettati durante l'esecuzione di un algoritmo ma non intercettati dal sistema irrobustito. Sebbene la maggior parte di questi fault non abbia un impatto diretto sull'output del sistema, una piccola percentuale (circa il 10\%) può generare risultati errati, evidenziando casi critici in cui il sistema irrobustito fallisce nel mantenere l'integrità dell'elaborazione.
+
+\subsection{Funzionalità dell'analizzatore}
+Per semplicità possiamo affermare che per ogni fault iniettato, in generale l'analizzatore distingue le due seguenti macrocategorie:
+\begin{itemize}
+    \item \textbf{Fault silent}: rappresentano gli errori non intercettati dal sistema irrobustito.
+    \item \textbf{Fault identificati}: corrispondono agli errori rilevati dal sistema irrobustito, categorizzati in base all'operazione specifica che li ha generati (ad esempio, operazioni di assegnazione, somma o moltiplicazione).
+\end{itemize}
+
+In aggiunta alla rilevazione e categorizzazione degli errori, l'analizzatore tiene traccia di metriche chiave legate all'overhead introdotto dall'irrobustimento del codice, come:
+\begin{itemize}
+
+    \item \textbf{Tempi di esecuzione}: confronto tra i tempi necessari per eseguire il codice irrobustito e quello non irrobustito.
+    \item \textbf{Dimensione del file}: differenza nella dimensione dei file contenenti il codice irrobustito e non irrobustito.
+    
+\end{itemize}
+
+\subsection{Tipologie di analisi}
+L'analizzatore supporta tre modalità principali di analisi, ognuna delle quali genera un report in formato PDF, salvato nella cartella results. Di seguito una panoramica:
+\begin{enumerate}
+\item Analisi singola:
+    \begin{itemize}
+        \item Analizza un singolo algoritmo su cui vengono iniettati un     numero prefissato di fault.
+        \item Produce un file PDF denominato \textless \textit{nome\_file}\textgreater.pdf.
+    \end{itemize}
+
+\item Analisi su più algoritmi:
+    \begin{itemize}
+        \item Valuta il comportamento di tre algoritmi diversi:     selection sort, bubble sort e matrix multiplication.
+        \item Produce un file PDF denominato \textless \textit{nome\_file}\textgreater\_all.pdf.
+    \end{itemize}
+
+\item Analisi su diverse cardinalità:
+    \begin{itemize}
+        \item Analizza un singolo algoritmo utilizzando tre diverse cardinalità della lista di fault (1000, 2000 e 3000 fault).
+        \item Produce un file PDF denominato \textless \textit{nome\_file}\textgreater\_diffcard.pdf.
+    \end{itemize}
+\end{enumerate}
+Ogni report include informazioni dettagliate sui fault rilevati e non rilevati, insieme alle metriche di performance e dimensioni del codice. Questo sistema di analisi offre una visione completa dell'efficacia del processo di irrobustimento e del relativo impatto su risorse e prestazioni.
