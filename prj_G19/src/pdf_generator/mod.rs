@@ -25,7 +25,7 @@ use genpdf::style::{Color, Style};
 use crate::analyzer::Analyzer;
 
 const FONT_DIRS: &[&str] = &[
-    "src/pdf_generator/fonts/my_fonts"
+    "src/pdf_generator/fonts/times_new_roman"
 ];
 const DEFAULT_FONT_NAME: &'static str = "TimesNewRoman";
 pub fn print_pdf_all(file_path: &String, data_list: Vec<Analyzer>){
