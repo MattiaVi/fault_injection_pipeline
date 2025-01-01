@@ -20,6 +20,10 @@ impl TestResult {
     pub fn get_result(&self) -> Result<Vec<Hardened<i32>>, IncoherenceError> {
         self.result.clone()
     }
+
+    pub fn get_fault_list_entry(&self) -> FaultListEntry {
+        self.fault_list_entry.clone()
+    }
 }
 enum AlgorithmVariables {
     SelectionSort(SelectionSortVariables),
@@ -159,9 +163,6 @@ fn runner(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, 
 fn injector(variables: Arc<AlgorithmVariables>, fault_list_entry: FaultListEntry, tx_injector: Sender<&str>, rx_runner: Receiver<&str>) {
 
     let mut counter = 0usize;
-    if VERBOSE{
-        println!("error to inject: {:?}", fault_list_entry);
-    }
 
     // dato che fault_mask mi dice la posizione del bit da modificare, per ottenere la maschera devo calcolare 2^fault_mask
     let mask = 1 << (fault_list_entry.flipped_bit);

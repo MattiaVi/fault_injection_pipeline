@@ -6,7 +6,7 @@ use crate::fault_env::Data;
 use crate::fault_list_manager::file_fault_list::{bubble_sort, matrix_multiplication, selection_sort};
 use crate::hardened::{bubble_sort_hardened, matrix_multiplication_hardened, selection_sort_hardened, Hardened, IncoherenceError, IntoNestedVec};
 use crate::injector::TestResult;
-use crate::pdf_generator;
+use crate::{pdf_generator, VERBOSE};
 
 #[derive(Serialize,Deserialize,Debug,Clone)]
 pub struct Faults{
@@ -129,13 +129,16 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
 
 
     let mut v_ok = Vec::new();
+    let mut fault_list_ok = Vec::new();
     for test_result in &vec_result {
 
         let res = test_result.get_result();
 
+
         if res.is_ok() {
             faults.n_silent_fault += 1;
             v_ok.push(res.unwrap());
+            fault_list_ok.push(test_result.get_fault_list_entry());
         } else {
             match res.err().unwrap() {
                 IncoherenceError::AssignFail => faults.n_assign_fault += 1,
@@ -166,11 +169,20 @@ pub fn run_analyzer(rx_chan_inj_anl: Receiver<TestResult>, file_path:String, dat
         "matrix_multiplication" => {analyzer.output.clone().into_matrices().0.into_iter().flatten().collect::<Vec<i32>>()}
         _ => {analyzer.output.clone().into_vector()}
     };
-
+    let mut i = 0;
+    if VERBOSE {
+        println!("##########################################################################");
+        println!("-----INIEZIONI CHE HANNO PORTATO AD UN FAULT SILENT CON OUTPUT ERRATO-----");
+        println!("##########################################################################");
+    }
     for v in v_ok{
-        if correct_ouput != v.into_nested_vec(){
+        if correct_ouput != v.into_nested_vec() {
+            if VERBOSE {
+                println!("Fault #{} {:?}", analyzer.faults.n_fatal_fault, fault_list_ok[i]);
+            }
             analyzer.faults.n_fatal_fault += 1;
         }
+        i=i+1;
     }
 
     let json_path = "results/tmp.json";
