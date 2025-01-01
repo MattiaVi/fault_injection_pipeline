@@ -1,5 +1,5 @@
 % $ biblatex auxiliary file $
-% $ biblatex bbl format version 3.2 $
+% $ biblatex bbl format version 3.3 $
 % Do not modify the above lines!
 %
 % This is an auxiliary file used by the 'biblatex' package.
@@ -18,8 +18,31 @@
 
 
 \refsection{0}
-  \datalist[entry]{nty/global//global/global}
-    \entry{benso_fault_1998}{inproceedings}{}
+  \datalist[entry]{nty/global//global/global/global}
+    \entry{benchmark}{misc}{}{}
+      \list{language}{1}{%
+        {en}%
+      }
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Benchmark Float Dataset for Sorting Algorithms}
+      \field{title}{Benchmark {Dataset} for {Sorting} {Algorithms}}
+      \field{urlday}{21}
+      \field{urlmonth}{11}
+      \field{urlyear}{2024}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Snapshot:C\:\\Users\\carlo\\Zotero\\storage\\67M6I2GD\\benchmark-dataset-for-sorting-algorithms.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://www.kaggle.com/datasets/bekiremirhanakay/benchmark-dataset-for-sorting-algorithms
+      \endverb
+      \verb{url}
+      \verb https://www.kaggle.com/datasets/bekiremirhanakay/benchmark-dataset-for-sorting-algorithms
+      \endverb
+    \endentry
+    \entry{benso_fault_1998}{inproceedings}{}{}
       \name{author}{4}{}{%
         {{hash=d29ee2a5d08492f3cdca71e0eb4e923a}{%
            family={Benso},
@@ -44,10 +67,12 @@
       }
       \strng{namehash}{a65b7e1569cc3e3442166f4f9877e9c7}
       \strng{fullhash}{0c84661dc67e5b0bd2a00f8e1a1698dd}
+      \strng{fullhashraw}{0c84661dc67e5b0bd2a00f8e1a1698dd}
       \strng{bibnamehash}{a65b7e1569cc3e3442166f4f9877e9c7}
       \strng{authorbibnamehash}{a65b7e1569cc3e3442166f4f9877e9c7}
       \strng{authornamehash}{a65b7e1569cc3e3442166f4f9877e9c7}
       \strng{authorfullhash}{0c84661dc67e5b0bd2a00f8e1a1698dd}
+      \strng{authorfullhashraw}{0c84661dc67e5b0bd2a00f8e1a1698dd}
       \field{sortinit}{B}
       \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
       \field{labelnamesource}{author}
@@ -78,7 +103,7 @@
       \endverb
       \keyw{Costs,Hardware,System testing,Aircraft,Application software,Control systems,Microprocessors,Rail transportation,Railway safety,Traffic control}
     \endentry
-    \entry{noauthor_dependability_2024}{misc}{}
+    \entry{noauthor_dependability_2024}{misc}{}{}
       \list{language}{1}{%
         {en}%
       }
@@ -105,7 +130,7 @@
       \verb https://en.wikipedia.org/w/index.php?title=Dependability&oldid=1237650888#cite_note-1
       \endverb
     \endentry
-    \entry{hsueh1997fault}{article}{}
+    \entry{hsueh1997fault}{article}{}{}
       \name{author}{3}{}{%
         {{hash=af0b58fcaebc08de7fa9f4d10652a35d}{%
            family={Hsueh},
@@ -128,10 +153,12 @@
       }
       \strng{namehash}{c2704a774d6ac6119b27b740617efd83}
       \strng{fullhash}{c2704a774d6ac6119b27b740617efd83}
+      \strng{fullhashraw}{c2704a774d6ac6119b27b740617efd83}
       \strng{bibnamehash}{c2704a774d6ac6119b27b740617efd83}
       \strng{authorbibnamehash}{c2704a774d6ac6119b27b740617efd83}
       \strng{authornamehash}{c2704a774d6ac6119b27b740617efd83}
       \strng{authorfullhash}{c2704a774d6ac6119b27b740617efd83}
+      \strng{authorfullhashraw}{c2704a774d6ac6119b27b740617efd83}
       \field{sortinit}{H}
       \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
       \field{labelnamesource}{author}
@@ -144,7 +171,7 @@
       \field{pages}{75\bibrangedash 82}
       \range{pages}{8}
     \endentry
-    \entry{depend}{article}{}
+    \entry{depend}{article}{}{}
       \name{author}{1}{}{%
         {{hash=f71c5d0c96f63330ca9ce114d864dd3f}{%
            family={J.A.\bibnamedelimi Clark},
@@ -154,10 +181,12 @@
       }
       \strng{namehash}{f71c5d0c96f63330ca9ce114d864dd3f}
       \strng{fullhash}{f71c5d0c96f63330ca9ce114d864dd3f}
+      \strng{fullhashraw}{f71c5d0c96f63330ca9ce114d864dd3f}
       \strng{bibnamehash}{f71c5d0c96f63330ca9ce114d864dd3f}
       \strng{authorbibnamehash}{f71c5d0c96f63330ca9ce114d864dd3f}
       \strng{authornamehash}{f71c5d0c96f63330ca9ce114d864dd3f}
       \strng{authorfullhash}{f71c5d0c96f63330ca9ce114d864dd3f}
+      \strng{authorfullhashraw}{f71c5d0c96f63330ca9ce114d864dd3f}
       \field{sortinit}{J}
       \field{sortinithash}{b2f54a9081ace9966a7cb9413811edb4}
       \field{labelnamesource}{author}
@@ -167,7 +196,7 @@
       \field{title}{Fault Injection: a method for validating Computing-System Dependability}
       \field{year}{June 1995}
     \endentry
-    \entry{802887}{inproceedings}{}
+    \entry{802887}{inproceedings}{}{}
       \name{author}{4}{}{%
         {{hash=8ce5203c12a003d94faecdcebf3f68f6}{%
            family={Rebaudengo},
@@ -192,10 +221,12 @@
       }
       \strng{namehash}{2b64fc1ff06d4b5619ae8ad94a4eeb68}
       \strng{fullhash}{16bcd46a76e88f52e4e6b1ea48f24b58}
+      \strng{fullhashraw}{16bcd46a76e88f52e4e6b1ea48f24b58}
       \strng{bibnamehash}{2b64fc1ff06d4b5619ae8ad94a4eeb68}
       \strng{authorbibnamehash}{2b64fc1ff06d4b5619ae8ad94a4eeb68}
       \strng{authornamehash}{2b64fc1ff06d4b5619ae8ad94a4eeb68}
       \strng{authorfullhash}{16bcd46a76e88f52e4e6b1ea48f24b58}
+      \strng{authorfullhashraw}{16bcd46a76e88f52e4e6b1ea48f24b58}
       \field{extraname}{1}
       \field{sortinit}{R}
       \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
@@ -211,7 +242,7 @@
       \endverb
       \keyw{Fault detection;Fault tolerance;Circuit faults;Programming profession;Costs;Hardware;Computer errors;High level languages;Read only memory;Safety devices}
     \endentry
-    \entry{rebaudengo1999soft}{inproceedings}{}
+    \entry{rebaudengo1999soft}{inproceedings}{}{}
       \name{author}{4}{}{%
         {{hash=633b59dddffe154cab50548f098798f6}{%
            family={Rebaudengo},
@@ -239,10 +270,12 @@
       }
       \strng{namehash}{14a85c3679e4ad891e1b854c33ea3a99}
       \strng{fullhash}{f3ab683b7cf4d1a3011f02a1a30e810a}
+      \strng{fullhashraw}{f3ab683b7cf4d1a3011f02a1a30e810a}
       \strng{bibnamehash}{14a85c3679e4ad891e1b854c33ea3a99}
       \strng{authorbibnamehash}{14a85c3679e4ad891e1b854c33ea3a99}
       \strng{authornamehash}{14a85c3679e4ad891e1b854c33ea3a99}
       \strng{authorfullhash}{f3ab683b7cf4d1a3011f02a1a30e810a}
+      \strng{authorfullhashraw}{f3ab683b7cf4d1a3011f02a1a30e810a}
       \field{extraname}{2}
       \field{sortinit}{R}
       \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
@@ -254,7 +287,7 @@
       \field{pages}{210\bibrangedash 218}
       \range{pages}{9}
     \endentry
-    \entry{schmidt2013pattern}{book}{}
+    \entry{schmidt2013pattern}{book}{}{}
       \name{author}{4}{}{%
         {{hash=45ce9ca7bea6c6c26f4b9dedf96373a8}{%
            family={Schmidt},
@@ -282,16 +315,42 @@
       }
       \strng{namehash}{8b9b4390a2a7032da66400d2f03caaca}
       \strng{fullhash}{d38c816583858590f86170465d55373c}
+      \strng{fullhashraw}{d38c816583858590f86170465d55373c}
       \strng{bibnamehash}{8b9b4390a2a7032da66400d2f03caaca}
       \strng{authorbibnamehash}{8b9b4390a2a7032da66400d2f03caaca}
       \strng{authornamehash}{8b9b4390a2a7032da66400d2f03caaca}
       \strng{authorfullhash}{d38c816583858590f86170465d55373c}
+      \strng{authorfullhashraw}{d38c816583858590f86170465d55373c}
       \field{sortinit}{S}
       \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{title}{Pattern-oriented software architecture, patterns for concurrent and networked objects}
       \field{year}{2013}
+    \endentry
+    \entry{noauthor_serde_nodate}{misc}{}{}
+      \field{sortinit}{s}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labeltitlesource}{title}
+      \field{title}{serde - {Rust}}
+      \verb{urlraw}
+      \verb https://docs.rs/serde/latest/serde/
+      \endverb
+      \verb{url}
+      \verb https://docs.rs/serde/latest/serde/
+      \endverb
+    \endentry
+    \entry{syn}{misc}{}{}
+      \field{sortinit}{s}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labeltitlesource}{title}
+      \field{title}{syn - {Rust}}
+      \verb{urlraw}
+      \verb https://docs.rs/syn/latest/syn/
+      \endverb
+      \verb{url}
+      \verb https://docs.rs/syn/latest/syn/
+      \endverb
     \endentry
   \enddatalist
 \endrefsection

@@ -1,0 +1,41 @@
+\section{PDF Generator}\label{sec:pdfgenerator}
+Il modulo \textit{pdf\_generator} si occupa di generare dinamicamente un report in formato PDF contenente i risultati dell'analisi dei fault iniettati. Per facilitarne la lettura e la comprensione, ogni report è composto da una serie di tabelle e grafici che riassumono i risultati ottenuti durante l'esecuzione dell'algoritmo irrobustito e non.\\
+Per ogni tipologia di analisi precedentemente esposta viene generato un report specifico.
+
+Per costruire il report, è stata utilizzata la libreria \textit{genpdf} che non è altro che un wrapper della libreria \textit{printpdf} che permette, utilizzando funzioni di alto livello,di creare documenti PDF personalizzati a partire direttamente da codice Rust.\\
+
+Un altro motivo per cui è stata scelta questa libreria è la possibilità di inserire immagini in formato PNG in maniera semplice. Nel caso specifico le immagini sono anch'esse generate automaticamente durante l'esecuzione del programma e rappresentano grafici a torta o a barre che riassumono i dati raccolti durante l'analisi.\\ 
+Queste immagini vengono come prima cosa generate utilizzando la libreria \textit{charts-rs} che data una stringa contenete il json del grafico da creare, restituisce una stringa contenete una descrizione del grafico in formato SVG. Per questo motivo, nella seconda fase, avviene la chiamata alla funzione \textit{svg\_to\_png()} contenuta all'interno del file \textit{encoder.rs}. Questa funzione converte una stringa con il codice SVG in un'immagine PNG salvandola poi in un'apposita cartella.\\
+
+\subsection{Costruzione del report}
+Come già detto il report è personalizzato in base alla tipologia di analisi condotta, ma in generale le funzioni utilizzate per la creazione e gestione del report sono le stesse.\\
+Di seguito vengono elencate le principali funzioni utilizzate per la creazione del report:
+\begin{enumerate}[label=\Alph*.]
+    \item \textbf{Configurazione del Documento PDF}
+    \begin{itemize}
+        \item \textit{setup\_document}: Configura l'aspetto generale del PDF, inclusi margini, stile del testo e numero di pagina. Imposta il titolo principale "Report" in stile evidenziato.
+    \end{itemize}
+    \item \textbf{Descrizione Testuale dei Dati}
+    \begin{itemize}
+        \item \textit{get\_list\_input\_output}: Genera una descrizione testuale degli input e degli output degli algoritmi analizzati. Supporta vettori e matrici, creando elenchi puntati per migliorare la leggibilità del documento.
+    \end{itemize}
+    \item \textbf{Creazione di Tabelle}
+    \begin{itemize}
+        \item \textit{gen\_table\_faults}: Genera una tabella che mostra i dati relativi ai guasti per ciascun algoritmo. Struttura le righe in base ai nomi degli algoritmi (side\_headers) e le colonne con intestazioni (top\_headers).
+        \item \textit{gen\_table\_dim\_time}: Crea una tabella che visualizza le dimensioni dei dati (ad esempio, byte elaborati con e senza protezione) e i tempi di esecuzione (con e senza protezione). Ogni riga rappresenta un algoritmo (determinato da side\_headers).
+    \end{itemize} 
+    \item \textbf{Generazione dei Grafici}
+    \begin{itemize}
+        \item \textit{gen\_pie\_chart}: Crea grafici a torta per visualizzare la distribuzione dei guasti (faults) di un algoritmo. Restituisce i percorsi delle immagini PNG generate.
+        \item \textit{gen\_bar\_chart}: Crea un grafico a barre che mostra la percentuale di guasti rilevati per ogni algoritmo analizzato e lo salva come "\textit{percentage\_detected.png}".
+    \end{itemize}
+    \item \textbf{Inserimento di Immagini nel PDF}
+    \begin{itemize}
+        \item \textit{add\_image\_to\_pdf}: Inserisce immagini nel report PDF. Supporta l'inserimento di singole immagini (analisi singola) o più immagini disposte in una tabella (analisi su più algoritmi o diverse cardinalità).
+    \end{itemize}   
+\end{enumerate}
+
+
+    
+    
+    
