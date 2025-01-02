@@ -263,15 +263,15 @@ pub enum IncoherenceError{
     SubFail,
     #[error("IncoherenceError::MulFail: due to incoherence mul failed")]
     MulFail,
-    #[error("IncoherenceError::IndexMutFail: ")]
+    #[error("IncoherenceError::IndexMutFail ")]
     IndexMutFail,
-    #[error("IncoherenceError::IndexFail: ")]
+    #[error("IncoherenceError::IndexFail ")]
     IndexFail,
-    #[error("IncoherenceError::OrdFail: ")]
+    #[error("IncoherenceError::OrdFail ")]
     OrdFail,
-    #[error("IncoherenceError::PartialOrdFail: ")]
+    #[error("IncoherenceError::PartialOrdFail ")]
     PartialOrdFail,
-    #[error("IncoherenceError::PartialEqFail: ")]
+    #[error("IncoherenceError::PartialEqFail ")]
     PartialEqFail,
     #[error("IncoherenceError::InnerFail")]
     InnerFail,

@@ -1,5 +1,5 @@
 \newpage
-\section{Data source}
+\section{Data source} \label{sec:data_source}
 In questa sezione sono descritte le operazioni che precedono la generazione della fault list e l'init dello stage della pipeline preposto a generare le fault entry. Tutto il lavoro viene svolto essenzialmente da un sottomodulo di \texttt{mod fault\_list\_manager} denominato \texttt{mod static\_analysis}.
 
 \subsection{Sottomodulo \texttt{mod static\_analysis}: analisi statica automatica del codice}
@@ -16,7 +16,7 @@ Come abbiamo chiarito dall'inizio, il nostro obiettivo -- dopo l'irrobustimento 
 Il sottomodulo \texttt{static\_anlysis} è preposto a rispondere a tutte queste domande. Il codice sorgente viene analizzato dalla \textbf{libreria di parsing} \texttt{syn} (vedi \cite{syn}); questa permette di trasformare una stringa contenente il codice stesso in un \textbf{syntax tree} da cui, utilizzando diversi metodi si possono ricavare le informazioni necessarie. In particolare, al modulo appena citato, vengono affidate in ordine le seguenti operazioni, dato il singolo caso di studio: 
 \begin{enumerate}
     \itemsep-0.3em
-    \item Lettura da un file di testo la sua implementazione in linguaggio Rust (sono tutte contenute in \newline \texttt{file\_fault\_list/<casodistudio>}), dove 
+    \item Lettura da un file di testo della sua implementazione in linguaggio Rust (sono tutte contenute in \newline \texttt{file\_fault\_list/<casodistudio>}), dove 
     \begin{center}
         \texttt{<casodistudio>}$\in$ \texttt{\{selection\_sort, bubble\_sort, matrix\_multiplication\}}
     \end{center}
@@ -118,7 +118,7 @@ Mentre nei primi due casi il tipo viene inferito direttamente\footnote{
 
 
 \section{Fault List Manager}\label{sec:FLM}
-Dopo un percorso abbastanza articolato, abbiamo ottenuto \textit{in modo automatico} le informazioni sulle variabili facendo passare il codice sorgente del caso di studio attraverso i metodi dell'analisi statica. \\
+Dopo un percorso abbastanza articolato, abbiamo sviluppato \textit{un modo automatico} per ottenere le informazioni sulle variabili facendo passare il codice sorgente del caso di studio attraverso i metodi dell'analisi statica. \\
 Il \textit{glossario} che viene dall'output di questa fase è di cruciale importanza per la generazione della fault list descritta in questo paragrafo. \\
 Prima di entrare in merito della discussione è doveroso aggiungere un dettaglio non trascurabile. Gli algoritmi (ordinamento/moltiplicazione di matrici) possono lavorare su \textbf{dati diversi} ad ogni esecuzione. Per cui per sapere effettivamente il numero di istruzioni che quel set di dati genera bisognerebbe eseguire quel codice! A questo scopo sono state implementate delle funzioni denominate \texttt{run\_for\_count\_<casodistudio>()} a cui è associata  un'esecuzione fittizia del codice in analisi. Il loro output è un intero associato al numero di istruzioni che un certo algoritmo applicato ad un certo set di dati (matrice o vettore) produce.\\
 
@@ -135,7 +135,10 @@ pub struct FaultListEntry{
     pub flipped_bit: usize,
 }
 \end{lstlisting}
-dove \texttt{var} è il \textbf{nome della variabile}, \texttt{time} è il \textbf{tempo di iniezione}, mentre \texttt{flipped\_bit} è il bit della variabile che è stato modificato dal guasto. Sul tipo \texttt{FaultListEntry} sono derivati, tra gli altri, i tratti \texttt{Serialize} e \texttt{Deserialize} utili per il \textit{marshalling} della fault list su file.
+dove \texttt{var} è il \textbf{nome della variabile}, \texttt{time} è il \textbf{tempo di iniezione}, mentre \texttt{flipped\_bit} è il bit della variabile che è stato modificato dal guasto. Sul tipo \texttt{FaultListEntry} sono derivati, tra gli altri, i tratti \texttt{Serialize} e \texttt{Deserialize} utili per il \textit{marshalling
+/unmarshalling}\footnote{
+    Sono le operazioni tramite le quali la struttura viene portata sul file (\textit{marshalling}) e dal file viene riportata in memoria (\textit{unmarshalling}).
+} della fault list su file.
 
 \subsection{Generazione della fault list}
 L'algoritmo di generazione della  fault list è riportato di seguito.
@@ -164,17 +167,17 @@ L'algoritmo di generazione della  fault list è riportato di seguito.
         \EndFor
     \end{algorithmic}
 \end{algorithm}
-Alla fine della sua creazione, la fault list viene serializzata in formato \texttt{json} alla stregua di quanto fatto per il glossario di analisi statica. La costante NUM\_FAULT se non settata dall'utente da linea di comando viene impostata a 5000, mentre la costante N\_INST è l'output delle funzioni \texttt{run\_for\_count()}. Il tempo di iniezione viene scelto in modo compatibile, nel senso che non posso iniettare in una variabile se prima questa non è stata dichiarata, ecco perché si è scelto di ricavare durante l'analisi dell'albero di sintassi anche l'informazione memorizzata in \texttt{Variable::start}. Riportiamo uno stralcio di fault list nello snipppet che segue:
+Alla fine della sua creazione, la fault list viene serializzata in formato \texttt{json} alla stregua di quanto fatto per il glossario di analisi statica. La costante NUM\_FAULT se non settata dall'utente da linea di comando viene impostata a 2000, mentre la costante N\_INST è l'output delle funzioni \texttt{run\_for\_count()}. Il tempo di iniezione viene scelto in modo compatibile, nel senso che non posso iniettare in una variabile se prima questa non è stata dichiarata, ecco perché si è scelto di ricavare durante l'analisi dell'albero di sintassi anche l'informazione memorizzata in \texttt{Variable::start}. Riportiamo uno stralcio di fault list nello snipppet che segue:
 
 \begin{lstlisting}[language=rust, style=boxed]
     {   "var": "swapped",   "time": 218,    "flipped_bit": 6    },
-    {   "var": "j",         "time": 15,     "flipped_bit":      },
+    {   "var": "j",         "time": 15,     "flipped_bit": 2    },
     {   "var": "swapped",   "time": 102,    "flipped_bit": 4    },
     {   "var": "n",         "time": 20,     "flipped_bit": 24   },
 \end{lstlisting}
 
 \subsection{Stage pipeline}
-Una volta creata, la fault list può essere utilizzata e possiamo far partire l'\textbf{esperimento di fault injection}. Lo stage della pipeline associata al \textsf{Fault list manager} è espletato dalla seguente funzione: 
+Una volta creata la fault list, possiamo far partire l'\textbf{esperimento di fault injection}. Lo stage della pipeline associata al \textsf{Fault list manager} è espletato dalla seguente funzione: 
 
 \begin{lstlisting}[language=rust, style=boxed]
 pub fn fault_manager(tx_chan_fm_inj: Sender<FaultListEntry>, fault_list:String){
