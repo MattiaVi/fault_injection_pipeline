@@ -1,6 +1,8 @@
 \documentclass[aspectratio=169]{beamer}
 \usepackage{listings}
 \usepackage{listings-rust}
+\usepackage{graphicx}
+\usepackage{tikz}
 
 %\usetheme{Warsaw}
 \usetheme{CambridgeUS}
@@ -30,6 +32,15 @@ Politecnico di Torino}
 \date[Gennaio 2025 AA 2024/2025]{Gennaio 2025\\
 Anno Accademico 2024/2025}
 
+\addtobeamertemplate{footline}{
+    \begin{tikzpicture}[remember picture, overlay]
+        \node[anchor=south west, xshift=0.2cm, yshift=0.3cm] at (current page.south west) {
+            \includegraphics[height=1cm]{img/Logo_PoliTo_dal_2021_blu.png}
+        };
+    \end{tikzpicture}
+}
+
+
 \AtBeginSection[]
 {
   \begin{frame}
@@ -44,6 +55,8 @@ Anno Accademico 2024/2025}
         \tableofcontents[currentsubsection]
     \end{frame}
 }
+
+
 
 %\logo{\includegraphics[height=1.7cm]{polito-logo.png}}
 
@@ -81,8 +94,7 @@ where T:Sub<Output=T>+PartialEq+Eq+Debug+Copy+Clone{
             cp2: self.cp2 - rhs.cp2,
         })
     }
-}       
-    \end{lstlisting}
+}       \end{lstlisting}
 }
 
 \defverbatim[colored]\incerror{
