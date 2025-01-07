@@ -39,24 +39,25 @@
 \thispagestyle{empty}
 \vspace{-0.8cm}
 \tableofcontents
+\newpage
 
 \section*{Introduzione}
 Questo manuale fornisce istruzioni rapide per utilizzare il programma scritto in Rust. \\
 Un menù interattivo consente di personalizzare l'esecuzione della pipeline di fault injection, scegliendo i dati di input, l'algoritmo di esecuzione e il tipo di report generato.
 
-\section*{Requisiti}
+\section{Requisiti}
 \begin{itemize}
 \item \textbf{Sistema operativo}: macOS, Linux o Windows.
 \item \textbf{Compilatore Rust}: \texttt{rustc} installato. Puoi installarlo da \url{https://rustup.rs}.
 \end{itemize}
 
-\section*{Come Aprire ed Eseguire il Programma}
+\section{Come Aprire ed Eseguire il Programma}
 \begin{enumerate}
 \item Accedi alla stessa directory che contiene il file \texttt{Cargo.toml} del progetto.
 \item Esegui il programma con il comando \texttt{cargo run}.
 \end{enumerate}
 
-\section*{Guida al Menù}
+\section{Guida al Menù}
 \subsection{Come navigare nel menù}
 Dopo l'avvio, il programma presenterà un menù interattivo.\\
 La \textbf{scelta corrente} è evidenziata dall'indicatore visivo \texttt{>}.\\
@@ -164,7 +165,7 @@ Inserisci il numero di fault entries desiderate [2000]:
 
 \paragraph{Passo 6: Avvio dell'analisi.}\leavevmode\\
 Confermando l'ultima scelta la pipeline di fault injection inizierà la sua esecuzione con i parametri selezionati.\\
-Una volta completata l'analisi, verrà mostrato il messaggio \textit{"operazione completata"} e verrà salvato il report nella cartella results. \\
+Una volta completata l'analisi, verrà mostrato il messaggio \textit{"operazione completata"} e verrà salvato il report nella cartella \textit{results}. \\
 In base alla configurazione scelta, il report sarà di diverso tipo:
 \begin{itemize}
     \item Se è stata selezionata l'opzione \textit{Singolo algoritmo} e \textit{Cardinalità a piacere della fault entry}, verrà generato un report con nome \texttt{[nomefile].pdf}.
@@ -228,6 +229,7 @@ Di seguito viene riportato un diagramma esplicativo della struttura del menù.\\
 
 
 \end{tikzpicture}
+\newpage
 
 \subsection{Esempio di utilizzo}
 Di seguito viene riportato un esempio completo di esecuzione con sorgente da data file per tutti gli algortimi con 2000 fault entries.\\\\
@@ -245,6 +247,32 @@ Esecuzione Bubble Sort\\
 Esecuzione Matrix Multiplication\\
 Operazione completata. Report salvato in: results/report\_all.pdf\\
 \end{tcolorbox}
+\newpage
 \textbf{Report PDF di output:}\\
+Il report generato conterrà i risultati dell'analisi comparativa tra tutti gli algoritmi.
+\begin{figure}[h!]
+    \centering
+    % Prima riga con due immagini affiancate
+    \begin{minipage}{0.34\textwidth}
+        \centering
+        \fbox{\includegraphics[width=\textwidth]{img/1.png}}
+        \caption{pagina 1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.34\textwidth}
+        \centering
+        \fbox{\includegraphics[width=\textwidth]{img/2.png}}
+        \caption{pagina 2}
+    \end{minipage}
+
+    % Seconda riga con una sola immagine
+    \vspace{0.5cm} % Spaziatura tra le righe
+    \begin{minipage}{0.31\textwidth}
+        \centering
+        \fbox{\includegraphics[width=\textwidth]{img/3.png}}
+        \caption{pagina 3}
+    \end{minipage}
+\end{figure}
+
 
 \end{document}

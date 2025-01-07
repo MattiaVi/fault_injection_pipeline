@@ -20,7 +20,7 @@ use regex::Regex;
 
 
 ///Ambiente di Fault Injection per applicazione ridondata
-pub static VERBOSE: bool = true; //Settare true per messaggi di iniezione
+pub static VERBOSE: bool = false; //Settare true per messaggi di iniezione
 #[derive(Debug)]
 pub struct InputData {
     pub vector: Vec<i32>,
