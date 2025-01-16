@@ -68,7 +68,7 @@ pub fn fault_injection_env(fault_list: String,   //Data Source: Fault List
         \textsc{Target program}&Data source&
             Codice sorgente dei casi di studio oggetto dell'analisi: irrobustimento dei dati e fault injection. La directory \texttt{fault\_list\_manager/file\_fault\_list} contiene i file \texttt{*.rs} input dell'analisi statica.\\
             \hline
-            Data&Data source&Sono i dati su cui lavorano gli algoritmi selezionati come casi di studio. Nel file \texttt{data/input.txt} ci sono: (i) La matrice di Wilson e la sua inversa (per la moltiplicazione di matrici); (ii) un campione di vettore dal dataset di benchmark \cite{benchmark} (per gli algoritmi di ordinamento)\\
+            Data&Data source&Sono i dati su cui lavorano gli algoritmi selezionati come casi di studio. I dati possono essere prelevati dal file \texttt{data/input.txt} o dai dataset \texttt{data/dataset.txt}.\\
             \hline
         \textsc{Fault list}&Data source& Sfruttando il report prodotto dall'analisi statica viene generata la fault list contenente un numero di entry scelto dall'utente o prefissato. Il modulo \texttt{mod fault\_list\_manager} contiene le funzioni adibite a tale compito.\\
         \midrule

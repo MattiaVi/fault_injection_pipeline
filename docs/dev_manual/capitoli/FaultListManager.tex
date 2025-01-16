@@ -1,7 +1,75 @@
 \newpage
 \section{Data source} \label{sec:data_source}
-In questa sezione sono descritte le operazioni che precedono la generazione della fault list e l'init dello stage della pipeline preposto a generare le fault entry. Tutto il lavoro viene svolto essenzialmente da un sottomodulo di \texttt{mod fault\_list\_manager} denominato \texttt{mod static\_analysis}.
+In questa sezione sono descritti i vari moduli facenti parte della data source.
 
+\subsection{Origine dei dati per gli algoritmi}
+Di seguito vengono presentate le sorgenti di provenienza dei dati, utilizzati per eseguire gli algoritmi del programma. I file presentati di seguito si trovano nella cartella \texttt{src/data} \\
+
+\noindent I dati possono essere vettori o matrici e sulla base delle scelta utente vengono estratti da:  
+\begin{itemize}
+    \item \textbf{Dataset dei vettori}: un dataset predefinito di vettori causuali.
+    \item \textbf{Dataset delle matrici}: un dataset predefinito di matrici di rotazione.
+    \item \textbf{File di input personalizzato}: un file \texttt{input.txt} precaricato e modificabile dall'utente per inserire manualmente vettori e matrici personalizzati.
+\end{itemize}
+
+\paragraph{Dataset dei vettori}
+Questo dataset contiene 100 vettori casuali con lunghezza crescente a partire da 5 elementi. I vettori sono generati utilizzando la funzione \texttt{unifrnd} di MATLAB, che genera valori casuali uniformi in questo caso tra 1 e 100. I vettori sono successivamente arrotondati al numero intero più vicino e salvati nel file \texttt{src/data/dataset\_vector.txt}.
+Nel caso in cui l'esperimento preveda l'ordinamento di vettori, selezionando questa sorgente da menù, verrà prelevato randomicamnete uno tra i 100 vettori presenti nel dataset.\\
+Di seguito il codice MATLAB di generazione.
+
+\begin{verbatim}
+    for i=5:104
+        v = unifrnd(1,100,1,i);
+        v_dataset{i-4} = round(v);
+    end
+    for i=1:100
+        writecell(num2cell(v_dataset{i}),'data_vector.txt','WriteMode','append');
+    end
+\end{verbatim}
+
+\paragraph{Dataset delle matrici}
+Questo dataset contiene 64 possibili matrici di rotazione calcolate sugli angoli prefissati 0, \(\pi/2\), \(\pi\), \(3\pi/2\).
+Nel caso in cui l'esperimento preveda la moltiplicazione tra matrici, selezionando questa sorgente da menù, verrà eseguita una traformazione lineare affine combinando una matrice di rotazione e una matrice di scalamento.\\
+La matrice di rotazione viene estratta randomicamente tra le 64 matrici presenti nel dataset e la matrice di scalamento viene generata nel \texttt{main.rs} a partire da uno scalare randomico moltiplicato per la matrice identità.
+Questo tipo di trasfromazione è presente in numerosi ambiti applicativi come grafica, robotica e computer vision.\\
+Di seguito il codice MATLAB di generazione.
+
+\begin{verbatim}
+r_1 = [1; 0; 0];
+I = [1; 2; 3];
+ang = [0 pi/2 pi 3*pi/2];
+c = 1;
+for i=1:length(ang)
+    for j=1:length(ang)
+        for k=1:length(ang) 
+            T_123 = rot_mat(I,[ang(i),ang(j),ang(k)]);
+            T_123_dataset{c} = round(T_123);
+            c = c+1;
+        end
+    end
+end
+
+% Check the validity of the rotation matrices created
+for i=1:length(T_123_dataset)
+    matrix = T_123_dataset{i};
+    if isequal(matrix',inv(matrix)) && det(matrix) == 1
+        writecell(num2cell(matrix),'data_matrix_rot.txt','WriteMode','append','Delimiter',' ');
+        fid = fopen('data_matrix_rot.txt', 'a+');
+        fprintf(fid, ' ');
+        fclose(fid);
+    else
+        'matrice non valida'
+    end
+end
+\end{verbatim}
+
+\paragraph{File di input personalizzato}
+Il file di input personalizzato \texttt{input.txt} è un file di testo configurabile dall'utente per poter modificare i dati in input. Il file contiene un vettore con la sua relativa lunghezza e una due matrici quadrate con la loro dimensione. \\
+I vettori sono rappresentati come sequenze di numeri interi separati da virgola, mentre le matrici sono rappresentate riga per riga con numeri interi separati da spazi.\\
+Il file è precaricato con un vettore randomico di 10 elementi e due matrici 4x4. Le due matrici sono rispettivamente una matrice di Wilson e la sua inversa che moltiplicate tra loro danno la matrice identità. La matrice di Wilson è una matrice simmetrica definita positiva e ben condizionata, spesso utilizzata in applicazioni scientifiche e ingegneristiche. \\
+Il file permette di essere modificato manualmente dall'utente per inserire i dati desiderati, prestando attentzione ala consistenza tra la dimensione specificata e il numero di elementi presenti.\\
+
+\noindent Di seguito sono descritte le operazioni che precedono la generazione della fault list e l'init dello stage della pipeline preposto a generare le fault entry. Tutto il lavoro viene svolto essenzialmente da un sottomodulo di \texttt{mod fault\_list\_manager} denominato \texttt{mod static\_analysis}.
 \subsection{Sottomodulo \texttt{mod static\_analysis}: analisi statica automatica del codice}
 Come abbiamo chiarito dall'inizio, il nostro obiettivo -- dopo l'irrobustimento dei dati tramite ridondanza -- è quello di eseguire degli \textit{esperimenti di fault injection} dove i target dei fault sono le variabili coinvolte negli algoritmi scelti come casi di studio. Tuttavia affinché si possa generare una fault list servono delle informazioni che descrivono il codice del caso di studio stesso. Nello specifico serve poter rispondere alle seguenti domande: 
 \begin{itemize}
