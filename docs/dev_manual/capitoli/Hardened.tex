@@ -173,6 +173,7 @@ impl Add<usize> for Hardened<usize>{
   }
 }
 \end{lstlisting}
+\newcolumn
 Si presenta qui l'implementazione del metodo \texttt{add()} del tratto omonimo. La presenza del tipo associato al tratto, permette di non essere vincolati sul tipo di ritorno che quindi è stato personalizzato secondo le nostre esigenze. In particolare poiché l'add come tutte le operazioni di lettura e modifica possono causare errori dovuti all'incoerenza tra le copie interne del dato, si sfrutta l'enumerazione generica \texttt{Result<T,E>} per gestire queste due situazioni. Il tipo \texttt{T} è \texttt{Hardened<T>} mentre il tipo \texttt{E} è quello personalizzato (\texttt{IncoherenceError} descritto in seguito). Un ragionamento analogo vale per tutti i metodi che hanno una struttura simile a quella presentata che abilita l'utilizzo di dati di ritorno personalizzati. 
 
 \newcolumn

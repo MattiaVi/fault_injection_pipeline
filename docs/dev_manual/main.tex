@@ -17,7 +17,7 @@ per applicazione ridondata
 \author{Mattia Viglino}
 \affil[1]{\small{Laurea Magistrale in Ingegneria Informatica, Politecnico di Torino}}
 
-\date{Gennaio 2025}
+\date{Febbraio 2025}
 
 \pagestyle{headings}
 
@@ -31,24 +31,27 @@ per applicazione ridondata
 \thispagestyle{empty}
 \vspace{-0.8cm}
 \begin{abstract}
-    \lipsum[1]
+    \noindent
+    La \textit{dependability} e la \textit{tolleranza ai guasti} sono temi di fondamentale importanza nello sviluppo di applicazioni e sistemi safety critical. Le metriche classiche adottate per quantificare affidabilità e robustezza (eg. MTBF) richiedono l'osservazione del sistema per periodi lunghi. Talvolta si vuole accelerare (artificialmente)  l'occorrenza dei guasti tramite tecniche (hardware o software) di fault injection. Il lavoro proposto ha un duplice obiettivo: (i) l'implementazione di un'applicazione \textit{fault tolerant} tramite modifiche sistematiche del codice sorgente in linguaggio \texttt{Rust} (ispirate a \cite{rebaudengo1999soft}); (ii) la realizzazione di un ambiente di fault injection per testare l'efficacia delle trasformazioni effettuate. Il presente \textsc{Manuale di Sviluppo} fornisce una descrizione dei passaggi fondamentali dell'implementazione, integrata -- dove necessario -- con brevi riferimenti teorici.
 \end{abstract}
 \tableofcontents
 
-\include{capitoli/Intro}        
+\newpage
+
+\input{capitoli/Intro}        
 \part{Irrobustimento del codice}
-\include{capitoli/Hardened}     
-\include{capitoli/CaseStudies}    
+\input{capitoli/Hardened}     
+\input{capitoli/CaseStudies}    
 \part{Ambiente di fault injection}
-\include{capitoli/FaultEnv}     
-\include{capitoli/FaultListManager} 
-\include{capitoli/Iniettore}        
-\include{capitoli/Analizzatore}    
-\include{capitoli/PDFGenerator}     
+\input{capitoli/FaultEnv}     
+\input{capitoli/FaultListManager} 
+\input{capitoli/Iniettore}        
+\input{capitoli/Analizzatore}    
+\input{capitoli/PDFGenerator}     
 
 
 \newpage
-\printbibliography[title=Riferimenti]
+\printbibliography[title=Riferimenti bibliografifi]
 
 
 \end{document}
