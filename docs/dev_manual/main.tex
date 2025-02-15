@@ -1,0 +1,57 @@
+\documentclass{article}
+\usepackage{lipsum}
+\usepackage{authblk}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{dirtree}
+\usepackage{pifont}
+\usepackage{enumitem}
+\input{packages}
+
+\title{\textbf{ Realizzazione di un ambiente di Fault Injection
+per applicazione ridondata
+[Manuale di Sviluppo]}}
+\author{Carlo Migliaccio}
+\author{Federico Pretini}
+\author{Alessandro Scavone}
+\author{Mattia Viglino}
+\affil[1]{\small{Laurea Magistrale in Ingegneria Informatica, Politecnico di Torino}}
+
+\date{Febbraio 2025}
+
+\pagestyle{headings}
+
+\begin{document}
+
+\counterwithin{figure}{section}
+\counterwithin{equation}{section}
+\renewcommand{\labelenumii}{\arabic{enumi}.\arabic{enumii}}
+
+\maketitle
+\thispagestyle{empty}
+\vspace{-0.8cm}
+\begin{abstract}
+    \noindent
+    La \textit{dependability} e la \textit{tolleranza ai guasti} sono temi di fondamentale importanza nello sviluppo di applicazioni e sistemi safety critical. Le metriche classiche adottate per quantificare affidabilità e robustezza (eg. MTBF) richiedono l'osservazione del sistema per periodi lunghi. Talvolta si vuole accelerare (artificialmente)  l'occorrenza dei guasti tramite tecniche (hardware o software) di fault injection. Il lavoro proposto ha un duplice obiettivo: (i) l'implementazione di un'applicazione \textit{fault tolerant} tramite modifiche sistematiche del codice sorgente in linguaggio \texttt{Rust} (ispirate a \cite{rebaudengo1999soft}); (ii) la realizzazione di un ambiente di fault injection per testare l'efficacia delle trasformazioni effettuate. Il presente \textsc{Manuale di Sviluppo} fornisce una descrizione dei passaggi fondamentali dell'implementazione, integrata -- dove necessario -- con brevi riferimenti teorici.
+\end{abstract}
+\tableofcontents
+
+\newpage
+
+\input{capitoli/Intro}        
+\part{Irrobustimento del codice}
+\input{capitoli/Hardened}     
+\input{capitoli/CaseStudies}    
+\part{Ambiente di fault injection}
+\input{capitoli/FaultEnv}     
+\input{capitoli/FaultListManager} 
+\input{capitoli/Iniettore}        
+\input{capitoli/Analizzatore}    
+\input{capitoli/PDFGenerator}     
+
+
+\newpage
+\printbibliography[title=Riferimenti bibliografifi]
+
+
+\end{document}

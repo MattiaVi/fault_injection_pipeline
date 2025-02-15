@@ -1,6 +1,0 @@
-13
-vet Vec < i32 > 4*len
-j i32 4
-N usize 4
-i i32 4
-min i32 4

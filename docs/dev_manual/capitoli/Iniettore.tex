@@ -1,0 +1,146 @@
+\section{Injector}\label{sec: Injector}
+\subsection{Aspetti Generali}
+L'iniettore è stato pensato come un componente della pipeline che riceve le fault list entry dal fault list manager, utilizzandole poi per iniettare gli errori nel momento 
+corretto durante l'esecuzione dell'algoritmo tesato. Il risultato dell'esecuzione viene poi utilizzato per creare il TestResult relativo alla singola fault list entry e passato 
+al successivo stadio della pipeline. 
+
+Per l'implementazione dell'iniettore vengono utilizzati 2 thread, uno per l'esecuzione dell'algoritmo che chiameremo \textit{runner}, e uno per l'esecuzione dell'i\-niettore che 
+chiameremo \textit{injector}. I due thread condividono le variabili in uso che, durante un'istanza dell'esecuzione dell'algoritmo sotto esame (un'istanza per ciascuna fault list 
+entry), verranno lette e modificate da entrambi i thread: il thread runner leggerà e modificherà le variabili seguendo l'ordine delle istruzioni dell'algoritmo, il thread
+injector leggerà la variabile su cui iniettare l'errore per poter calcolare il nuovo valore (ovvero quello contenente l'errore) e modificandola di conseguenza. Affinché i due 
+thread si sincronizzino correttamente e l'iniezione dell'errore avvenga nell'istante specificato nella fault list entry, i due thread utilizzano 2 canali monodirezionali \textit{mpsc} in modo che 
+dopo ogni istruzione dell'algoritmo eseguita dal runner venga mandato un messaggio all'injector su un canale e ne venga attesa la risposta sull'altro. L'\textit{injector}
+
+\subsection{Aspetti tecnici}
+\subsubsection{Injector Manager}
+La funzione chiamata \textit{injector\_manager} ha la funzione di coordinare la ricezione delle fault list entry provenienti dallo stato precedente della pipeline tramite un canale dedicato, ricevendo anche il canale per trasmettere i risultati, l'algoritmo target e i dati da usare durante l'analisi.
+
+\begin{lstlisting}[language=Rust, style=boxed]
+pub fn injector_manager(rx_chan_fm_inj: Receiver<FaultListEntry>,
+                tx_chan_inj_anl: Sender<TestResult>,
+                target: String,
+                data: Data<i32>);
+\end{lstlisting}
+
+Al suo interno la funzione tramite un ciclo while attende la ricezione sul canale delle fault list entry e, per ciascuna, crea il set di variabili utilizzate (in base al tipo di algoritmo in esecuzione), i 2 canali con cui i thread gestiranno la sincronizzazione e i 2 thread \textit{runner} e \textit{injector}.
+
+Affinche' siano testabili più algoritmi, ciascuno avente il proprio set di variabili che utilizza, è stata usata un'enum chiamata \textit{AlgorithmVariables} contenente per ciascun algoritmo una struct contenente le variabili.
+
+\begin{lstlisting}[language=Rust, style=boxed]
+enum AlgorithmVariables {
+    SelectionSort(SelectionSortVariables),
+    BubbleSort(BubbleSortVariables),
+    MatrixMultiplication(MatrixMultiplicationVariables),
+}
+\end{lstlisting}
+
+Le struct relative ai singoli algoritmi contengono, per ogni variabile, un \textit{RwLock} contenente a sua volta il tipo \textit{Hardened} corrispondente. Dovendo condividere questa struttura tra più thread eseguiti, era necessario renderla accessibile in modo sicuro (dovendo essere sia letta che scritta) e per questo motivo una possibile soluzione era quella di racchiudere la struttura per intero all'interno di un \textit{Mutex} o \textit{RwLock}. Questa soluzione presentava però delle criticità. Per effettuare il controllo condizionale per i cicli while era richiesto di acquisire il lock prima del check sulla condizione del ciclo, ma una volta acquisito il lock fuori dal ciclo questo veniva mantenuto per l'intera durata del ciclo, impedendo all'\textit{injector} di iniettare l'errore su una delle variabili. Di conseguenza l'opzione migliore e che richiedesse meno overhead a livello di codice era racchiudere ciascuna singola variabile della struct in un RwLock anziché la struttura per intero. La scelta di utilizzare RwLock è stata motivata principalmente da una possibile migliore gestione delle read e write, dovuta a numero di letture e scrittura sbilanciato in base all'algoritmo eseguito.
+
+\begin{lstlisting}[language=Rust, style=boxed]
+struct SelectionSortVariables {
+    i: RwLock<Hardened<usize>>,
+    j: RwLock<Hardened<usize>>,
+    N: RwLock<Hardened<usize>>,
+    min: RwLock<Hardened<usize>>,
+    vec: RwLock<Vec<Hardened<i32>>>,
+}
+\end{lstlisting}
+
+Una volta creata la struct contenente le variabili della fault list entry corrente, vengono aperti i canali di comunicazione tra \textit{runner} e \textit{injector} ed eseguiti i rispettivi due thread. Quando il thread \textit{runner} termina invia all'analizzatore (stadio di pipeline successivo) i risultati ottenuti.
+
+\subsubsection{Runner}
+Il thread \textit{runner} esegue una funzione wrapper chiamata \textit{runner} la quale si occupa di lanciare l'esecuzione dell'algoritmo irrobustito corretto per il tipo di analisi che si sta facendo e gestendo il risultato prodotto da questo. 
+
+\begin{lstlisting}[language=Rust, style=boxed]
+fn runner(variables: Arc<AlgorithmVariables>,
+          fault_list_entry: FaultListEntry,
+          tx_runner: Sender<&str>,
+          rx_runner: Receiver<&str>) -> TestResult
+\end{lstlisting}
+
+In base al tipo di algoritmo \textit{target} sono stati creati degli algoritmi ad-hoc per poter interagire correttamente con l'iniettore. Questi sono delle versioni rivisitate delle versioni irrobustite originali, le quali non sarebbero state in grado di sincronizzarsi con l'iniettore per subire i fault. Di seguito viene descritta la struttura di questi algoritmi, facendo esempi relativi al Selection Sort, in quanto gli altri seguono tutti la stessa logica. 
+
+\paragraph{Algoritmo Testato}
+Ciascun algoritmo riceve le variabili da utilizzare, il canale su cui trasmettere il completamento di un'istruzione e quello su cui attendere l'eventuale inserimento del fault.
+
+\begin{lstlisting}[language=Rust, style=boxed]
+pub fn runner_matrix_multiplication(variables: &MatrixMultiplicationVariables, 
+            tx_runner: Sender<&str>, 
+            rx_runner: Receiver<&str>) -> Result<(), IncoherenceError>
+\end{lstlisting}
+
+La procedura per l'esecuzione di una qualsiasi istruzione è:
+\begin{itemize}
+    \item Accesso al lock con conseguente lettura/scrittura della variabile
+    \item Scrittura sul canale \textit{tx\_runner} per comunicare all'\textit{injector} che un'istruzione è stata eseguita
+    \item Attesa sul canale \textit{rx\_runner} che l'\textit{injector} termini le sue operazioni, necessario affinché \textit{runner} e \textit{injector} rimangano sincronizzati
+\end{itemize}
+
+Riportiamo di seguito un esempio di un'istruzione equivalente all'istruzione $j.assign((i+1)?)?$:
+\begin{lstlisting}[language=Rust, style=boxed]
+// j = i + 1   -- versione non irrobustita
+// j.assign((i+1)?)?    -- versione irrobustita
+variables.j.write().unwrap().assign((*variables.i.read().unwrap() + 1)?)?;
+tx_runner.send("").unwrap();
+rx_runner.recv().unwrap();
+\end{lstlisting}
+
+L'algoritmo ritorna un Result, contenente:
+\begin{itemize}
+    \item \textit{Ok(())}: successo ed esecuzione portata a termine correttamente'
+    \item \textit{Err$<$IncoherenceError$>$}: variante dell'enum \textit{IncoherenceError} che descrive il tipo di errore riscontrato 
+\end{itemize}
+
+\paragraph{Terminazione Runner}
+Il runner termina eseguendo un pattern match sul risultato dell'algoritmo eseguito, producendo il TestResult che verrà utilizzato dall'analizzatore per ottenere statistiche utili.
+
+\subsection{Injector}
+L'\textit{injector} è una funzione che si occupa di iniettare nel momento corretto il fault contenuto nella fault list entry sulla variabile indicata. Per fare ciò, riceve le variabili usate dall'algoritmo e condivise con il \textit{runner}, la fault list entry e i canali necessari per la sincronizzazione con il \textit{runner}.
+
+\begin{lstlisting}[language=Rust, style=boxed]
+fn injector(variables: Arc<AlgorithmVariables>, 
+            fault_list_entry: FaultListEntry,
+            tx_injector: Sender<&str>,
+            rx_runner: Receiver<&str>)
+\end{lstlisting}
+
+L'informazione sul tipo di algoritmo in esecuzione è ricavata dal tipo di variabili ricevute, essendo queste un'istanza dell'enum \textit{AlgorithmVariables}. Viene poi manutenuto un \textit{counter} necessario a contare il numero di istruzioni eseguite per poi al momento indicato nella fault list entry iniettare l'errore. Tramite un ciclo while, che termina quando il canale condiviso con il \textit{runner} viene chiuso, vengono ricevuti gli impulsi che indicano la terminazione di un'istruzione. Il flusso di operazioni eseguite è: 
+
+\begin{enumerate}
+    \item Calcola la maschera in base al bit indicato nella fault list entry
+    \item Per ogni segnale ricevuto dal \textit{runner}:
+    \begin{enumerate}
+        \item Incrementa il counter
+        \item Se $\textit{counter} == \textit{fault\_list\_entry}.\textit{time}$
+        \begin{enumerate}
+            \item Ricava la variabile su cui iniettare contenuta nella fault list entry
+            \item Tramite match inietta sulla variabile la maschera calcolata
+        \end{enumerate}
+        \item Manda sul canale verso il \textit{runner} il segnale per la continuazione della sua esecuzione
+    \end{enumerate}
+\end{enumerate}
+
+Le maschere vengono calcolate come $\textit{mask} = 2^{\textit{fault\_mask}}$. Le maschere vengono applicate alle variabili tramite XOR. Prendendo un esempio per quanto riguarda il Selection Sort:
+\begin{lstlisting}[language=Rust, style=boxed]
+"i" => {
+    let val = var.i.read().unwrap().inner().unwrap().clone();   // leggo il valore della variabile
+    let new_val = val \wedge mask;                                   // nuovo valore da salvare (XOR per il bitflip)
+    var.i.write().unwrap()["cp1"] = new_val;                    // inietto l'errore
+}
+\end{lstlisting}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

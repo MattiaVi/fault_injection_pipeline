@@ -1,7 +1,12 @@
+pub(crate) mod bubble_sort_hardened;
+pub(crate) mod matrix_multiplication_hardened;
+pub(crate) mod selection_sort_hardened;
+
 use std::cmp::Ordering;
-use std::fmt::{Display, Debug, Formatter};
-use std::ops::{Add, Index, IndexMut, Sub};
+use std::fmt::{Debug, Formatter};
+use std::ops::{Add, Index, IndexMut, Sub, Mul};
 use thiserror::Error;
+use crate::fault_env::Data;
 
 //-------------------------------------------------------------
 #[derive(Clone, Copy)]
@@ -44,11 +49,16 @@ where T: Debug+PartialEq+Eq+Copy+Clone{
         vet.iter().map(|&x| Hardened::from(x)).collect()
     }
 
+    //Uso questa funzione in ottica di irrobustire un'intera matrice...
+    pub fn from_mat(mat: Vec<Vec<T>>) -> Vec<Vec<Hardened<T>>> {
+        mat.into_iter().map(|row| row.into_iter().map(|x| Hardened::from(x)).collect()).collect()
+    }
+
     ///Estrae (dopo aver controllato la coerenza del dato) il dato
     /// di tipo T incapsulato al suo interno.
     pub fn inner(&self)->Result<T, IncoherenceError>{
         if self.incoherent(){
-            return Err(IncoherenceError::Generic)
+            return Err(IncoherenceError::InnerFail)
         }
         Ok(self.cp1)
     }
@@ -59,6 +69,17 @@ where T: Debug+PartialEq+Eq+Copy+Clone{
 impl<T> From<T> for Hardened<T> where T:Copy{
     fn from(value: T) -> Self {
         Self{cp1: value, cp2: value}
+    }
+}
+
+pub trait IntoNestedVec {
+    fn into_nested_vec(self) -> Vec<i32>;
+}
+impl IntoNestedVec for Vec<Hardened<i32>> {
+    fn into_nested_vec(self) -> Vec<i32> {
+        self.into_iter()
+            .map(|hardened| hardened.cp1) // Estrai solo il campo cp1
+            .collect()
     }
 }
 
@@ -98,7 +119,7 @@ where T:Sub<Output=T>+PartialEq+Eq+Debug+Copy+Clone{
     type Output=Result<Hardened<T>,IncoherenceError>;
     fn sub(self, rhs: Self) -> Self::Output {
         if self.incoherent() || rhs.incoherent(){
-            return Err(IncoherenceError::Generic)
+            return Err(IncoherenceError::SubFail)
         }
         Ok(Self{
             cp1: self.cp1 - rhs.cp1,
@@ -111,7 +132,7 @@ impl Sub<usize> for Hardened<usize>{
     type Output = Result<Hardened<usize>, IncoherenceError>;
     fn sub(self, rhs: usize) -> Self::Output {
         if self.incoherent(){
-            return Err(IncoherenceError::Generic)
+            return Err(IncoherenceError::SubFail)
         }
         return Ok(Self{
             cp1: self.cp1 - rhs,
@@ -119,6 +140,24 @@ impl Sub<usize> for Hardened<usize>{
         })
     }
 }
+
+// Mul per Hardened<T> per supportare la moltiplicazione elementare
+impl<T> Mul for Hardened<T>
+where T: Mul<Output = T> + PartialEq + Eq + Debug + Copy + Clone {
+    type Output = Result<Hardened<T>, IncoherenceError>;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        if self.incoherent() || rhs.incoherent() {
+            return Err(IncoherenceError::MulFail);
+        }
+
+        Ok(Self {
+            cp1: self.cp1 * rhs.cp1,
+            cp2: self.cp2 * rhs.cp2,
+        })
+    }
+}
+
 //------------------------------------------------------------------------
 
 //------------------------OPERAZIONI DI CONFRONTO-------------------------
@@ -126,7 +165,7 @@ impl<T> PartialEq for Hardened<T>
 where T:PartialEq+Eq+Debug+Copy+Clone{
     fn eq(&self, other: &Self) -> bool {
         if  other.incoherent(){
-            panic!("Found an incoherence!")
+            panic!("PartialEq::eq")
         }
         self.cp1.eq(&other.cp1)
     }
@@ -139,7 +178,7 @@ impl<T> PartialOrd for Hardened<T>
 where T:PartialEq+PartialOrd+Eq+Debug+Copy+Clone{
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         if other.incoherent(){
-            panic!("Found an incoherence!")
+            panic!("PartialOrd::partial_cmp")
         }
         self.cp1.partial_cmp(&other.cp1)
     }
@@ -149,7 +188,7 @@ impl<T> Ord for Hardened<T>
 where T:PartialEq+PartialOrd+Ord+Eq+Debug+Copy+Clone{
     fn cmp(&self, other: &Self) -> Ordering {
         if other.incoherent(){
-            panic!("Found an incoherence!");
+            panic!("Ord::cmp");
         }
         self.cp1.cmp(&other.cp1)
     }
@@ -161,7 +200,7 @@ impl<T> Index<Hardened<usize>> for Vec<Hardened<T>>{
     ///Estrae un riferimento immutabile
     fn index(&self, index: Hardened<usize>) -> &Self::Output {
         if index.incoherent(){
-            panic!("Found an incoherence!");
+            panic!("Index<Hardened<usize>>::index");
         }
         self.index(index.cp1)
     }
@@ -170,9 +209,30 @@ impl<T> Index<Hardened<usize>> for Vec<Hardened<T>>{
 impl<T> IndexMut<Hardened<usize>> for Vec<Hardened<T>>{
     fn index_mut(&mut self, index: Hardened<usize>) -> &mut Self::Output {
         if index.incoherent(){
-            panic!("Found an incoherence");
+            panic!("IndexMut<Hardened<usize>>::index_mut");
         }
         self.index_mut(index.cp1)
+    }
+}
+//Per iniettare nelle variabili si potrebbero utilizzare la notazione Var["cp1"], Var["cp2"]
+impl<T> Index<&str> for Hardened<T>{
+    type Output=T;
+    fn index(&self, index: &str) -> &Self::Output {
+        match index{
+            "cp1" => {  &self.cp1 },
+            "cp2" => {   &self.cp2 },
+            _ => panic!("Index")
+        }
+    }
+}
+
+impl<T> IndexMut<&str> for Hardened<T>{
+    fn index_mut(&mut self, index: &str) -> &mut Self::Output {
+        match index{
+            "cp1" => {  &mut self.cp1 },
+            "cp2" => {   &mut self.cp2 },
+            _ => panic!("IndexMut")
+        }
     }
 }
 
@@ -181,36 +241,10 @@ impl<T> IndexMut<Hardened<usize>> for Vec<Hardened<T>>{
 impl<T> Debug for Hardened<T> where T:Debug+PartialEq+Eq+Copy+Clone{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if self.incoherent(){
-            panic!("Found an incoherence");
+            panic!("Debug::fmt");
         }
         self.cp1.fmt(f)
     }
-}
-
-
-///Funzione di prova
-/// <h3>Caso di studio 1: Selection Sort</h3>
-fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
-    let mut N:Hardened<usize> = vet.len().into();
-    let mut j= Hardened::from(0);
-    let mut min = Hardened::from(0);
-    //--------------SELECTION SORT-------------------------
-    let mut i= Hardened::from(0);
-    while i<(N-1)?{
-        min.assign(i)?;                 //min=i
-        j.assign((i+1)?)?;        //j=0
-        //Ricerca del minimo
-        while j<N{
-            if vet[j]<vet[min]  {   min.assign(j)?; }
-            j.assign((j+1)?)?;
-        }
-        //Scambio il minimo
-        vet.swap(i.inner()?, min.inner()?);
-        //Vado avanti
-        i.assign((i+1)?)?;
-    }
-    //------------------------------------------------------
-    Ok(())
 }
 
 
@@ -219,22 +253,145 @@ fn selection_sort(vet: &mut Vec<Hardened<i32>>)->Result<(), IncoherenceError>{
 ///Tipo di errore generato tutte le volte che fallisce il controllo
 /// di coerenza delle due copie all'interno di una variabile di tipo
 /// ```Hardened<T>```.
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Clone)]
 pub enum IncoherenceError{
     #[error("IncoherenceError::AssignFail: assignment failed")]
     AssignFail,
     #[error("IncoherenceError::AddFail: due to incoherence add failed")]
     AddFail,
+    #[error("IncoherenceError::SubFail: due to incoherence add failed")]
+    SubFail,
     #[error("IncoherenceError::MulFail: due to incoherence mul failed")]
     MulFail,
-    #[error("IncoherenceError::Generic: generic incoherence error")]
-    Generic
+    #[error("IncoherenceError::IndexMutFail ")]
+    IndexMutFail,
+    #[error("IncoherenceError::IndexFail ")]
+    IndexFail,
+    #[error("IncoherenceError::OrdFail ")]
+    OrdFail,
+    #[error("IncoherenceError::PartialOrdFail ")]
+    PartialOrdFail,
+    #[error("IncoherenceError::PartialEqFail ")]
+    PartialEqFail,
+    #[error("IncoherenceError::InnerFail")]
+    InnerFail,
 }
+
+//Funzioni per il conteggio 'passivo' delle istruzioni eseguite
+
+pub fn run_for_count_selection_sort(vettore: Data<i32>) ->usize{
+
+    let mut vet = vettore.into_vector();
+    let n:usize = vet.len();
+    let mut j;
+    let mut min;
+
+    let mut count=5;
+    //-----------------------SELECTION SORT-------------------------
+    let mut i=0;
+    while i< n -1{
+        count=count+1;
+        min=i;
+        count=count+1;
+        j=i+1;
+        //Ricerca del minimo
+        count=count+1;
+        while j< n {
+            count=count+1;
+            if vet[j] < vet[min]{
+                count=count+1;
+                min=j;  }
+            count=count+1;
+            j = j+1;
+        }
+        count=count+1;
+        //Scambio il minimo
+        vet.swap(min,i);
+        //Vado avanti
+        count=count+1;
+        i=i+1;
+
+        //conto il while di dopo (se necessario)
+        if i< n -1 {count=count+1}
+    }
+    count
+}
+pub fn run_for_count_bubble_sort(vettore: Data<i32>) ->usize{
+    let mut count=2;
+    let mut vet=vettore.into_vector();
+    let n = vet.len();
+    let mut i = 0;
+
+    while i < n {
+        count+=1;
+        let mut swapped = false;
+        count+=1;
+        let mut j = 0;
+        count+=1;
+
+        while j < n - i - 1 {
+            count+=1;
+            if vet[j] > vet[j + 1] {
+                count+=1;
+                vet.swap(j, j + 1);
+                count+=1;
+                swapped = true;
+                count+=1;
+            }
+            j += 1;
+            count+=1;
+        }
+        if !swapped {
+            count+=1;
+            break;
+        }
+        i += 1;
+        count+=1;
+    }
+    count
+}
+//a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>
+pub fn run_for_count_matrix_mul(matrici: Data<i32>, size:usize)->usize{
+
+    let matrices = matrici.into_matrices();
+    let a = matrices.0;
+    let b = matrices.1;
+
+    let mut result: Vec<Vec<i32>> = Vec::new();
+    let mut count=3;
+    for i in 0..size {
+        count+=1;
+        let mut row: Vec<i32> = Vec::new(); // Crea una nuova riga
+        count+=1;
+        for j in 0..size {
+            count+=1;
+            let mut acc = 0;
+            count+=1;
+            for k in 0..size {
+                count+=1;
+                acc += a[i][k] * b[k][j];
+                count+=1;
+            }
+            row.push(acc); // Aggiunge il valore calcolato alla riga
+            count+=1;
+        }
+        result.push(row); // Aggiunge la riga alla matrice risultante
+        count+=1;
+    }
+    //result
+    count
+}
+
+
+
+
+//------------------------------------------------------
 
 #[cfg(test)]
 mod tests{
+    use std::panic::catch_unwind;
     use crate::Hardened;
-    use crate::hardened::selection_sort;
+
     use crate::IncoherenceError;
     #[test]
     fn test_add_ok(){
@@ -271,13 +428,88 @@ mod tests{
     }
 
     #[test]
-    //Provo a usare il nuovo tipo per ordinare un vettore
-    fn test_sort(){
-        let mut myvec = Hardened::from_vec(vec![31, 10, 15, 6, 4, 3]);
-        assert!(selection_sort(&mut myvec).is_ok());
-        let mut myvec2 = Hardened::from_vec(vec![3,4,6,10,15,31]);
-        assert_eq!(myvec, myvec2);
+    //Test per verificare il corretto funzionamento di from_mat
+    fn test_from_mat(){
+        let input_matrix = vec![
+            vec![1, 2, 3],
+            vec![4, 5, 6],
+            vec![7, 8, 9]
+        ];
+
+        let expected_output = vec![
+            vec![Hardened::from(1), Hardened::from(2), Hardened::from(3)],
+            vec![Hardened::from(4), Hardened::from(5), Hardened::from(6)],
+            vec![Hardened::from(7), Hardened::from(8), Hardened::from(9)]
+        ];
+
+        // Call the function
+        let output_matrix = Hardened::from_mat(input_matrix);
+
+        // Assert the output is as expected
+        assert_eq!(output_matrix, expected_output);
     }
+    #[test]
+    fn test_matrix(){
+        let mat = vec![
+            vec![1, 2, 3],
+            vec![4, 5, 6],
+            vec![7, 8, 9]
+        ];
 
+        assert_eq!(4, mat[1][0]);
+    }
+    //Test su Index/IndexMut<&str> for Hardened<T>
+    #[test]
+    fn test_indexMut_Hardened_for_injection(){
+        let mut myhd =Hardened::from(3);
+        myhd["cp1"] = 2;
+        assert_eq!(myhd.incoherent(), true);
+    }
+    #[test]
+    fn test_index_Hardened_for_injection(){
+        let mut myhd=Hardened::from(2);
+        assert_eq!(myhd["cp1"],2);
+    }
+    #[test]
+    #[should_panic]
+    fn test_index_panic(){
+        let mut myvar=Hardened::from(2);
+        _=myvar["cp3"];
+    }
+    #[test]
+    #[should_panic]
+    fn test_indexMut_panic(){
+        let mut myvar=Hardened::from(2);
+        myvar["cpe2ejnkjndf"] = 2;
+    }
+    #[test]
+    fn test_from_mat_hardened() {
+        // Matrice di input con valori interi
+        let input_matrix = vec![
+            vec![1, 2, 3],
+            vec![4, 5, 6],
+            vec![7, 8, 9]
+        ];
 
-}
+        // Matrice attesa con elementi di tipo Hardened
+        let expected_output = vec![
+            vec![Hardened::from(1), Hardened::from(2), Hardened::from(3)],
+            vec![Hardened::from(4), Hardened::from(5), Hardened::from(6)],
+            vec![Hardened::from(7), Hardened::from(8), Hardened::from(9)]
+        ];
+
+        // Chiamata della funzione e confronto con l'output atteso
+        let output_matrix = Hardened::from_mat(input_matrix);
+        assert_eq!(output_matrix, expected_output);
+    }
+        #[test]
+        fn test_get_message(){
+            let payload = catch_unwind(|| {
+                panic!("funge"); }).unwrap_err();
+
+            let msg = panic_message::panic_message(&payload);
+            assert_eq!("funge", msg);
+        }
+
+    }
+//}

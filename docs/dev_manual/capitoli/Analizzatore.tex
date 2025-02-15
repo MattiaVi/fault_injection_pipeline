@@ -1,0 +1,86 @@
+\section{Analizzatore}\label{sec:analyzer}
+L'analizzatore si colloca come elemento conclusivo della pipeline di \textit{fault injection}. La sua funzione principale è raccogliere e organizzare i risultati generati durante l'iniezione di fault negli algoritmi sottoposti a test, al fine di fornire una visione dettagliata del comportamento degli algoritmi irrobustiti e non.\\
+Tali dettagli sono riassunti in un report \textit{pdf} generato dinamicamente in base ai risultati ottenuti. 
+
+\subsection{Struct Analyzer e Faults}
+Per gestire e memorizzare i dati rilevanti ai fini dell'analisi dei risultati, sono state progettate due strutture dati, una di tipo \textbf{Analyzer} e l'altra di tipo \textbf{Faults}. Di seguito vengono riportate le loro strutture con una breve descrizione dei loro campi.
+\subsubsection{Struttura Analyzer}
+\begin{lstlisting}[language=rust, style=boxed]
+    #[derive(Serialize,Deserialize,Debug,Clone)]
+    pub struct Analyzer{
+        pub(crate) n_esecuzione: i8,
+        pub(crate) faults: Faults,
+        pub(crate) input: Data<i32>,
+        pub(crate) output: Data<i32>,
+        pub(crate) time_experiment: f64,
+        pub(crate) time_alg_hardened: f64,
+        pub(crate) time_alg_not_hardened: f64,
+        pub(crate) byte_hardened: f64,
+        pub(crate) byte_not_hardened: f64,
+        pub(crate) target_program: String,
+    }
+\end{lstlisting}
+Come possiamo vedere questa struttura include specifici campi per misurare l'overhead introdotto dal codice irrobustito, sia in termini di dimensione (espresso in byte) sia in termini di tempo di esecuzione (espresso in $\mu$s). I campi: \textit{byte\_hardened}, \textit{byte\_not\_hardened}, \textit{time\_alg\_hardened}, e \textit{time\_alg\_not\_hardened}, vengono valorizzati tramite apposite funzioni dedicate:
+\begin{itemize}
+    \item \textit{get\_data\_for\_dimension\_table}: calcola l'overhead dimensionale confrontando la dimensione dei file del codice originale e di quello irrobustito.
+    \item \textit
+    {get\_data\_for\_time\_table}: misura i tempi di esecuzione degli algoritmi, sia nella versione originale che in quella irrobustita.
+\end{itemize}
+Gli altri campi della struttura dati come \textit{n\_esecuzione}, \textit{input}, \textit{output} e \textit{target\_program} sono invece utilizzati in una seconda fase per costruire opportunamente il report finale.
+
+\subsubsection{Struttura Faults}
+\begin{lstlisting}[language=rust, style=boxed]
+    #[derive(Serialize,Deserialize,Debug,Clone)]
+    pub struct Faults{
+        pub(crate) n_silent_fault: usize,
+        pub(crate) n_assign_fault: usize,
+        pub(crate) n_inner_fault: usize,
+        pub(crate) n_sub_fault: usize,
+        pub(crate) n_mul_fault: usize,
+        pub(crate) n_add_fault: usize,
+        pub(crate) n_indexmut_fault: usize,
+        pub(crate) n_index_fault: usize,
+        pub(crate) n_ord_fault: usize,
+        pub(crate) n_partialord_fault: usize,
+        pub(crate) n_partialeq_fault: usize,
+        pub(crate) n_fatal_fault: usize,
+        pub(crate) total_fault: usize,
+    }
+\end{lstlisting}
+La struttura \textbf{Faults}, utilizzata come tipo di un campo della struttura \textbf{Analyzer}, contiene al suo interno una serie di contatori dedicati. Questi contatori vengono incrementati ogni volta che un fault specifico viene rilevato sul canale di comunicazione tra l'iniettore e l'analizzatore.
+
+Per semplicità possiamo affermare che per ogni fault iniettato, in generale l'analizzatore distingue le due seguenti macrocategorie:
+\begin{itemize}
+    \item \textbf{Fault silent}: rappresentano gli errori non intercettati dal sistema irrobustito (\textit{n\_silent\_fault}).
+    \item \textbf{Fault identificati}: corrispondono agli errori rilevati dal sistema irrobustito, categorizzati in base all'operazione specifica che li ha generati (ad esempio, operazioni di assegnazione, somma o moltiplicazione).
+\end{itemize}
+
+Sebbene la maggior parte dei fault iniettati non abbia un impatto diretto sull'output del sistema, una piccola percentuale può generare risultati errati, evidenziando casi critici in cui il sistema irrobustito fallisce nel mantenere l'integrità dell'elaborazione, tali errori vanno ad alterare il contatore \textit{n\_fatal\_fault}. \\
+Infine, il campo ridondante \textit{total\_fault} memorizza il numero totale di fault iniettati durante l'esecuzione dell'algoritmo, così da avere a disposizione questa informazione senza dover calcolare ogni volta la somma di tutti i campi della struttura \textbf{Faults}.
+
+\subsection{Tipologie di analisi}
+L'analizzatore supporta tre modalità principali di analisi, ognuna delle quali genera un report in formato pdf, salvato nella cartella \textit{\textbf{results}}. Di seguito una panoramica:
+\begin{enumerate}
+\item Analisi singola:
+    \begin{itemize}
+        \item Analizza un singolo algoritmo su cui vengono iniettati un     numero prefissato di fault.
+        \item Produce un file PDF denominato \textless \textit{nome\_file}\textgreater.pdf.
+    \end{itemize}
+
+\item Analisi su più algoritmi:
+    \begin{itemize}
+        \item Valuta il comportamento di tre algoritmi diversi: selection sort, bubble sort e matrix multiplication.
+        \item Produce un file PDF denominato \textless \textit{nome\_file}\textgreater\_all.pdf.
+    \end{itemize}
+
+\item Analisi su diverse cardinalità:
+    \begin{itemize}
+        \item Analizza un singolo algoritmo utilizzando tre diverse cardinalità della lista di fault (1000, 2000 e 3000 fault).
+        \item Produce un file PDF denominato \textless \textit{nome\_file}\textgreater\_diffcard.pdf.
+    \end{itemize}
+\end{enumerate}
+Ogni report include informazioni dettagliate sui fault rilevati e non rilevati, insieme alle metriche di performance e dimensioni del codice. Questo sistema di analisi offre una visione completa dell'efficacia del processo di irrobustimento e del relativo impatto su risorse e prestazioni.
+
+\subsection{Persistenza dei dati}
+Durante le analisi di tipo 2 (analisi su più algoritmi) e 3 (analisi su diverse cardinalità), l'analizzatore utilizza un file JSON temporaneo per memorizzare in maniera persistente e incrementale le informazioni derivate dalle esecuzioni precedenti. Questo approccio consente di memorizzare in un vettore di \textbf{Analyzer} tutte le informazioni necessarie per generare il report finale.
+Questo file viene salvato nella cartella results per poi essere eliminato alla fine dell'analisi, al fine di evitare sovraccarichi di memoria con dati obsoleti e garantire la pulizia dell'ambiente di lavoro. Infatti, nel caso l'utente voglia avere memoria di quelli che erano i dati contenuti nel file JSON, può sempre fare riferimento al vecchio report pdf generato.
