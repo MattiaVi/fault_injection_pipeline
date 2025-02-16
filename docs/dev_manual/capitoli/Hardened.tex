@@ -2,7 +2,7 @@
 In generale le tecniche di software fault-tolerance, tendono a sfruttare modifiche di alto livello al codice sorgente in modo da poter rilevare comportamenti irregolari (faults) che riguardano \textbf{sia il codice che i dati}. Qui invece \textit{poniamo l’attenzione esclusivamente su fault che riguardano i dati},  senza peraltro preoccuparci del fatto che questi si trovino in memoria centrale, memoria cache, registri o bus. Al codice target infatti vengono applicate semplici trasformazioni di alto livello che sono completamente indipendenti dal processore che esegue il programma. \\
 In questa sezione, dopo una prima analisi, si descrivono le principali caratteristiche e i metodi offerti dal nuovo tipo, in un secondo momento si entra nel dettaglio del linguaggio e si pone l'attenzione all'implementazione della semantica richiesta da \textbf{(R1)-(R3)}.
 \subsection{Tre regole per la trasformazione del codice}
-Le regole di trasformazione del codice citate sono quelle proposte in \cite{802887}. Riportiamo qui quelle mirate al rilevamento di \textbf{errori sui dati}:
+Le regole di trasformazione del codice citate sono quelle proposte in \cite{rebaudengo1999soft}. Riportiamo qui quelle mirate al rilevamento di \textbf{errori sui dati}:
 \begin{enumerate}
     \itemsep-0.2em
     \item \textbf{Regola \#1}: Ogni variabile \texttt{x} deve essere duplicata: siano \texttt{cp1} e \texttt{cp2} i nomi delle due copie;
@@ -23,7 +23,7 @@ struct Hardened<T>{
 \end{lstlisting}
 \noindent
 Poiché si vuole costruire un nuovo tipo in grado di associare a quanti più tipi standard possibili un dato comportamento, si usa la programmazione generica. In particolare, le due copie \texttt{cp1} e \texttt{cp2} hanno un tipo generico \texttt{T} a cui viene posto l'unico vincolo di essere confrontabile e copiabile.
-Al fine di ù di coprire il maggior numero di casistiche possibili in cui il dato viene acceduto in lettura e/o scrittura, sono stati implementati per \texttt{Hardened<T>} un numero significativo di \textbf{tratti della libreria standard}, in particolare: 
+Al fine di coprire il maggior numero di casistiche possibili in cui il dato viene acceduto in lettura e/o scrittura, sono stati implementati per \texttt{Hardened<T>} un numero significativo di \textbf{tratti della libreria standard}, in particolare: 
 \begin{itemize}
     \itemsep-0.3em
     \item \texttt{From<T>}: per ricavare una variabile ridondata a partire da una variabile 'semplice' di tipo T; 

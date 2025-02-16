@@ -26,7 +26,7 @@ between adjacent filters. Recombining filters allows you to build
 families of related systems"}
 \end{quotation}
 Di seguito si riporta 
-la versione modificata della pipeline in cui dove vengono aggiunti anche i componenti citati nella definizione. 
+la versione modificata della pipeline in cui vengono aggiunti anche i componenti citati nella definizione. 
 
 \begin{figure}[h]
     \centering
@@ -35,7 +35,7 @@ la versione modificata della pipeline in cui dove vengono aggiunti anche i compo
 \end{figure}
 
 \subsection{Implementazione in Rust}
-Ogni componente della pipeline mostrata trova implementazione in Rust in opportuni componenti software. La \textsc{sorgente dei dati} è costituita da un sottosistema che esegue l'\textbf{analisi statica automatica} del \textbf{programma target} producendo un primo report (\textit{Static analysis result)} (data preparation) che viene utilizzato a sua volta da una routine preposta alla generazione della \textbf{generare la fault list}. I \textsc{tre filtri}, invece, sono delle subroutine allocate in appositi moduli. Le due \textsc{pipeline} tramite le quali comunicano i tre stage sono implementate tramite 2 canali \textit{multiple producer single consumer} \texttt{(mpsc)}. Ogni filtro\footnote{
+Ogni componente della pipeline mostrata trova implementazione in Rust in opportuni componenti software. La \textsc{sorgente dei dati} è costituita da un sottosistema che esegue l'\textbf{analisi statica automatica} del \textbf{programma target} producendo un primo report (\textit{Static analysis result)} (data preparation) che viene utilizzato a sua volta da una routine preposta a \textbf{generare la fault list}. I \textsc{tre filtri}, invece, sono delle subroutine allocate in appositi moduli. Le due \textsc{pipeline} tramite le quali comunicano i tre stage sono implementate tramite 2 canali \textit{multiple producer single consumer} \texttt{(mpsc)}. Ogni filtro\footnote{
     Questi in letteratura sono noti come \textit{filtri attivi} in quanto rispettano il seguente principio: "[...] the filter is active in a loop, pulling its input from
     and pushing its output down the pipeline."(cfr. \cite{schmidt2013pattern})
 } utilizza come struttura di \textbf{programmazione concorrente} i thread.
